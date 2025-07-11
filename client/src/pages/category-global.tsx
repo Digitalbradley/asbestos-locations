@@ -323,6 +323,15 @@ export default function CategoryGlobalPage() {
           </p>
         </div>
 
+        {/* Google AdSense Block */}
+        <div className="bg-muted/20 border-2 border-dashed border-muted-foreground/30 rounded-lg p-6 mb-8">
+          <div className="text-center text-muted-foreground">
+            <div className="text-sm font-medium mb-1">Advertisement</div>
+            <div className="text-xs">Google AdSense code will be placed here</div>
+            <div className="text-xs mt-2">728x90 Leaderboard or 320x50 Mobile Banner</div>
+          </div>
+        </div>
+
         {/* Category Overview */}
         <div className="bg-muted/30 rounded-lg p-8 mb-8">
           <h2 className="text-2xl font-semibold mb-6">About {category.name} Asbestos Exposure</h2>
@@ -366,16 +375,7 @@ export default function CategoryGlobalPage() {
           </div>
         </div>
 
-        {/* Content Ad */}
-        <div className="my-12">
-          <div className="bg-muted/20 border-2 border-dashed border-muted-foreground/30 rounded-lg p-6">
-            <div className="text-center text-muted-foreground">
-              <div className="text-sm font-medium mb-1">Advertisement</div>
-              <div className="text-xs">AdSense Content Banner</div>
-              <div className="text-xs mt-2">728x90 Leaderboard</div>
-            </div>
-          </div>
-        </div>
+
 
         {/* Call to Action */}
         <div className="mb-12 p-6 bg-primary/10 rounded-lg border border-primary/20">
