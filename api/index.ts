@@ -60,17 +60,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         id: schema.states.id,
         name: schema.states.name,
         slug: schema.states.slug,
-        facilityCount: schema.states.facilityCount,
-        cities: sql`(
-          SELECT COALESCE(json_agg(json_build_object(
-            'id', c.id,
-            'name', c.name,
-            'slug', c.slug,
-            'facilityCount', c.facility_count
-          ) ORDER BY c.facility_count DESC), '[]')
-          FROM ${schema.cities} c 
-          WHERE c.state_id = ${schema.states.id}
-        )`.as('cities')
+        facilityCount: schema.states.facilityCount
       })
       .from(schema.states)
       .where(eq(schema.states.slug, slug));
@@ -79,7 +69,25 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         res.status(404).json({ message: 'State not found' });
         return;
       }
-      res.status(200).json(state);
+      
+      // Get cities for this state
+      const cities = await db.select({
+        id: schema.cities.id,
+        name: schema.cities.name,
+        slug: schema.cities.slug,
+        facilityCount: schema.cities.facilityCount
+      })
+      .from(schema.cities)
+      .where(eq(schema.cities.stateId, state.id))
+      .orderBy(desc(schema.cities.facilityCount));
+      
+      
+      const stateWithCities = {
+        ...state,
+        cities: cities
+      };
+      
+      res.status(200).json(stateWithCities);
       return;
     }
 
@@ -199,7 +207,14 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       const templateName = pathParts[4];
       
       if (templateType && templateName) {
-        const [template] = await db.select()
+        const [template] = await db.select({
+          id: schema.contentTemplates.id,
+          templateType: schema.contentTemplates.templateType,
+          templateName: schema.contentTemplates.templateName,
+          contentBlocks: schema.contentTemplates.contentBlocks,
+          placeholders: schema.contentTemplates.placeholders,
+          isActive: schema.contentTemplates.isActive
+        })
           .from(schema.contentTemplates)
           .where(and(
             eq(schema.contentTemplates.templateType, templateType),
