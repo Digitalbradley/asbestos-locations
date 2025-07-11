@@ -46,6 +46,20 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       res.status(200).json({ status: 'ok', timestamp: new Date().toISOString() });
       return;
     }
+    // Main sitemap route
+if (path === '/sitemap.xml') {
+  let sitemapContent = `<?xml version="1.0" encoding="UTF-8"?>
+<sitemapindex xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <sitemap>
+    <loc>https://asbestos-locations.vercel.app/sitemap-florida.xml</loc>
+    <lastmod>2025-01-10</lastmod>
+  </sitemap>
+</sitemapindex>`;
+
+  res.setHeader('Content-Type', 'application/xml');
+  res.status(200).send(sitemapContent);
+  return;
+}
 
     // Sitemap route
     if (path === '/sitemap-florida.xml') {
