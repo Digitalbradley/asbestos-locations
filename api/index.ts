@@ -97,8 +97,68 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       return;
     }
 
-    // Handle facilities route
-    if (path?.startsWith('/api/facilities')) {
+    // Handle individual facility routes FIRST (more specific)
+    if (path?.includes('/api/facilities/') && path.split('/').length >= 6) {
+      const pathParts = path.split('/');
+      const stateSlug = pathParts[3];
+      const citySlug = pathParts[4];
+      const facilitySlug = pathParts[5].replace('-asbestos-exposure', ''); // Remove suffix if present
+      
+      console.log('Individual facility route - State:', stateSlug, 'City:', citySlug, 'Facility:', facilitySlug);
+      
+      if (stateSlug && citySlug && facilitySlug) {
+        const [facility] = await db.select({
+          id: schema.facilities.id,
+          name: schema.facilities.name,
+          slug: schema.facilities.slug,
+          address: schema.facilities.address,
+          companyName: schema.facilities.companyName,
+          description: schema.facilities.description,
+          metaTitle: schema.facilities.metaTitle,
+          metaDescription: schema.facilities.metaDescription,
+          seoKeyword: schema.facilities.seoKeyword,
+          operationalYears: schema.facilities.operationalYears,
+          facilityType: schema.facilities.facilityType,
+          city: {
+            id: schema.cities.id,
+            name: schema.cities.name,
+            slug: schema.cities.slug
+          },
+          state: {
+            id: schema.states.id,
+            name: schema.states.name,
+            slug: schema.states.slug
+          },
+          category: {
+            id: schema.categories.id,
+            name: schema.categories.name,
+            slug: schema.categories.slug
+          }
+        })
+        .from(schema.facilities)
+        .leftJoin(schema.cities, eq(schema.facilities.cityId, schema.cities.id))
+        .leftJoin(schema.states, eq(schema.cities.stateId, schema.states.id))
+        .leftJoin(schema.categories, eq(schema.facilities.categoryId, schema.categories.id))
+        .where(and(
+          eq(schema.facilities.slug, facilitySlug),
+          eq(schema.cities.slug, citySlug),
+          eq(schema.states.slug, stateSlug)
+        ));
+        
+        if (!facility) {
+          console.log('Facility not found for:', stateSlug, citySlug, facilitySlug);
+          res.status(404).json({ message: 'Facility not found' });
+          return;
+        }
+        
+        console.log('Found facility:', facility.name, facility.id);
+        res.status(200).json(facility);
+        return;
+      }
+    }
+
+    // Handle facilities route (general, less specific)
+    if (path === '/api/facilities') {
       const cityId = req.query.cityId ? parseInt(req.query.cityId as string) : null;
       const limit = req.query.limit ? parseInt(req.query.limit as string) : 100;
       
@@ -290,58 +350,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       }
     }
 
-    // Handle individual facility routes
-    if (path?.includes('/api/facilities/') && path.split('/').length >= 6) {
-      const pathParts = path.split('/');
-      const stateSlug = pathParts[3];
-      const citySlug = pathParts[4];
-      const facilitySlug = pathParts[5].replace('-asbestos-exposure', ''); // Remove suffix if present
-      
-      if (stateSlug && citySlug && facilitySlug) {
-        const [facility] = await db.select({
-          id: schema.facilities.id,
-          name: schema.facilities.name,
-          slug: schema.facilities.slug,
-          address: schema.facilities.address,
-          companyName: schema.facilities.companyName,
-          description: schema.facilities.description,
-          metaTitle: schema.facilities.metaTitle,
-          metaDescription: schema.facilities.metaDescription,
-          seoKeyword: schema.facilities.seoKeyword,
-          city: {
-            id: schema.cities.id,
-            name: schema.cities.name,
-            slug: schema.cities.slug
-          },
-          state: {
-            id: schema.states.id,
-            name: schema.states.name,
-            slug: schema.states.slug
-          },
-          category: {
-            id: schema.categories.id,
-            name: schema.categories.name,
-            slug: schema.categories.slug
-          }
-        })
-        .from(schema.facilities)
-        .leftJoin(schema.cities, eq(schema.facilities.cityId, schema.cities.id))
-        .leftJoin(schema.states, eq(schema.cities.stateId, schema.states.id))
-        .leftJoin(schema.categories, eq(schema.facilities.categoryId, schema.categories.id))
-        .where(and(
-          eq(schema.facilities.slug, facilitySlug),
-          eq(schema.cities.slug, citySlug),
-          eq(schema.states.slug, stateSlug)
-        ));
-        
-        if (!facility) {
-          res.status(404).json({ message: 'Facility not found' });
-          return;
-        }
-        res.status(200).json(facility);
-        return;
-      }
-    }
+
 
     // Handle nearby facilities route
     if (path?.includes('/api/facilities/') && path.endsWith('/nearby')) {
