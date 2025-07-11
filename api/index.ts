@@ -1,151 +1,111 @@
-import express, { type Request, Response, NextFunction } from "express";
-import { storage } from "../server/storage";
-import { insertContactSubmissionSchema } from "../shared/schema";
-import { qualifyLead } from "../server/utils/leadQualification";
-import { createGoogleSheetsService } from "../server/utils/googleSheets";
-import { z } from "zod";
+import { VercelRequest, VercelResponse } from '@vercel/node';
 
-const app = express();
-app.use(express.json());
-app.use(express.urlencoded({ extended: false }));
-
-// States routes
-app.get("/api/states", async (req, res) => {
-  try {
-    const states = await storage.getStates();
-    res.json(states);
-  } catch (error) {
-    console.error("Error fetching states:", error);
-    res.status(500).json({ message: "Failed to fetch states" });
+export default async function handler(req: VercelRequest, res: VercelResponse) {
+  // Set CORS headers
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+  
+  if (req.method === 'OPTIONS') {
+    res.status(200).end();
+    return;
   }
-});
 
-app.get("/api/states/:slug", async (req, res) => {
   try {
-    const state = await storage.getStateBySlug(req.params.slug);
-    if (!state) {
-      return res.status(404).json({ message: "State not found" });
+    const path = req.url;
+    console.log('API Request:', req.method, path);
+
+    // Health check
+    if (path === '/api/health') {
+      res.status(200).json({ status: 'ok', timestamp: new Date().toISOString() });
+      return;
     }
-    res.json(state);
-  } catch (error) {
-    console.error("Error fetching state:", error);
-    res.status(500).json({ message: "Failed to fetch state" });
-  }
-});
 
-// Cities routes
-app.get("/api/cities/:stateSlug/:citySlug", async (req, res) => {
-  try {
-    const city = await storage.getCityBySlug(req.params.stateSlug, req.params.citySlug);
-    if (!city) {
-      return res.status(404).json({ message: "City not found" });
-    }
-    res.json(city);
-  } catch (error) {
-    console.error("Error fetching city:", error);
-    res.status(500).json({ message: "Failed to fetch city" });
-  }
-});
-
-// Facilities routes
-app.get("/api/facilities/:stateSlug/:citySlug/:facilitySlug", async (req, res) => {
-  try {
-    const facility = await storage.getFacilityBySlug(
-      req.params.stateSlug,
-      req.params.citySlug,
-      req.params.facilitySlug
-    );
-    if (!facility) {
-      return res.status(404).json({ message: "Facility not found" });
-    }
-    res.json(facility);
-  } catch (error) {
-    console.error("Error fetching facility:", error);
-    res.status(500).json({ message: "Failed to fetch facility" });
-  }
-});
-
-// Categories routes
-app.get("/api/categories", async (req, res) => {
-  try {
-    const categories = await storage.getCategories();
-    res.json(categories);
-  } catch (error) {
-    console.error("Error fetching categories:", error);
-    res.status(500).json({ message: "Failed to fetch categories" });
-  }
-});
-
-// Search routes
-app.get("/api/search", async (req, res) => {
-  try {
-    const query = req.query.q as string;
-    const limit = req.query.limit ? parseInt(req.query.limit as string) : 10;
+    // Dynamic import to avoid module loading issues
+    const { storage } = await import('../server/storage');
     
-    if (!query) {
-      return res.status(400).json({ message: "Search query is required" });
+    // Handle API routes
+    if (path === '/api/states') {
+      const states = await storage.getStates();
+      res.status(200).json(states);
+      return;
     }
 
-    const results = await storage.searchFacilities(query, limit);
-    res.json(results);
-  } catch (error) {
-    console.error("Error searching facilities:", error);
-    res.status(500).json({ message: "Failed to search facilities" });
-  }
-});
+    if (path?.startsWith('/api/states/')) {
+      const slug = path.split('/')[3];
+      const state = await storage.getStateBySlug(slug);
+      if (!state) {
+        res.status(404).json({ message: 'State not found' });
+        return;
+      }
+      res.status(200).json(state);
+      return;
+    }
 
-// Contact submission
-app.post("/api/contact", async (req, res) => {
-  try {
-    const validatedData = insertContactSubmissionSchema.parse(req.body);
-    
-    // Qualify the lead
-    const qualification = await qualifyLead(validatedData);
-    
-    // Create contact submission with qualification
-    const contactSubmission = await storage.createContactSubmission({
-      ...validatedData,
-      qualificationScore: qualification.score,
-      qualificationLevel: qualification.level,
-      qualificationNotes: qualification.notes
-    });
+    if (path === '/api/categories') {
+      const categories = await storage.getCategories();
+      res.status(200).json(categories);
+      return;
+    }
 
-    // Submit to Google Sheets if qualified
-    if (qualification.score >= 60) {
-      try {
-        const googleSheets = await createGoogleSheetsService();
-        await googleSheets.submitLead({
-          ...validatedData,
-          qualification
-        });
-      } catch (sheetsError) {
-        console.error("Error submitting to Google Sheets:", sheetsError);
+    // Handle city routes
+    if (path?.includes('/api/cities/')) {
+      const pathParts = path.split('/');
+      const stateSlug = pathParts[3];
+      const citySlug = pathParts[4];
+      
+      if (stateSlug && citySlug) {
+        const city = await storage.getCityBySlug(stateSlug, citySlug);
+        if (!city) {
+          res.status(404).json({ message: 'City not found' });
+          return;
+        }
+        res.status(200).json(city);
+        return;
       }
     }
 
-    res.json({ 
-      success: true, 
-      id: contactSubmission.id,
-      qualification: qualification
-    });
-  } catch (error) {
-    console.error("Error creating contact submission:", error);
-    if (error instanceof z.ZodError) {
-      return res.status(400).json({ 
-        message: "Invalid form data", 
-        errors: error.errors 
-      });
+    // Handle facility routes
+    if (path?.includes('/api/facilities/')) {
+      const pathParts = path.split('/');
+      const stateSlug = pathParts[3];
+      const citySlug = pathParts[4];
+      const facilitySlug = pathParts[5];
+      
+      if (stateSlug && citySlug && facilitySlug) {
+        const facility = await storage.getFacilityBySlug(stateSlug, citySlug, facilitySlug);
+        if (!facility) {
+          res.status(404).json({ message: 'Facility not found' });
+          return;
+        }
+        res.status(200).json(facility);
+        return;
+      }
     }
-    res.status(500).json({ message: "Failed to submit contact form" });
+
+    // Handle search
+    if (path?.startsWith('/api/search')) {
+      const query = req.query.q as string;
+      const limit = req.query.limit ? parseInt(req.query.limit as string) : 10;
+      
+      if (!query) {
+        res.status(400).json({ message: 'Search query is required' });
+        return;
+      }
+
+      const results = await storage.searchFacilities(query, limit);
+      res.status(200).json(results);
+      return;
+    }
+
+    res.status(404).json({ message: 'API endpoint not found' });
+    
+  } catch (error) {
+    console.error('API Error:', error);
+    res.status(500).json({ 
+      message: 'Internal server error',
+      error: error instanceof Error ? error.message : 'Unknown error'
+    });
   }
-});
+}
 
-// Error handler
-app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
-  const status = err.status || err.statusCode || 500;
-  const message = err.message || "Internal Server Error";
-  res.status(status).json({ message });
-});
-
-// Export for Vercel
-export default app;
