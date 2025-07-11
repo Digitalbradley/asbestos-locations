@@ -22,7 +22,7 @@
       "dest": "/api/index.ts"
     },
     {
-      "src": "/sitemap-florida.xml",
+      "src": "/sitemap-(.*)\\.xml",
       "dest": "/api/index.ts"
     },
     {
