@@ -421,13 +421,18 @@ export class DatabaseStorage implements IStorage {
     const offset = (page - 1) * limit;
 
     let query = db.select().from(contactSubmissions);
+    let conditions: any[] = [];
     
     if (status) {
-      query = query.where(eq(contactSubmissions.status, status));
+      conditions.push(eq(contactSubmissions.status, status));
     }
     
     if (priority) {
-      query = query.where(eq(contactSubmissions.priority, priority));
+      conditions.push(eq(contactSubmissions.priority, priority));
+    }
+    
+    if (conditions.length > 0) {
+      query = query.where(and(...conditions));
     }
 
     const submissions = await query
@@ -454,13 +459,19 @@ export class DatabaseStorage implements IStorage {
 
   // Content Templates
   async getContentTemplates(templateType?: string): Promise<ContentTemplate[]> {
-    const query = db.select().from(contentTemplates).where(eq(contentTemplates.isActive, true));
-    
     if (templateType) {
-      return await query.where(eq(contentTemplates.templateType, templateType)).orderBy(asc(contentTemplates.templateName));
+      return await db
+        .select()
+        .from(contentTemplates)
+        .where(and(eq(contentTemplates.isActive, true), eq(contentTemplates.templateType, templateType)))
+        .orderBy(asc(contentTemplates.templateName));
     }
     
-    return await query.orderBy(asc(contentTemplates.templateType), asc(contentTemplates.templateName));
+    return await db
+      .select()
+      .from(contentTemplates)
+      .where(eq(contentTemplates.isActive, true))
+      .orderBy(asc(contentTemplates.templateType), asc(contentTemplates.templateName));
   }
 
   async getContentTemplateByName(templateName: string): Promise<ContentTemplate | undefined> {
@@ -573,10 +584,10 @@ export class DatabaseStorage implements IStorage {
       if (!otherFacility.latitude || !otherFacility.longitude) continue;
       
       const distance = this.calculateHaversineDistance(
-        parseFloat(facility.latitude),
-        parseFloat(facility.longitude),
-        parseFloat(otherFacility.latitude),
-        parseFloat(otherFacility.longitude)
+        parseFloat(facility.latitude!),
+        parseFloat(facility.longitude!),
+        parseFloat(otherFacility.latitude!),
+        parseFloat(otherFacility.longitude!)
       );
 
       proximityData.push({
@@ -639,7 +650,7 @@ export class DatabaseStorage implements IStorage {
         id: city.id,
         name: city.name,
         slug: city.slug,
-        facilityCount: city.facilityCount,
+        facilityCount: city.facilityCount || 0,
         distance: Math.round((index + 1) * 15.5 * 10) / 10 // Estimated distances
       }));
 
