@@ -99,11 +99,24 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
     // Handle facilities route
     if (path === '/api/facilities') {
+      const cityId = req.query.cityId ? parseInt(req.query.cityId as string) : null;
+      const limit = req.query.limit ? parseInt(req.query.limit as string) : 100;
+      
+      let whereClause;
+      if (cityId) {
+        whereClause = eq(schema.facilities.cityId, cityId);
+      }
+      
       const facilities = await db.select({
         id: schema.facilities.id,
         name: schema.facilities.name,
         slug: schema.facilities.slug,
         address: schema.facilities.address,
+        companyName: schema.facilities.companyName,
+        description: schema.facilities.description,
+        metaTitle: schema.facilities.metaTitle,
+        metaDescription: schema.facilities.metaDescription,
+        seoKeyword: schema.facilities.seoKeyword,
         city: {
           id: schema.cities.id,
           name: schema.cities.name,
@@ -124,7 +137,9 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       .leftJoin(schema.cities, eq(schema.facilities.cityId, schema.cities.id))
       .leftJoin(schema.states, eq(schema.cities.stateId, schema.states.id))
       .leftJoin(schema.categories, eq(schema.facilities.categoryId, schema.categories.id))
-      .limit(100);
+      .where(whereClause)
+      .orderBy(asc(schema.facilities.name))
+      .limit(limit);
       
       res.status(200).json(facilities);
       return;
@@ -230,12 +245,57 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       }
     }
 
-    // Handle facility routes
-    if (path?.includes('/api/facilities/')) {
+    // Handle city facilities route
+    if (path?.startsWith('/api/cities/') && path.includes('/facilities')) {
       const pathParts = path.split('/');
       const stateSlug = pathParts[3];
       const citySlug = pathParts[4];
-      const facilitySlug = pathParts[5];
+      
+      if (stateSlug && citySlug) {
+        const facilities = await db.select({
+          id: schema.facilities.id,
+          name: schema.facilities.name,
+          slug: schema.facilities.slug,
+          address: schema.facilities.address,
+          companyName: schema.facilities.companyName,
+          description: schema.facilities.description,
+          city: {
+            id: schema.cities.id,
+            name: schema.cities.name,
+            slug: schema.cities.slug
+          },
+          state: {
+            id: schema.states.id,
+            name: schema.states.name,
+            slug: schema.states.slug
+          },
+          category: {
+            id: schema.categories.id,
+            name: schema.categories.name,
+            slug: schema.categories.slug
+          }
+        })
+        .from(schema.facilities)
+        .leftJoin(schema.cities, eq(schema.facilities.cityId, schema.cities.id))
+        .leftJoin(schema.states, eq(schema.cities.stateId, schema.states.id))
+        .leftJoin(schema.categories, eq(schema.facilities.categoryId, schema.categories.id))
+        .where(and(
+          eq(schema.cities.slug, citySlug),
+          eq(schema.states.slug, stateSlug)
+        ))
+        .orderBy(asc(schema.facilities.name));
+        
+        res.status(200).json(facilities);
+        return;
+      }
+    }
+
+    // Handle individual facility routes
+    if (path?.includes('/api/facilities/') && path.split('/').length >= 6) {
+      const pathParts = path.split('/');
+      const stateSlug = pathParts[3];
+      const citySlug = pathParts[4];
+      const facilitySlug = pathParts[5].replace('-asbestos-exposure', ''); // Remove suffix if present
       
       if (stateSlug && citySlug && facilitySlug) {
         const [facility] = await db.select({
@@ -281,6 +341,175 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         res.status(200).json(facility);
         return;
       }
+    }
+
+    // Handle nearby facilities route
+    if (path?.includes('/api/facilities/') && path.endsWith('/nearby')) {
+      const facilityId = parseInt(path.split('/')[3]);
+      
+      if (facilityId) {
+        const facility = await db.select()
+          .from(schema.facilities)
+          .where(eq(schema.facilities.id, facilityId))
+          .limit(1);
+        
+        if (facility.length > 0) {
+          const nearbyFacilities = await db.select({
+            id: schema.facilities.id,
+            name: schema.facilities.name,
+            slug: schema.facilities.slug,
+            city: {
+              id: schema.cities.id,
+              name: schema.cities.name,
+              slug: schema.cities.slug
+            },
+            state: {
+              id: schema.states.id,
+              name: schema.states.name,
+              slug: schema.states.slug
+            },
+            category: {
+              id: schema.categories.id,
+              name: schema.categories.name,
+              slug: schema.categories.slug
+            }
+          })
+          .from(schema.facilities)
+          .leftJoin(schema.cities, eq(schema.facilities.cityId, schema.cities.id))
+          .leftJoin(schema.states, eq(schema.cities.stateId, schema.states.id))
+          .leftJoin(schema.categories, eq(schema.facilities.categoryId, schema.categories.id))
+          .where(and(
+            eq(schema.facilities.cityId, facility[0].cityId),
+            ne(schema.facilities.id, facilityId)
+          ))
+          .orderBy(asc(schema.facilities.name))
+          .limit(10);
+          
+          res.status(200).json(nearbyFacilities);
+          return;
+        }
+      }
+    }
+
+    // Handle related facilities route
+    if (path?.includes('/api/facilities/') && path.endsWith('/related')) {
+      const facilityId = parseInt(path.split('/')[3]);
+      
+      if (facilityId) {
+        const facility = await db.select()
+          .from(schema.facilities)
+          .where(eq(schema.facilities.id, facilityId))
+          .limit(1);
+        
+        if (facility.length > 0) {
+          const relatedFacilities = await db.select({
+            id: schema.facilities.id,
+            name: schema.facilities.name,
+            slug: schema.facilities.slug,
+            city: {
+              id: schema.cities.id,
+              name: schema.cities.name,
+              slug: schema.cities.slug
+            },
+            state: {
+              id: schema.states.id,
+              name: schema.states.name,
+              slug: schema.states.slug
+            },
+            category: {
+              id: schema.categories.id,
+              name: schema.categories.name,
+              slug: schema.categories.slug
+            }
+          })
+          .from(schema.facilities)
+          .leftJoin(schema.cities, eq(schema.facilities.cityId, schema.cities.id))
+          .leftJoin(schema.states, eq(schema.cities.stateId, schema.states.id))
+          .leftJoin(schema.categories, eq(schema.facilities.categoryId, schema.categories.id))
+          .where(and(
+            eq(schema.facilities.categoryId, facility[0].categoryId),
+            ne(schema.facilities.id, facilityId)
+          ))
+          .orderBy(asc(schema.facilities.name))
+          .limit(10);
+          
+          res.status(200).json(relatedFacilities);
+          return;
+        }
+      }
+    }
+
+    // Handle contact form submissions
+    if (path === '/api/contact' && method === 'POST') {
+      const { name, email, phone, message, facilityId, cityId, stateId } = req.body;
+      
+      try {
+        const submission = await db.insert(schema.contactSubmissions).values({
+          name: name || '',
+          email: email || '',
+          phone: phone || '',
+          message: message || '',
+          facilityId: facilityId || null,
+          cityId: cityId || null,
+          stateId: stateId || null,
+          isQualified: false,
+          qualificationScore: 0,
+          submittedAt: new Date()
+        }).returning();
+        
+        res.status(201).json(submission[0]);
+        return;
+      } catch (error) {
+        console.error('Contact form submission error:', error);
+        res.status(500).json({ message: 'Failed to submit contact form' });
+        return;
+      }
+    }
+
+    // Handle search route
+    if (path?.startsWith('/api/search')) {
+      const query = req.query.q as string;
+      const limit = parseInt(req.query.limit as string) || 50;
+      
+      if (!query) {
+        res.status(400).json({ message: 'Search query is required' });
+        return;
+      }
+      
+      const searchResults = await db.select({
+        id: schema.facilities.id,
+        name: schema.facilities.name,
+        slug: schema.facilities.slug,
+        city: {
+          id: schema.cities.id,
+          name: schema.cities.name,
+          slug: schema.cities.slug
+        },
+        state: {
+          id: schema.states.id,
+          name: schema.states.name,
+          slug: schema.states.slug
+        },
+        category: {
+          id: schema.categories.id,
+          name: schema.categories.name,
+          slug: schema.categories.slug
+        }
+      })
+      .from(schema.facilities)
+      .leftJoin(schema.cities, eq(schema.facilities.cityId, schema.cities.id))
+      .leftJoin(schema.states, eq(schema.cities.stateId, schema.states.id))
+      .leftJoin(schema.categories, eq(schema.facilities.categoryId, schema.categories.id))
+      .where(or(
+        ilike(schema.facilities.name, `%${query}%`),
+        ilike(schema.cities.name, `%${query}%`),
+        ilike(schema.facilities.companyName, `%${query}%`)
+      ))
+      .orderBy(asc(schema.facilities.name))
+      .limit(limit);
+      
+      res.status(200).json(searchResults);
+      return;
     }
 
     res.status(404).json({ message: 'API endpoint not found' });
