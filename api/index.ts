@@ -1,7 +1,7 @@
 import { VercelRequest, VercelResponse } from '@vercel/node';
 import { Pool, neonConfig } from '@neondatabase/serverless';
 import { drizzle } from 'drizzle-orm/neon-serverless';
-import { eq, like, and, desc, asc, sql } from 'drizzle-orm';
+import { eq, like, and, desc, asc, sql, ne, or, ilike } from 'drizzle-orm';
 import * as schema from '../shared/schema.js';
 
 // Configure WebSocket for serverless environments
