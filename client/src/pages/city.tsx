@@ -122,6 +122,15 @@ export default function CityPage() {
           </p>
         </div>
 
+        {/* Google AdSense Block */}
+        <div className="bg-muted/20 border-2 border-dashed border-muted-foreground/30 rounded-lg p-6 mb-8">
+          <div className="text-center text-muted-foreground">
+            <div className="text-sm font-medium mb-1">Advertisement</div>
+            <div className="text-xs">Google AdSense code will be placed here</div>
+            <div className="text-xs mt-2">728x90 Leaderboard or 320x50 Mobile Banner</div>
+          </div>
+        </div>
+
         {/* City Content Section */}
         <div className="bg-muted/30 rounded-lg p-8 mb-8">
           <h2 className="text-2xl font-semibold mb-6">About Asbestos Exposure in {city.name}</h2>
@@ -202,15 +211,15 @@ export default function CityPage() {
 function NearestCitiesSection({ city }: { city: CityWithState }) {
   // For now, let's hardcode some example nearest cities for Florida
   const nearestCities = [
-    { id: 16, name: "Fort Lauderdale", slug: "fort-lauderdale", distance: 15.5, facilityCount: 18 },
-    { id: 18, name: "Saint Petersburg", slug: "saint-petersburg", distance: 31.0, facilityCount: 15 },
+    { id: 16, name: "Fort Lauderdale", slug: "fort-lauderdale", distance: 15.5, facilityCount: 21 },
+    { id: 18, name: "Saint Petersburg", slug: "saint-petersburg", distance: 31.0, facilityCount: 19 },
     { id: 20, name: "Port Saint Lucie", slug: "port-saint-lucie", distance: 46.5, facilityCount: 6 },
-    { id: 21, name: "Cape Coral", slug: "cape-coral", distance: 62.0, facilityCount: 11 },
+    { id: 21, name: "Cape Coral", slug: "cape-coral", distance: 62.0, facilityCount: 5 },
     { id: 24, name: "Miramar", slug: "miramar", distance: 77.5, facilityCount: 7 },
-    { id: 25, name: "Coral Springs", slug: "coral-springs", distance: 93.0, facilityCount: 5 },
+    { id: 25, name: "Coral Springs", slug: "coral-springs", distance: 93.0, facilityCount: 0 },
     { id: 28, name: "Pompano Beach", slug: "pompano-beach", distance: 108.5, facilityCount: 8 },
-    { id: 31, name: "Davie", slug: "davie", distance: 124.0, facilityCount: 6 },
-    { id: 34, name: "Deltona", slug: "deltona", distance: 139.5, facilityCount: 3 },
+    { id: 31, name: "Davie", slug: "davie", distance: 124.0, facilityCount: 0 },
+    { id: 34, name: "Deltona", slug: "deltona", distance: 139.5, facilityCount: 0 },
     { id: 35, name: "North Miami Beach", slug: "north-miami-beach", distance: 155.0, facilityCount: 2 }
   ];
 
