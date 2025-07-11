@@ -130,7 +130,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const categoryId = req.query.categoryId ? parseInt(req.query.categoryId as string) : undefined;
       const categorySlug = req.query.categorySlug as string;
 
-      let facilities;
+      let facilities: any[] = [];
       if (stateId && categorySlug) {
         // Get facilities by state and category slug
         const category = await storage.getCategoryBySlug(categorySlug);
@@ -234,8 +234,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         validationResult.data.phone || '',
         validationResult.data.inquiryType,
         validationResult.data.message,
-        validationResult.data.exposure,
-        validationResult.data.diagnosis
+        validationResult.data.exposure || null,
+        validationResult.data.diagnosis || null
       );
 
       // Add additional tracking data and qualification results
@@ -243,7 +243,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         ...validationResult.data,
         pageUrl: req.headers.referer || req.body.pageUrl || '',
         userAgent: req.headers['user-agent'] || '',
-        ipAddress: req.headers['x-forwarded-for'] || req.connection.remoteAddress || '',
+        ipAddress: Array.isArray(req.headers['x-forwarded-for']) ? req.headers['x-forwarded-for'][0] : req.headers['x-forwarded-for'] || req.connection.remoteAddress || '',
         // Set priority based on qualification level
         priority: qualification.qualificationLevel === 'high' ? 'urgent' :
                  qualification.qualificationLevel === 'medium' ? 'high' :
@@ -271,8 +271,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
           try {
             console.log('Submission data:', {
               id: submission.id,
-              submittedAt: submission.submittedAt,
-              submittedAtType: typeof submission.submittedAt,
               createdAt: submission.createdAt,
               createdAtType: typeof submission.createdAt
             });
