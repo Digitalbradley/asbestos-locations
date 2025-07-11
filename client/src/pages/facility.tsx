@@ -22,62 +22,83 @@ export default function FacilityPage() {
   const facilitySlugWithSuffix = params?.["facilitySlug-asbestos-exposure"] || "";
   const facilitySlug = facilitySlugWithSuffix.replace("-asbestos-exposure", "");
 
-  const { data: facility, isLoading: isLoadingFacility } = useQuery({
+  const { data: facility, isLoading: isLoadingFacility, error: facilityError } = useQuery({
     queryKey: ["/api/facilities", stateSlug, citySlug, facilitySlug],
     queryFn: async () => {
+      console.log('Fetching facility:', stateSlug, citySlug, facilitySlug);
       const response = await fetch(`/api/facilities/${stateSlug}/${citySlug}/${facilitySlug}`);
-      if (!response.ok) throw new Error("Facility not found");
-      return response.json() as FacilityWithRelations;
+      console.log('Facility API response:', response.status, response.statusText);
+      if (!response.ok) throw new Error(`Facility not found: ${response.status}`);
+      const data = await response.json();
+      console.log('Facility data:', data?.name, data?.id);
+      return data as FacilityWithRelations;
     },
     enabled: !!(stateSlug && citySlug && facilitySlug),
   });
 
-  const { data: nearbyFacilities = [] } = useQuery({
+  const { data: nearbyFacilities = [], error: nearbyError } = useQuery({
     queryKey: ["/api/facilities", facility?.id, "nearby"],
     queryFn: async () => {
       if (!facility?.id) return [];
+      console.log('Fetching nearby facilities for facility ID:', facility.id);
       const response = await fetch(`/api/facilities/${facility.id}/nearby`);
-      if (!response.ok) return [];
-      return response.json() as FacilityWithRelations[];
+      console.log('Nearby facilities API response:', response.status, response.statusText);
+      if (!response.ok) throw new Error(`Failed to fetch nearby facilities: ${response.status}`);
+      const data = await response.json();
+      console.log('Nearby facilities count:', data.length);
+      return data as FacilityWithRelations[];
     },
     enabled: !!facility?.id,
   });
 
-  const { data: relatedFacilities = [] } = useQuery({
+  const { data: relatedFacilities = [], error: relatedError } = useQuery({
     queryKey: ["/api/facilities", facility?.id, "related"],
     queryFn: async () => {
       if (!facility?.id) return [];
+      console.log('Fetching related facilities for facility ID:', facility.id);
       const response = await fetch(`/api/facilities/${facility.id}/related`);
-      if (!response.ok) return [];
-      return response.json() as FacilityWithRelations[];
+      console.log('Related facilities API response:', response.status, response.statusText);
+      if (!response.ok) throw new Error(`Failed to fetch related facilities: ${response.status}`);
+      const data = await response.json();
+      console.log('Related facilities count:', data.length);
+      return data as FacilityWithRelations[];
     },
     enabled: !!facility?.id,
   });
 
-  const { data: facilityContent } = useQuery({
+  const { data: facilityContent, error: contentError } = useQuery({
     queryKey: ["/api/content-templates/facility", facility?.slug, facility?.id],
     queryFn: async () => {
       if (!facility?.slug || !facility?.id) return null;
       
       // Determine template version based on facility ID (same logic as generation)
       const templateVersion = (facility.id % 3) + 1;
+      console.log('Fetching facility content template for:', facility.slug, 'version:', templateVersion);
       
       // Try versioned template first
       let response = await fetch(`/api/content-templates/facility/${facility.slug}_content_v${templateVersion}`);
+      console.log('Primary template API response:', response.status, response.statusText);
       if (response.ok) {
-        return response.json() as ContentTemplate;
+        const data = await response.json();
+        console.log('Template found:', data?.templateName);
+        return data as ContentTemplate;
       }
       
       // Fall back to other versions if primary not found
       for (let v = 1; v <= 3; v++) {
         if (v !== templateVersion) {
+          console.log('Trying fallback template version:', v);
           response = await fetch(`/api/content-templates/facility/${facility.slug}_content_v${v}`);
+          console.log('Fallback template API response:', response.status, response.statusText);
           if (response.ok) {
-            return response.json() as ContentTemplate;
+            const data = await response.json();
+            console.log('Fallback template found:', data?.templateName);
+            return data as ContentTemplate;
           }
         }
       }
       
+      console.log('No content template found for facility:', facility.slug);
       return null;
     },
     enabled: !!facility?.slug && !!facility?.id,
@@ -174,6 +195,32 @@ export default function FacilityPage() {
                   </div>
                 </div>
               </div>
+
+              {/* Error Messages */}
+              {(facilityError || nearbyError || relatedError || contentError) && (
+                <div className="mb-6 space-y-2">
+                  {facilityError && (
+                    <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+                      <p className="text-red-800">Error loading facility: {facilityError.message}</p>
+                    </div>
+                  )}
+                  {nearbyError && (
+                    <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+                      <p className="text-red-800">Error loading nearby facilities: {nearbyError.message}</p>
+                    </div>
+                  )}
+                  {relatedError && (
+                    <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+                      <p className="text-red-800">Error loading related facilities: {relatedError.message}</p>
+                    </div>
+                  )}
+                  {contentError && (
+                    <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+                      <p className="text-red-800">Error loading content: {contentError.message}</p>
+                    </div>
+                  )}
+                </div>
+              )}
 
               <div className="prose max-w-none mb-8">
                 <h2 className="text-2xl font-semibold mb-4">Facility Overview</h2>
