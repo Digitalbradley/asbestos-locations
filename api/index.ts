@@ -67,7 +67,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             'name', c.name,
             'slug', c.slug,
             'facilityCount', c.facility_count
-          )), '[]')
+          ) ORDER BY c.facility_count DESC), '[]')
           FROM ${schema.cities} c 
           WHERE c.state_id = ${schema.states.id}
         )`.as('cities')
