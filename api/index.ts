@@ -245,7 +245,6 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
           address: schema.facilities.address,
           companyName: schema.facilities.companyName,
           description: schema.facilities.description,
-          content: schema.facilities.content,
           metaTitle: schema.facilities.metaTitle,
           metaDescription: schema.facilities.metaDescription,
           seoKeyword: schema.facilities.seoKeyword,
