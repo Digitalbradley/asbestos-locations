@@ -1,4 +1,30 @@
 import { VercelRequest, VercelResponse } from '@vercel/node';
+import { Pool, neonConfig } from '@neondatabase/serverless';
+import { drizzle } from 'drizzle-orm/neon-serverless';
+import { eq, like, and, desc, asc, sql } from 'drizzle-orm';
+import * as schema from '../shared/schema.js';
+
+// Configure WebSocket for serverless environments
+if (typeof window === 'undefined') {
+  try {
+    import('ws').then(ws => {
+      neonConfig.webSocketConstructor = ws.default;
+    }).catch(() => {
+      console.log('WebSocket not available in this environment');
+    });
+  } catch (error) {
+    console.log('WebSocket not available in this environment');
+  }
+}
+
+// Direct database connection
+const pool = new Pool({ 
+  connectionString: process.env.DATABASE_URL,
+  max: 1,
+  idleTimeoutMillis: 30000,
+  connectionTimeoutMillis: 2000,
+});
+const db = drizzle({ client: pool, schema });
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   // Set CORS headers
@@ -20,20 +46,35 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       res.status(200).json({ status: 'ok', timestamp: new Date().toISOString() });
       return;
     }
-
-    // Dynamic import to avoid module loading issues
-    const { storage } = await import('../server/storage');
     
-    // Handle API routes
+    // Handle API routes with direct database queries
     if (path === '/api/states') {
-      const states = await storage.getStates();
+      const states = await db.select().from(schema.states);
       res.status(200).json(states);
       return;
     }
 
     if (path?.startsWith('/api/states/')) {
       const slug = path.split('/')[3];
-      const state = await storage.getStateBySlug(slug);
+      const [state] = await db.select({
+        id: schema.states.id,
+        name: schema.states.name,
+        slug: schema.states.slug,
+        facilityCount: schema.states.facilityCount,
+        cities: sql`(
+          SELECT COALESCE(json_agg(json_build_object(
+            'id', c.id,
+            'name', c.name,
+            'slug', c.slug,
+            'facilityCount', c.facility_count
+          )), '[]')
+          FROM ${schema.cities} c 
+          WHERE c.state_id = ${schema.states.id}
+        )`.as('cities')
+      })
+      .from(schema.states)
+      .where(eq(schema.states.slug, slug));
+      
       if (!state) {
         res.status(404).json({ message: 'State not found' });
         return;
@@ -43,8 +84,41 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     }
 
     if (path === '/api/categories') {
-      const categories = await storage.getCategories();
+      const categories = await db.select().from(schema.categories);
       res.status(200).json(categories);
+      return;
+    }
+
+    // Handle facilities route
+    if (path === '/api/facilities') {
+      const facilities = await db.select({
+        id: schema.facilities.id,
+        name: schema.facilities.name,
+        slug: schema.facilities.slug,
+        address: schema.facilities.address,
+        city: {
+          id: schema.cities.id,
+          name: schema.cities.name,
+          slug: schema.cities.slug
+        },
+        state: {
+          id: schema.states.id,
+          name: schema.states.name,
+          slug: schema.states.slug
+        },
+        category: {
+          id: schema.categories.id,
+          name: schema.categories.name,
+          slug: schema.categories.slug
+        }
+      })
+      .from(schema.facilities)
+      .leftJoin(schema.cities, eq(schema.facilities.cityId, schema.cities.id))
+      .leftJoin(schema.states, eq(schema.cities.stateId, schema.states.id))
+      .leftJoin(schema.categories, eq(schema.facilities.categoryId, schema.categories.id))
+      .limit(100);
+      
+      res.status(200).json(facilities);
       return;
     }
 
@@ -55,30 +129,29 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       const citySlug = pathParts[4];
       
       if (stateSlug && citySlug) {
-        const city = await storage.getCityBySlug(stateSlug, citySlug);
+        const [city] = await db.select({
+          id: schema.cities.id,
+          name: schema.cities.name,
+          slug: schema.cities.slug,
+          facilityCount: schema.cities.facilityCount,
+          state: {
+            id: schema.states.id,
+            name: schema.states.name,
+            slug: schema.states.slug
+          }
+        })
+        .from(schema.cities)
+        .leftJoin(schema.states, eq(schema.cities.stateId, schema.states.id))
+        .where(and(
+          eq(schema.cities.slug, citySlug),
+          eq(schema.states.slug, stateSlug)
+        ));
+        
         if (!city) {
           res.status(404).json({ message: 'City not found' });
           return;
         }
         res.status(200).json(city);
-        return;
-      }
-    }
-
-    // Handle facility routes
-    if (path?.includes('/api/facilities/')) {
-      const pathParts = path.split('/');
-      const stateSlug = pathParts[3];
-      const citySlug = pathParts[4];
-      const facilitySlug = pathParts[5];
-      
-      if (stateSlug && citySlug && facilitySlug) {
-        const facility = await storage.getFacilityBySlug(stateSlug, citySlug, facilitySlug);
-        if (!facility) {
-          res.status(404).json({ message: 'Facility not found' });
-          return;
-        }
-        res.status(200).json(facility);
         return;
       }
     }
@@ -93,7 +166,28 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         return;
       }
 
-      const results = await storage.searchFacilities(query, limit);
+      const results = await db.select({
+        id: schema.facilities.id,
+        name: schema.facilities.name,
+        slug: schema.facilities.slug,
+        address: schema.facilities.address,
+        city: {
+          id: schema.cities.id,
+          name: schema.cities.name,
+          slug: schema.cities.slug
+        },
+        state: {
+          id: schema.states.id,
+          name: schema.states.name,
+          slug: schema.states.slug
+        }
+      })
+      .from(schema.facilities)
+      .leftJoin(schema.cities, eq(schema.facilities.cityId, schema.cities.id))
+      .leftJoin(schema.states, eq(schema.cities.stateId, schema.states.id))
+      .where(like(schema.facilities.name, `%${query}%`))
+      .limit(limit);
+      
       res.status(200).json(results);
       return;
     }
