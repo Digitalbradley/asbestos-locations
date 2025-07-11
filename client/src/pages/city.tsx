@@ -24,13 +24,17 @@ export default function CityPage() {
     enabled: !!(stateSlug && citySlug),
   });
 
-  const { data: facilities = [], isLoading: isLoadingFacilities } = useQuery({
+  const { data: facilities = [], isLoading: isLoadingFacilities, error: facilitiesError } = useQuery({
     queryKey: ["/api/facilities", city?.id],
     queryFn: async () => {
       if (!city?.id) return [];
+      console.log('Fetching facilities for city ID:', city.id);
       const response = await fetch(`/api/facilities?cityId=${city.id}&limit=1000`);
-      if (!response.ok) throw new Error("Failed to fetch facilities");
-      return response.json() as FacilityWithRelations[];
+      console.log('Facilities API response:', response.status, response.statusText);
+      if (!response.ok) throw new Error(`Failed to fetch facilities: ${response.status}`);
+      const data = await response.json();
+      console.log('Facilities data length:', data.length);
+      return data as FacilityWithRelations[];
     },
     enabled: !!city?.id,
   });
@@ -146,6 +150,11 @@ export default function CityPage() {
 
         {/* Facility Listings */}
         <div>
+          {facilitiesError && (
+            <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-4">
+              <p className="text-red-800">Error loading facilities: {facilitiesError.message}</p>
+            </div>
+          )}
           {isLoadingFacilities ? (
             <div className="text-center py-12">
               <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
