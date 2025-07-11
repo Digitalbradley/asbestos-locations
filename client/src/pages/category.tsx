@@ -1,6 +1,6 @@
 import { useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { useRoute, Link } from "wouter";
+import { useRoute, Link, useLocation } from "wouter";
 import BreadcrumbNav from "@/components/navigation/breadcrumb-nav";
 import FacilityCard from "@/components/facilities/facility-card";
 import { Button } from "@/components/ui/button";
@@ -204,15 +204,21 @@ const categoryInfo: Record<string, {
 
 export default function CategoryPage() {
   const [, params] = useRoute("/:stateSlug/category/:categorySlug");
+  const [location] = useLocation();
   const stateSlug = params?.stateSlug || "";
   const categorySlug = params?.categorySlug || "";
   
   const category = categoryInfo[categorySlug];
 
-  // Scroll to top when component mounts
+  // Scroll to top when location changes
   useEffect(() => {
+    // Force immediate scroll to top
     window.scrollTo(0, 0);
-  }, []);
+    // Also try with smooth behavior as backup
+    setTimeout(() => {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }, 50);
+  }, [location]);
   
   const { data: state, isLoading: isLoadingState } = useQuery({
     queryKey: ["/api/states", stateSlug],
@@ -299,6 +305,15 @@ export default function CategoryPage() {
           <p className="text-xl text-muted-foreground">
             There are <span className="font-semibold text-primary">{facilityCount} {category.name.toLowerCase()} facilities</span> documented in {state.name}
           </p>
+        </div>
+
+        {/* Google AdSense Block */}
+        <div className="bg-muted/20 border-2 border-dashed border-muted-foreground/30 rounded-lg p-6 mb-8">
+          <div className="text-center text-muted-foreground">
+            <div className="text-sm font-medium mb-1">Advertisement</div>
+            <div className="text-xs">Google AdSense code will be placed here</div>
+            <div className="text-xs mt-2">728x90 Leaderboard or 320x50 Mobile Banner</div>
+          </div>
         </div>
 
         {/* Category Overview */}
@@ -414,16 +429,7 @@ export default function CategoryPage() {
           </div>
         </div>
 
-        {/* Content Ad */}
-        <div className="my-12">
-          <div className="bg-muted/20 border-2 border-dashed border-muted-foreground/30 rounded-lg p-6">
-            <div className="text-center text-muted-foreground">
-              <div className="text-sm font-medium mb-1">Advertisement</div>
-              <div className="text-xs">AdSense Content Banner</div>
-              <div className="text-xs mt-2">728x90 Leaderboard</div>
-            </div>
-          </div>
-        </div>
+
 
         {/* Other Categories - Beautiful Home Page Style */}
         <div className="mt-16">
@@ -443,6 +449,7 @@ export default function CategoryPage() {
                   key={slug}
                   href={`/${state.slug}/category/${slug}`}
                   className="block medical-card group cursor-pointer transform hover:scale-105 transition-all duration-300"
+
                 >
                   <div className="flex items-center justify-center w-16 h-16 rounded-full mx-auto mb-6 transition-all duration-300 group-hover:scale-110"
                        style={{backgroundColor: 'hsl(var(--medical-teal) / 0.1)'}}>
@@ -464,13 +471,13 @@ export default function CategoryPage() {
                     {info.description}
                   </p>
                   <div className="text-center mt-6">
-                    <button className="px-8 py-3 rounded-lg font-semibold transition-all duration-300 group-hover:shadow-lg"
-                            style={{
-                              backgroundColor: 'hsl(var(--medical-teal))',
-                              color: 'white'
-                            }}>
+                    <div className="inline-block px-8 py-3 rounded-lg font-semibold transition-all duration-300 group-hover:shadow-lg"
+                         style={{
+                           backgroundColor: 'hsl(var(--medical-teal))',
+                           color: 'white'
+                         }}>
                       Explore {info.name}
-                    </button>
+                    </div>
                   </div>
                 </Link>
               )
