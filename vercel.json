@@ -16,9 +16,13 @@
       }
     }
   ],
-  "routes": [
+"routes": [
     {
       "src": "/api/(.*)",
+      "dest": "/api/index.ts"
+    },
+    {
+      "src": "/sitemap-florida.xml",
       "dest": "/api/index.ts"
     },
     {
@@ -30,6 +34,7 @@
       "dest": "/index.html"
     }
   ],
+  
   "env": {
     "NODE_ENV": "production"
   }
