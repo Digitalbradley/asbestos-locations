@@ -98,7 +98,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     }
 
     // Handle facilities route
-    if (path === '/api/facilities') {
+    if (path?.startsWith('/api/facilities')) {
       const cityId = req.query.cityId ? parseInt(req.query.cityId as string) : null;
       const limit = req.query.limit ? parseInt(req.query.limit as string) : 100;
       
