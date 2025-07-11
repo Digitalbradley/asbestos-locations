@@ -97,8 +97,56 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       return;
     }
 
-    // Handle individual facility routes FIRST (more specific)
-    if (path?.includes('/api/facilities/') && path.split('/').length >= 6) {
+    // Handle facilities route (general) - Check for query parameters first
+    if (path === '/api/facilities' || (path?.startsWith('/api/facilities?') && Object.keys(req.query).length > 0)) {
+      const cityId = req.query.cityId ? parseInt(req.query.cityId as string) : null;
+      const limit = req.query.limit ? parseInt(req.query.limit as string) : 100;
+      
+      let whereClause;
+      if (cityId) {
+        whereClause = eq(schema.facilities.cityId, cityId);
+      }
+      
+      const facilities = await db.select({
+        id: schema.facilities.id,
+        name: schema.facilities.name,
+        slug: schema.facilities.slug,
+        address: schema.facilities.address,
+        companyName: schema.facilities.companyName,
+        description: schema.facilities.description,
+        metaTitle: schema.facilities.metaTitle,
+        metaDescription: schema.facilities.metaDescription,
+        seoKeyword: schema.facilities.seoKeyword,
+        city: {
+          id: schema.cities.id,
+          name: schema.cities.name,
+          slug: schema.cities.slug
+        },
+        state: {
+          id: schema.states.id,
+          name: schema.states.name,
+          slug: schema.states.slug
+        },
+        category: {
+          id: schema.categories.id,
+          name: schema.categories.name,
+          slug: schema.categories.slug
+        }
+      })
+      .from(schema.facilities)
+      .leftJoin(schema.cities, eq(schema.facilities.cityId, schema.cities.id))
+      .leftJoin(schema.states, eq(schema.cities.stateId, schema.states.id))
+      .leftJoin(schema.categories, eq(schema.facilities.categoryId, schema.categories.id))
+      .where(whereClause)
+      .orderBy(asc(schema.facilities.name))
+      .limit(limit);
+      
+      res.status(200).json(facilities);
+      return;
+    }
+
+    // Handle individual facility routes (more specific path structure, no query params)
+    if (path?.includes('/api/facilities/') && path.split('/').length >= 6 && Object.keys(req.query).length === 0) {
       const pathParts = path.split('/');
       const stateSlug = pathParts[3];
       const citySlug = pathParts[4];
@@ -155,54 +203,6 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         res.status(200).json(facility);
         return;
       }
-    }
-
-    // Handle facilities route (general, less specific)
-    if (path === '/api/facilities') {
-      const cityId = req.query.cityId ? parseInt(req.query.cityId as string) : null;
-      const limit = req.query.limit ? parseInt(req.query.limit as string) : 100;
-      
-      let whereClause;
-      if (cityId) {
-        whereClause = eq(schema.facilities.cityId, cityId);
-      }
-      
-      const facilities = await db.select({
-        id: schema.facilities.id,
-        name: schema.facilities.name,
-        slug: schema.facilities.slug,
-        address: schema.facilities.address,
-        companyName: schema.facilities.companyName,
-        description: schema.facilities.description,
-        metaTitle: schema.facilities.metaTitle,
-        metaDescription: schema.facilities.metaDescription,
-        seoKeyword: schema.facilities.seoKeyword,
-        city: {
-          id: schema.cities.id,
-          name: schema.cities.name,
-          slug: schema.cities.slug
-        },
-        state: {
-          id: schema.states.id,
-          name: schema.states.name,
-          slug: schema.states.slug
-        },
-        category: {
-          id: schema.categories.id,
-          name: schema.categories.name,
-          slug: schema.categories.slug
-        }
-      })
-      .from(schema.facilities)
-      .leftJoin(schema.cities, eq(schema.facilities.cityId, schema.cities.id))
-      .leftJoin(schema.states, eq(schema.cities.stateId, schema.states.id))
-      .leftJoin(schema.categories, eq(schema.facilities.categoryId, schema.categories.id))
-      .where(whereClause)
-      .orderBy(asc(schema.facilities.name))
-      .limit(limit);
-      
-      res.status(200).json(facilities);
-      return;
     }
 
     // Handle city routes
