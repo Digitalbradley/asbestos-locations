@@ -46,6 +46,76 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       res.status(200).json({ status: 'ok', timestamp: new Date().toISOString() });
       return;
     }
+
+    // Sitemap route
+    if (path === '/sitemap-florida.xml') {
+      // Get all Florida cities
+      const floridaCities = await db
+        .select({
+          slug: schema.cities.slug,
+          name: schema.cities.name
+        })
+        .from(schema.cities)
+        .where(eq(schema.cities.stateId, 3))
+        .orderBy(schema.cities.slug);
+
+      // Get all Florida facilities
+      const facilityUrls = await db
+        .select({
+          facilitySlug: schema.facilities.slug,
+          citySlug: schema.cities.slug,
+          facilityName: schema.facilities.name
+        })
+        .from(schema.facilities)
+        .innerJoin(schema.cities, eq(schema.facilities.cityId, schema.cities.id))
+        .where(eq(schema.cities.stateId, 3))
+        .orderBy(schema.cities.slug, schema.facilities.slug);
+
+      let sitemapContent = `<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <!-- Florida State Page -->
+  <url>
+    <loc>https://asbestosexposuresites.com/florida</loc>
+    <lastmod>2025-01-10</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.9</priority>
+  </url>
+  
+  <!-- Florida Cities (${floridaCities.length} cities) -->`;
+
+      // Add city URLs
+      for (const city of floridaCities) {
+        sitemapContent += `
+  <url>
+    <loc>https://asbestosexposuresites.com/florida/${city.slug}</loc>
+    <lastmod>2025-01-10</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>`;
+      }
+
+      sitemapContent += `
+  
+  <!-- Florida Facilities (${facilityUrls.length} facilities) -->`;
+
+      // Add facility URLs
+      for (const facility of facilityUrls) {
+        sitemapContent += `
+  <url>
+    <loc>https://asbestosexposuresites.com/florida/${facility.citySlug}/${facility.facilitySlug}-asbestos-exposure</loc>
+    <lastmod>2025-01-10</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>`;
+      }
+
+      sitemapContent += `
+</urlset>`;
+
+      res.setHeader('Content-Type', 'application/xml');
+      res.status(200).send(sitemapContent);
+      return;
+    }
     
     // Handle API routes with direct database queries
     if (path === '/api/states') {
