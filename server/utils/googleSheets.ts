@@ -18,8 +18,9 @@ export interface LeadData {
   inquiryType: string;
   subject: string;
   message: string;
-  exposure?: string;
   diagnosis?: string;
+  pathologyReport?: string;
+  diagnosisTimeline?: string;
   submittedAt: Date;
   pageUrl?: string;
   qualification: LeadQualificationResult;
@@ -43,6 +44,16 @@ export class GoogleSheetsService {
   }
 
   async addLeadToSheet(leadData: LeadData): Promise<void> {
+    // Add to qualified leads tab
+    await this.addLeadToTab(leadData, 'Qualified Leads');
+  }
+
+  async addAllLeadsToSheet(leadData: LeadData): Promise<void> {
+    // Add to all leads tab
+    await this.addLeadToTab(leadData, 'All Leads');
+  }
+
+  private async addLeadToTab(leadData: LeadData, tabName: string): Promise<void> {
     try {
       // Debug the leadData structure
       console.log('Lead data for Google Sheets:', {
@@ -60,41 +71,52 @@ export class GoogleSheetsService {
       
       const values = [
         [
-          leadData.id.toString(),
-          submittedAtString,
-          leadData.name,
-          leadData.email,
-          leadData.phone,
-          leadData.inquiryType,
-          leadData.subject,
-          leadData.message,
-          leadData.exposure || '',
-          leadData.diagnosis || '',
-          leadData.qualification.qualityScore.toString(),
-          leadData.qualification.qualificationLevel,
-          leadData.qualification.contentAnalysis.highValueKeywords.join(', '),
-          `Email: ${leadData.qualification.contactQuality.emailValid ? 'Valid' : 'Invalid'}, Phone: ${leadData.qualification.contactQuality.phoneValid ? 'Valid' : 'Invalid'}, Name: ${leadData.qualification.contactQuality.nameComplete ? 'Complete' : 'Incomplete'}`,
-          leadData.qualification.contentAnalysis.wordCount.toString(),
-          'New', // Status
-          '', // Assigned to Firm
-          '', // Date Sent to Firm
-          '', // Firm Response
-          leadData.qualification.qualificationReasons.join('; '), // Notes
-          leadData.pageUrl || '',
+          leadData.id.toString(),                                              // Lead ID
+          submittedAtString,                                                   // Date/Time Submitted
+          leadData.name,                                                       // Name
+          leadData.email,                                                      // Email
+          leadData.phone,                                                      // Phone
+          leadData.inquiryType,                                               // Inquiry Type
+          leadData.subject,                                                   // Subject
+          leadData.message,                                                   // Message
+          leadData.diagnosis || '',                                           // Diagnosis Info
+          leadData.pathologyReport || '',                                     // Pathology Report
+          leadData.diagnosisTimeline || '',                                   // Diagnosis Timeline
+          leadData.qualification.qualityScore.toString(),                     // Quality Score
+          leadData.qualification.qualificationLevel,                          // Qualification Level
+          leadData.qualification.contentAnalysis.highValueKeywords.join(', '), // High-Value Keywords
+          `Email: ${leadData.qualification.contactQuality.emailValid ? 'Valid' : 'Invalid'}, Phone: ${leadData.qualification.contactQuality.phoneValid ? 'Valid' : 'Invalid'}, Name: ${leadData.qualification.contactQuality.nameComplete ? 'Complete' : 'Incomplete'}`, // Contact Quality
+          leadData.qualification.contentAnalysis.wordCount.toString(),        // Word Count
+          'New',                                                              // Status
+          '',                                                                 // Assigned to Firm
+          '',                                                                 // Date Sent to Firm
+          '',                                                                 // Firm Response
+          leadData.qualification.qualificationReasons.join('; '),            // Notes
+          leadData.pageUrl || '',                                             // Source Page
         ],
       ];
 
-      await this.sheets.spreadsheets.values.append({
+      // Debug log the values array
+      console.log('Google Sheets Values Array:', values[0].map((val, idx) => `${idx}: ${val}`));
+      console.log('Values array length:', values[0].length);
+
+      const result = await this.sheets.spreadsheets.values.append({
         spreadsheetId: this.spreadsheetId,
-        range: `${this.worksheetName}!A:U`, // Adjust range as needed
+        range: `${tabName}!A:V`,
         valueInputOption: 'RAW',
         insertDataOption: 'INSERT_ROWS',
         resource: {
           values,
         },
       });
+      
+      console.log('Google Sheets API Response:', {
+        updatedRange: result.data.updates?.updatedRange,
+        updatedRows: result.data.updates?.updatedRows,
+        updatedColumns: result.data.updates?.updatedColumns
+      });
 
-      console.log(`Lead ${leadData.id} added to Google Sheets successfully`);
+      console.log(`Lead ${leadData.id} added to ${tabName} tab successfully`);
     } catch (error) {
       console.error('Error adding lead to Google Sheets:', error);
       throw new Error('Failed to add lead to Google Sheets');
@@ -103,47 +125,49 @@ export class GoogleSheetsService {
 
   async initializeSheet(): Promise<void> {
     try {
-      // Check if the worksheet exists, if not create it
+      // Check if the worksheets exist, if not create them
       const response = await this.sheets.spreadsheets.get({
         spreadsheetId: this.spreadsheetId,
       });
 
-      const worksheetExists = response.data.sheets.some(
-        (sheet: any) => sheet.properties.title === this.worksheetName
-      );
+      const existingSheets = response.data.sheets.map((sheet: any) => sheet.properties.title);
+      const requiredSheets = ['Qualified Leads', 'All Leads'];
 
-      if (!worksheetExists) {
-        // Create the worksheet
-        await this.sheets.spreadsheets.batchUpdate({
-          spreadsheetId: this.spreadsheetId,
-          resource: {
-            requests: [
-              {
-                addSheet: {
-                  properties: {
-                    title: this.worksheetName,
+      for (const sheetName of requiredSheets) {
+        if (!existingSheets.includes(sheetName)) {
+          // Create the worksheet
+          await this.sheets.spreadsheets.batchUpdate({
+            spreadsheetId: this.spreadsheetId,
+            resource: {
+              requests: [
+                {
+                  addSheet: {
+                    properties: {
+                      title: sheetName,
+                    },
                   },
                 },
-              },
-            ],
-          },
-        });
+              ],
+            },
+          });
+        }
       }
 
-      // Add headers if they don't exist
-      await this.addHeadersIfNeeded();
+      // Add headers to both sheets if they don't exist
+      await this.addHeadersIfNeeded('Qualified Leads');
+      await this.addHeadersIfNeeded('All Leads');
     } catch (error) {
       console.error('Error initializing Google Sheets:', error);
       throw new Error('Failed to initialize Google Sheets');
     }
   }
 
-  private async addHeadersIfNeeded(): Promise<void> {
+  private async addHeadersIfNeeded(tabName: string): Promise<void> {
     try {
       // Check if headers exist
       const response = await this.sheets.spreadsheets.values.get({
         spreadsheetId: this.spreadsheetId,
-        range: `${this.worksheetName}!A1:U1`,
+        range: `${tabName}!A1:V1`,
       });
 
       if (!response.data.values || response.data.values.length === 0) {
@@ -158,8 +182,9 @@ export class GoogleSheetsService {
             'Inquiry Type',
             'Subject',
             'Message',
-            'Exposure Details',
             'Diagnosis Info',
+            'Pathology Report',
+            'Diagnosis Timeline',
             'Quality Score',
             'Qualification Level',
             'High-Value Keywords',
@@ -176,7 +201,7 @@ export class GoogleSheetsService {
 
         await this.sheets.spreadsheets.values.update({
           spreadsheetId: this.spreadsheetId,
-          range: `${this.worksheetName}!A1:U1`,
+          range: `${tabName}!A1:V1`,
           valueInputOption: 'RAW',
           resource: {
             values: headers,
