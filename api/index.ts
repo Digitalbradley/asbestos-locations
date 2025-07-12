@@ -360,9 +360,9 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       return;
     }
 
-// Handle contact form submissions - FIXED VERSION
+// Handle contact form submissions - FIXED VERSION (exposure field removed)
 if (path === '/api/contact' && req.method === 'POST') {
-  const { name, email, phone, message, diagnosis, pathologyReport, diagnosisTimeline, facilityId, cityId, stateId } = req.body;
+  const { name, email, phone, message, diagnosis, pathologyReport, diagnosisTimeline } = req.body;
   
   try {
     console.log('Contact form data received:', req.body);
@@ -379,7 +379,7 @@ if (path === '/api/contact' && req.method === 'POST') {
       }
     };
 
-    // Insert using CORRECT camelCase field names
+    // Insert using CORRECT camelCase field names (removed exposure field)
     const submission = await db.insert(schema.contactSubmissions).values({
       name: name || '',
       email: email || '',
