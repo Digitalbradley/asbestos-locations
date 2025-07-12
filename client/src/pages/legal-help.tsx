@@ -81,13 +81,18 @@ export default function LegalHelpPage() {
     },
   });
 
-  const onSubmit = (data: ContactFormData) => {
-    console.log("Form data:", data);
-    console.log("Form errors:", form.formState.errors);
-    
-    console.log("Submission data:", submissionData);
-    contactMutation.mutate(submissionData);
+const onSubmit = (data: ContactFormData) => {
+  console.log("Form data:", data);
+  console.log("Form errors:", form.formState.errors);
+  
+  // Set a default message if empty
+  const formData = {
+    ...data,
+    message: data.message || "Legal consultation request from legal-help page"
   };
+  
+  contactMutation.mutate(formData);  // ✅ Use formData instead
+};
 
   return (
     <div className="py-16">
