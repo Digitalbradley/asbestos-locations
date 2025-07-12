@@ -122,7 +122,6 @@ export const contactSubmissions = pgTable("contact_submissions", {
   
   // Lead tracking
   status: text("status").default("new"), // new, contacted, qualified, converted, closed
-  priority: text("priority").default("normal"), // low, normal, high, urgent
   assignedTo: text("assigned_to"), // Staff member handling the lead
   
   // Source tracking
