@@ -51,7 +51,6 @@ export default function LegalHelpPage() {
       diagnosis: z.string().optional(),
       pathologyReport: z.string().optional(),
       diagnosisTimeline: z.string().optional(),
-      exposure: z.string().optional(),
     })),
     defaultValues: {
       name: "",
@@ -60,7 +59,6 @@ export default function LegalHelpPage() {
       inquiryType: "legal-referral",
       subject: "Legal Consultation Request",
       message: "",
-      exposure: "",
       diagnosis: "",
       pathologyReport: "",
       diagnosisTimeline: "",
