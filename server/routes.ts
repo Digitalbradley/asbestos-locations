@@ -235,12 +235,38 @@ export async function registerRoutes(app: Express): Promise<Server> {
         validationResult.data.inquiryType,
         validationResult.data.message,
         validationResult.data.exposure || null,
-        validationResult.data.diagnosis || null
+        validationResult.data.diagnosis || null,
+        validationResult.data.pathologyReport || null,
+        validationResult.data.diagnosisTimeline || null
       );
+
+      // Generate dynamic subject based on diagnosis type
+      const generateSubject = (originalSubject: string, diagnosis: string | null) => {
+        let diagnosisType = 'Asbestos Exposure';
+        
+        if (diagnosis) {
+          switch (diagnosis.toLowerCase()) {
+            case 'mesothelioma':
+              diagnosisType = 'Mesothelioma';
+              break;
+            case 'lung-cancer':
+              diagnosisType = 'Lung Cancer';
+              break;
+            case 'asbestosis':
+              diagnosisType = 'Asbestosis';
+              break;
+            default:
+              diagnosisType = 'Asbestos Exposure';
+          }
+        }
+        
+        return `${diagnosisType} Lead`;
+      };
 
       // Add additional tracking data and qualification results
       const submissionData = {
         ...validationResult.data,
+        subject: generateSubject(validationResult.data.subject || '', validationResult.data.diagnosis),
         pageUrl: req.headers.referer || req.body.pageUrl || '',
         userAgent: req.headers['user-agent'] || '',
         ipAddress: Array.isArray(req.headers['x-forwarded-for']) ? req.headers['x-forwarded-for'][0] : req.headers['x-forwarded-for'] || req.connection.remoteAddress || '',
@@ -264,36 +290,44 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Save to database
       const submission = await storage.createContactSubmission(submissionData);
       
-      // Send to Google Sheets if configured and lead is qualified
-      if (qualification.qualificationLevel !== 'rejected') {
-        const googleSheetsService = createGoogleSheetsService();
-        if (googleSheetsService) {
-          try {
-            console.log('Submission data:', {
-              id: submission.id,
-              createdAt: submission.createdAt,
-              createdAtType: typeof submission.createdAt
-            });
-            
-            await googleSheetsService.addLeadToSheet({
-              id: submission.id,
-              name: submission.name,
-              email: submission.email,
-              phone: submission.phone || '',
-              inquiryType: submission.inquiryType,
-              subject: submission.subject,
-              message: submission.message,
-              exposure: submission.exposure || undefined,
-              diagnosis: submission.diagnosis || undefined,
-              submittedAt: submission.createdAt || new Date(), // Use createdAt instead
-              pageUrl: submission.pageUrl || undefined,
-              qualification
-            });
-            console.log(`Lead ${submission.id} added to Google Sheets`);
-          } catch (error) {
-            console.error('Failed to add lead to Google Sheets:', error);
-            // Continue processing even if Google Sheets fails
+      // Send to Google Sheets if configured
+      const googleSheetsService = createGoogleSheetsService();
+      if (googleSheetsService) {
+        try {
+          console.log('Submission data:', {
+            id: submission.id,
+            createdAt: submission.createdAt,
+            createdAtType: typeof submission.createdAt
+          });
+          
+          const leadData = {
+            id: submission.id,
+            name: submission.name,
+            email: submission.email,
+            phone: submission.phone || '',
+            inquiryType: submission.inquiryType,
+            subject: submission.subject,
+            message: submission.message,
+            diagnosis: submission.diagnosis || undefined,
+            pathologyReport: submission.pathologyReport || undefined,
+            diagnosisTimeline: submission.diagnosisTimeline || undefined,
+            submittedAt: submission.createdAt || new Date(),
+            pageUrl: submission.pageUrl || undefined,
+            qualification
+          };
+          
+          // All leads go to "All Leads" tab
+          await googleSheetsService.addAllLeadsToSheet(leadData);
+          console.log(`Lead ${submission.id} added to All Leads tab`);
+          
+          // Qualified leads also go to "Qualified Leads" tab
+          if (qualification.qualificationLevel !== 'rejected') {
+            await googleSheetsService.addLeadToSheet(leadData);
+            console.log(`Lead ${submission.id} added to Qualified Leads tab`);
           }
+        } catch (error) {
+          console.error('Failed to add lead to Google Sheets:', error);
+          // Continue processing even if Google Sheets fails
         }
       }
       
