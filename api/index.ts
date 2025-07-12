@@ -410,7 +410,7 @@ const submission = await db.insert(schema.contactSubmissions).values({
         });
         
         const sheets = google.sheets({ version: 'v4', auth });
-        const spreadsheetId = '1iDfJiJhQKhFbh9Tt4wOHcJZKQRYo_1s2fNjrDt8PxKs';
+        const spreadsheetId = '1nIBlcGbxaXw_2LxlOSb9BW8G1xmboAktAAgBaVtmsBQ';
         
         await sheets.spreadsheets.values.append({
           spreadsheetId: spreadsheetId,
