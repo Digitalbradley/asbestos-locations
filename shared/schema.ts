@@ -122,23 +122,16 @@ export const contactSubmissions = pgTable("contact_submissions", {
   
   // Lead tracking
   status: text("status").default("new"), // new, contacted, qualified, converted, closed
-  assignedTo: text("assigned_to"), // Staff member handling the lead
-  
+ 
   // Source tracking
-  referralSource: text("referral_source"), // How they found us
   pageUrl: text("page_url"), // What page they were on when they submitted
-  userAgent: text("user_agent"), // Browser information
-  ipAddress: text("ip_address"), // For geographic tracking
   
   // Follow-up tracking
   contacted: boolean("contacted").default(false),
-  contactedAt: timestamp("contacted_at"),
-  followUpDate: timestamp("follow_up_date"),
   notes: text("notes"), // Internal notes about the lead
   
   // Timestamps
   createdAt: timestamp("created_at").defaultNow(),
-  updatedAt: timestamp("updated_at").defaultNow(),
 });
 
 // Relations
