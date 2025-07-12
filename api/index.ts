@@ -388,8 +388,8 @@ const submission = await db.insert(schema.contactSubmissions).values({
   subject: generateSubject(diagnosis),
   message: message || '',
   diagnosis: diagnosis || null,
-  pathology_report: pathologyReport || null,  // ✅ Fixed: snake_case
-  diagnosis_timeline: diagnosisTimeline || null,  // ✅ Fixed: snake_case
+  pathologyReport: pathologyReport || null,     // ✅ Use camelCase (schema name)
+  diagnosisTimeline: diagnosisTimeline || null, // ✅ Use camelCase (schema name)
   status: 'new'
 }).returning();
     
