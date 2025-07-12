@@ -7,11 +7,12 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 import { insertContactSubmissionSchema } from "@shared/schema";
 import { apiRequest } from "@/lib/queryClient";
 import { CheckCircle, Clock, DollarSign, FileText, Phone, Scale, Users } from "lucide-react";
-import type { z } from "zod";
+import { z } from "zod";
 
 type ContactFormData = z.infer<typeof insertContactSubmissionSchema>;
 
@@ -45,7 +46,13 @@ export default function LegalHelpPage() {
   }, []);
 
   const form = useForm<ContactFormData>({
-    resolver: zodResolver(insertContactSubmissionSchema),
+    resolver: zodResolver(insertContactSubmissionSchema.extend({
+      phone: z.string().min(1, "Phone number is required"),
+      diagnosis: z.string().optional(),
+      pathologyReport: z.string().optional(),
+      diagnosisTimeline: z.string().optional(),
+      exposure: z.string().optional(),
+    })),
     defaultValues: {
       name: "",
       phone: "",
@@ -55,16 +62,19 @@ export default function LegalHelpPage() {
       message: "",
       exposure: "",
       diagnosis: "",
+      pathologyReport: "",
+      diagnosisTimeline: "",
     },
   });
 
   const contactMutation = useMutation({
-    mutationFn: (data: ContactFormData) => apiRequest("/api/contact", "POST", data),
+    mutationFn: (data: ContactFormData) => apiRequest("POST", "/api/contact", data),
     onSuccess: () => {
       // Redirect to thank you page
       setLocation("/thank-you");
     },
     onError: (error) => {
+      console.error("Form submission error:", error);
       toast({
         title: "Error submitting form",
         description: "Please try again or call us directly.",
@@ -74,11 +84,16 @@ export default function LegalHelpPage() {
   });
 
   const onSubmit = (data: ContactFormData) => {
+    console.log("Form data:", data);
+    console.log("Form errors:", form.formState.errors);
+    
     // Map exposure details to message field for consistency with schema
     const submissionData = {
       ...data,
       message: data.exposure || "Legal consultation request from legal-help page",
     };
+    
+    console.log("Submission data:", submissionData);
     contactMutation.mutate(submissionData);
   };
 
@@ -282,6 +297,56 @@ export default function LegalHelpPage() {
                         {form.formState.errors.exposure.message}
                       </p>
                     )}
+                  </div>
+
+                  {/* Diagnosis */}
+                  <div>
+                    <label className="block text-sm font-medium mb-2">
+                      What is the diagnosis?
+                    </label>
+                    <Select onValueChange={(value) => form.setValue("diagnosis", value)}>
+                      <SelectTrigger className="w-full">
+                        <SelectValue placeholder="Select diagnosis" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="mesothelioma">Mesothelioma</SelectItem>
+                        <SelectItem value="lung-cancer">Lung Cancer</SelectItem>
+                        <SelectItem value="asbestosis">Asbestosis</SelectItem>
+                        <SelectItem value="other">Other</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  {/* Pathology Report */}
+                  <div>
+                    <label className="block text-sm font-medium mb-2">
+                      Is there a pathology report?
+                    </label>
+                    <Select onValueChange={(value) => form.setValue("pathologyReport", value)}>
+                      <SelectTrigger className="w-full">
+                        <SelectValue placeholder="Select option" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="yes">Yes</SelectItem>
+                        <SelectItem value="no">No</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  {/* Diagnosis Timeline */}
+                  <div>
+                    <label className="block text-sm font-medium mb-2">
+                      When was the diagnosis made?
+                    </label>
+                    <Select onValueChange={(value) => form.setValue("diagnosisTimeline", value)}>
+                      <SelectTrigger className="w-full">
+                        <SelectValue placeholder="Select timeframe" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="within_2_years">Within the last 2 years</SelectItem>
+                        <SelectItem value="more_than_2_years">More than 2 years ago</SelectItem>
+                      </SelectContent>
+                    </Select>
                   </div>
 
                   {/* Submit Button */}
