@@ -379,6 +379,91 @@ if (path === '/sitemap.xml') {
             eq(schema.contentTemplates.templateType, templateType),
             eq(schema.contentTemplates.templateName, templateName)
           ));
+    // Handle contact form submissions
+    if (path === '/api/contact' && req.method === 'POST') {
+      const { name, email, phone, message, diagnosis, pathologyReport, diagnosisTimeline, facilityId, cityId, stateId } = req.body;
+      
+      try {
+        const submission = await db.insert(schema.contactSubmissions).values({
+          name: name || '',
+          email: email || '',
+          phone: phone || '',
+          message: message || '',
+          diagnosis: diagnosis || '',
+          pathologyReport: pathologyReport || '',
+          diagnosisTimeline: diagnosisTimeline || '',
+          inquiryType: 'legal-consultation',
+          subject: diagnosis === 'mesothelioma' ? 'Mesothelioma Lead' : 
+                   diagnosis === 'lung-cancer' ? 'Lung Cancer Lead' : 
+                   diagnosis === 'asbestosis' ? 'Asbestosis Lead' : 
+                   'Asbestos Exposure Lead',
+          facilityId: facilityId || null,
+          cityId: cityId || null,
+          stateId: stateId || null,
+          status: 'new',
+          pageUrl: req.headers.referer || ''
+        }).returning();
+        
+        // Post to Google Sheets (if credentials are available)
+        if (process.env.GOOGLE_SHEETS_CLIENT_EMAIL && process.env.GOOGLE_SHEETS_PRIVATE_KEY) {
+          try {
+            const { google } = await import('googleapis');
+            const auth = new google.auth.GoogleAuth({
+              credentials: {
+                client_email: process.env.GOOGLE_SHEETS_CLIENT_EMAIL,
+                private_key: process.env.GOOGLE_SHEETS_PRIVATE_KEY.replace(/\\n/g, '\n'),
+              },
+              scopes: ['https://www.googleapis.com/auth/spreadsheets'],
+            });
+            
+            const sheets = google.sheets({ version: 'v4', auth });
+            const spreadsheetId = '1iDfJiJhQKhFbh9Tt4wOHcJZKQRYo_1s2fNjrDt8PxKs';
+            
+            await sheets.spreadsheets.values.append({
+              spreadsheetId: spreadsheetId,
+              range: 'All Leads!A:V',
+              valueInputOption: 'RAW',
+              insertDataOption: 'INSERT_ROWS',
+              requestBody: {
+                values: [[
+                  submission[0].id.toString(),
+                  new Date().toISOString(),
+                  submission[0].name,
+                  submission[0].email,
+                  submission[0].phone || '',
+                  submission[0].inquiryType,
+                  submission[0].subject,
+                  submission[0].message,
+                  submission[0].diagnosis || '',
+                  submission[0].pathologyReport || '',
+                  submission[0].diagnosisTimeline || '',
+                  '', // quality_score
+                  '', // qualification_level
+                  '', // high_value_keywords
+                  '', // contact_quality
+                  '', // word_count
+                  'new', // status
+                  '', // assigned_to_firm
+                  '', // date_sent_to_firm
+                  '', // firm_response
+                  '', // notes
+                  submission[0].pageUrl || ''
+                ]],
+              },
+            });
+          } catch (sheetsError) {
+            console.error('Failed to add lead to Google Sheets:', sheetsError);
+          }
+        }
+        
+        res.status(201).json(submission[0]);
+        return;
+      } catch (error) {
+        console.error('Contact form submission error:', error);
+        res.status(500).json({ message: 'Failed to submit contact form' });
+        return;
+      }
+    }
         
         if (!template) {
           res.status(404).json({ message: 'Content template not found' });
