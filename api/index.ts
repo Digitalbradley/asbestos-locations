@@ -46,9 +46,10 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       res.status(200).json({ status: 'ok', timestamp: new Date().toISOString() });
       return;
     }
+
     // Main sitemap route
-if (path === '/sitemap.xml') {
-  let sitemapContent = `<?xml version="1.0" encoding="UTF-8"?>
+    if (path === '/sitemap.xml') {
+      let sitemapContent = `<?xml version="1.0" encoding="UTF-8"?>
 <sitemapindex xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <sitemap>
     <loc>https://asbestos-locations.vercel.app/sitemap-florida.xml</loc>
@@ -56,10 +57,10 @@ if (path === '/sitemap.xml') {
   </sitemap>
 </sitemapindex>`;
 
-  res.setHeader('Content-Type', 'application/xml');
-  res.status(200).send(sitemapContent);
-  return;
-}
+      res.setHeader('Content-Type', 'application/xml');
+      res.status(200).send(sitemapContent);
+      return;
+    }
 
     // Sitemap route
     if (path === '/sitemap-florida.xml') {
@@ -359,26 +360,6 @@ if (path === '/sitemap.xml') {
       return;
     }
 
-    // Handle content templates
-    if (path?.startsWith('/api/content-templates/')) {
-      const pathParts = path.split('/');
-      const templateType = pathParts[3]; // state, city, or facility
-      const templateName = pathParts[4];
-      
-      if (templateType && templateName) {
-        const [template] = await db.select({
-          id: schema.contentTemplates.id,
-          templateType: schema.contentTemplates.templateType,
-          templateName: schema.contentTemplates.templateName,
-          contentBlocks: schema.contentTemplates.contentBlocks,
-          placeholders: schema.contentTemplates.placeholders,
-          isActive: schema.contentTemplates.isActive
-        })
-          .from(schema.contentTemplates)
-          .where(and(
-            eq(schema.contentTemplates.templateType, templateType),
-            eq(schema.contentTemplates.templateName, templateName)
-          ));
     // Handle contact form submissions
     if (path === '/api/contact' && req.method === 'POST') {
       const { name, email, phone, message, diagnosis, pathologyReport, diagnosisTimeline, facilityId, cityId, stateId } = req.body;
@@ -464,6 +445,27 @@ if (path === '/sitemap.xml') {
         return;
       }
     }
+
+    // Handle content templates
+    if (path?.startsWith('/api/content-templates/')) {
+      const pathParts = path.split('/');
+      const templateType = pathParts[3]; // state, city, or facility
+      const templateName = pathParts[4];
+      
+      if (templateType && templateName) {
+        const [template] = await db.select({
+          id: schema.contentTemplates.id,
+          templateType: schema.contentTemplates.templateType,
+          templateName: schema.contentTemplates.templateName,
+          contentBlocks: schema.contentTemplates.contentBlocks,
+          placeholders: schema.contentTemplates.placeholders,
+          isActive: schema.contentTemplates.isActive
+        })
+          .from(schema.contentTemplates)
+          .where(and(
+            eq(schema.contentTemplates.templateType, templateType),
+            eq(schema.contentTemplates.templateName, templateName)
+          ));
         
         if (!template) {
           res.status(404).json({ message: 'Content template not found' });
@@ -518,8 +520,6 @@ if (path === '/sitemap.xml') {
         return;
       }
     }
-
-
 
     // Handle nearby facilities route
     if (path?.includes('/api/facilities/') && path.endsWith('/nearby')) {
@@ -617,33 +617,6 @@ if (path === '/sitemap.xml') {
       }
     }
 
-    // Handle contact form submissions
-    if (path === '/api/contact' && method === 'POST') {
-      const { name, email, phone, message, facilityId, cityId, stateId } = req.body;
-      
-      try {
-        const submission = await db.insert(schema.contactSubmissions).values({
-          name: name || '',
-          email: email || '',
-          phone: phone || '',
-          message: message || '',
-          facilityId: facilityId || null,
-          cityId: cityId || null,
-          stateId: stateId || null,
-          isQualified: false,
-          qualificationScore: 0,
-          submittedAt: new Date()
-        }).returning();
-        
-        res.status(201).json(submission[0]);
-        return;
-      } catch (error) {
-        console.error('Contact form submission error:', error);
-        res.status(500).json({ message: 'Failed to submit contact form' });
-        return;
-      }
-    }
-
     // Handle search route
     if (path?.startsWith('/api/search')) {
       const query = req.query.q as string;
@@ -700,4 +673,3 @@ if (path === '/sitemap.xml') {
     });
   }
 }
-
