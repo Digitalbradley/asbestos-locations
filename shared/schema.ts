@@ -127,7 +127,6 @@ export const contactSubmissions = pgTable("contact_submissions", {
   pageUrl: text("page_url"), // What page they were on when they submitted
   
   // Follow-up tracking
-  contacted: boolean("contacted").default(false),
   notes: text("notes"), // Internal notes about the lead
   
   // Timestamps
