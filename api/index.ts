@@ -360,93 +360,120 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       return;
     }
 
-// Handle contact form submissions
+// Handle contact form submissions - FIXED VERSION
 if (path === '/api/contact' && req.method === 'POST') {
   const { name, email, phone, message, diagnosis, pathologyReport, diagnosisTimeline, facilityId, cityId, stateId } = req.body;
   
   try {
+    console.log('Contact form data received:', req.body);
+    
+    // Generate subject based on diagnosis
+    const generateSubject = (diagnosis: string) => {
+      if (!diagnosis) return 'Asbestos Exposure Lead';
+      
+      switch (diagnosis.toLowerCase()) {
+        case 'mesothelioma': return 'Mesothelioma Lead';
+        case 'lung-cancer': return 'Lung Cancer Lead';
+        case 'asbestosis': return 'Asbestosis Lead';
+        default: return 'Asbestos Exposure Lead';
+      }
+    };
+
+    // Insert using CORRECT camelCase field names
     const submission = await db.insert(schema.contactSubmissions).values({
       name: name || '',
       email: email || '',
-      phone: phone || '',
+      phone: phone || null,
+      inquiryType: 'legal-consultation',  // ✅ Fixed: camelCase
+      subject: generateSubject(diagnosis),
       message: message || '',
-      diagnosis: diagnosis || '',
-      pathology_report: pathologyReport || '',  // Fixed: snake_case
-      diagnosis_timeline: diagnosisTimeline || '',  // Fixed: snake_case
-      inquiry_type: 'legal-consultation',  // Fixed: snake_case
-      subject: diagnosis === 'mesothelioma' ? 'Mesothelioma Lead' : 
-               diagnosis === 'lung-cancer' ? 'Lung Cancer Lead' : 
-               diagnosis === 'asbestosis' ? 'Asbestosis Lead' : 
-               'Asbestos Exposure Lead',
-      facility_id: facilityId || null,  // Fixed: snake_case
-      city_id: cityId || null,  // Fixed: snake_case
-      state_id: stateId || null,  // Fixed: snake_case
+      diagnosis: diagnosis || null,
+      pathologyReport: pathologyReport || null,  // ✅ Fixed: camelCase
+      diagnosisTimeline: diagnosisTimeline || null,  // ✅ Fixed: camelCase
+      pageUrl: req.headers.referer || '',  // ✅ Fixed: camelCase
+      userAgent: req.headers['user-agent'] || '',  // ✅ Fixed: camelCase
+      ipAddress: req.headers['x-forwarded-for'] || req.connection.remoteAddress || '',  // ✅ Fixed: camelCase
       status: 'new',
-      page_url: req.headers.referer || ''  // Fixed: snake_case
+      priority: 'normal',
+      referralSource: 'website',  // ✅ Fixed: camelCase
+      contacted: false
     }).returning();
     
-    // Rest of your Google Sheets code stays the same...
+    console.log('Database insertion successful:', submission[0].id);
         
-        // Post to Google Sheets (if credentials are available)
-        if (process.env.GOOGLE_SHEETS_CLIENT_EMAIL && process.env.GOOGLE_SHEETS_PRIVATE_KEY) {
-          try {
-            const { google } = await import('googleapis');
-            const auth = new google.auth.GoogleAuth({
-              credentials: {
-                client_email: process.env.GOOGLE_SHEETS_CLIENT_EMAIL,
-                private_key: process.env.GOOGLE_SHEETS_PRIVATE_KEY.replace(/\\n/g, '\n'),
-              },
-              scopes: ['https://www.googleapis.com/auth/spreadsheets'],
-            });
-            
-            const sheets = google.sheets({ version: 'v4', auth });
-            const spreadsheetId = '1iDfJiJhQKhFbh9Tt4wOHcJZKQRYo_1s2fNjrDt8PxKs';
-            
-            await sheets.spreadsheets.values.append({
-              spreadsheetId: spreadsheetId,
-              range: 'All Leads!A:V',
-              valueInputOption: 'RAW',
-              insertDataOption: 'INSERT_ROWS',
-              requestBody: {
-                values: [[
-                  submission[0].id.toString(),
-                  new Date().toISOString(),
-                  submission[0].name,
-                  submission[0].email,
-                  submission[0].phone || '',
-                  submission[0].inquiryType,
-                  submission[0].subject,
-                  submission[0].message,
-                  submission[0].diagnosis || '',
-                  submission[0].pathologyReport || '',
-                  submission[0].diagnosisTimeline || '',
-                  '', // quality_score
-                  '', // qualification_level
-                  '', // high_value_keywords
-                  '', // contact_quality
-                  '', // word_count
-                  'new', // status
-                  '', // assigned_to_firm
-                  '', // date_sent_to_firm
-                  '', // firm_response
-                  '', // notes
-                  submission[0].pageUrl || ''
-                ]],
-              },
-            });
-          } catch (sheetsError) {
-            console.error('Failed to add lead to Google Sheets:', sheetsError);
-          }
-        }
+    // Post to Google Sheets (if credentials are available)
+    if (process.env.GOOGLE_SHEETS_CLIENT_EMAIL && process.env.GOOGLE_SHEETS_PRIVATE_KEY) {
+      try {
+        console.log('Adding to Google Sheets...');
         
-        res.status(201).json(submission[0]);
-        return;
-      } catch (error) {
-        console.error('Contact form submission error:', error);
-        res.status(500).json({ message: 'Failed to submit contact form' });
-        return;
+        const { google } = await import('googleapis');
+        const auth = new google.auth.GoogleAuth({
+          credentials: {
+            client_email: process.env.GOOGLE_SHEETS_CLIENT_EMAIL,
+            private_key: process.env.GOOGLE_SHEETS_PRIVATE_KEY.replace(/\\n/g, '\n'),
+          },
+          scopes: ['https://www.googleapis.com/auth/spreadsheets'],
+        });
+        
+        const sheets = google.sheets({ version: 'v4', auth });
+        const spreadsheetId = '1iDfJiJhQKhFbh9Tt4wOHcJZKQRYo_1s2fNjrDt8PxKs';
+        
+        await sheets.spreadsheets.values.append({
+          spreadsheetId: spreadsheetId,
+          range: 'All Leads!A:V',
+          valueInputOption: 'RAW',
+          insertDataOption: 'INSERT_ROWS',
+          requestBody: {
+            values: [[
+              submission[0].id.toString(),
+              new Date().toISOString(),
+              submission[0].name,
+              submission[0].email,
+              submission[0].phone || '',
+              submission[0].inquiryType,
+              submission[0].subject,
+              submission[0].message,
+              submission[0].diagnosis || '',
+              submission[0].pathologyReport || '',
+              submission[0].diagnosisTimeline || '',
+              '', // quality_score (add later)
+              '', // qualification_level (add later)
+              '', // high_value_keywords (add later)
+              '', // contact_quality (add later)
+              '', // word_count (add later)
+              'new', // status
+              '', // assigned_to_firm
+              '', // date_sent_to_firm
+              '', // firm_response
+              '', // notes
+              submission[0].pageUrl || ''
+            ]],
+          },
+        });
+        
+        console.log('Google Sheets integration successful');
+      } catch (sheetsError) {
+        console.error('Failed to add lead to Google Sheets:', sheetsError);
+        // Don't fail the entire request if sheets integration fails
       }
     }
+    
+    res.status(201).json({ 
+      success: true,
+      message: 'Form submitted successfully',
+      submissionId: submission[0].id,
+      redirectUrl: '/thank-you'
+    });
+    return;
+  } catch (error) {
+    console.error('Contact form submission error:', error);
+    res.status(500).json({ 
+      error: 'Failed to submit contact form',
+      details: error.message 
+    });
+    return;
+  }
+}
 
     // Handle content templates
     if (path?.startsWith('/api/content-templates/')) {
