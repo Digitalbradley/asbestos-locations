@@ -2,10 +2,12 @@ import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
+import { useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
@@ -16,6 +18,12 @@ const contactFormSchema = z.object({
   email: z.string().email("Please enter a valid email address"),
   message: z.string().optional(),
   facilityId: z.number().optional(),
+  inquiryType: z.string().optional(),
+  subject: z.string().optional(),
+  exposure: z.string().optional(),
+  diagnosis: z.string().optional(),
+  pathologyReport: z.string().optional(),
+  diagnosisTimeline: z.string().optional(),
 });
 
 type ContactFormData = z.infer<typeof contactFormSchema>;
@@ -33,6 +41,7 @@ export default function ContactForm({
 }: ContactFormProps) {
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  const [, setLocation] = useLocation();
   
   const form = useForm<ContactFormData>({
     resolver: zodResolver(contactFormSchema),
@@ -42,6 +51,12 @@ export default function ContactForm({
       email: "",
       message: "",
       facilityId: facilityId,
+      inquiryType: "facility-inquiry",
+      subject: facilityName ? `Inquiry about ${facilityName}` : "Asbestos Exposure Inquiry",
+      exposure: "",
+      diagnosis: "",
+      pathologyReport: "",
+      diagnosisTimeline: "",
     },
   });
 
@@ -50,11 +65,8 @@ export default function ContactForm({
       return await apiRequest("POST", "/api/contact", data);
     },
     onSuccess: () => {
-      toast({
-        title: "Form submitted successfully!",
-        description: "We'll contact you within 24 hours for your free consultation.",
-      });
-      form.reset();
+      // Redirect to thank you page
+      setLocation("/thank-you");
     },
     onError: (error: any) => {
       toast({
@@ -142,6 +154,53 @@ export default function ContactForm({
             className="mt-1 focus-ring"
             placeholder="When did you work here? What was your job? Any health issues?"
           />
+        </div>
+        
+        <div>
+          <Label className="text-sm font-medium text-foreground">
+            What is the diagnosis?
+          </Label>
+          <Select onValueChange={(value) => form.setValue("diagnosis", value)}>
+            <SelectTrigger className="mt-1 focus-ring">
+              <SelectValue placeholder="Select diagnosis" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="mesothelioma">Mesothelioma</SelectItem>
+              <SelectItem value="lung-cancer">Lung Cancer</SelectItem>
+              <SelectItem value="asbestosis">Asbestosis</SelectItem>
+              <SelectItem value="other">Other</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+        
+        <div>
+          <Label className="text-sm font-medium text-foreground">
+            Is there a pathology report?
+          </Label>
+          <Select onValueChange={(value) => form.setValue("pathologyReport", value)}>
+            <SelectTrigger className="mt-1 focus-ring">
+              <SelectValue placeholder="Select option" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="yes">Yes</SelectItem>
+              <SelectItem value="no">No</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+        
+        <div>
+          <Label className="text-sm font-medium text-foreground">
+            When was the diagnosis made?
+          </Label>
+          <Select onValueChange={(value) => form.setValue("diagnosisTimeline", value)}>
+            <SelectTrigger className="mt-1 focus-ring">
+              <SelectValue placeholder="Select timeframe" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="within_2_years">Within the last 2 years</SelectItem>
+              <SelectItem value="more_than_2_years">More than 2 years ago</SelectItem>
+            </SelectContent>
+          </Select>
         </div>
         
         <Button
