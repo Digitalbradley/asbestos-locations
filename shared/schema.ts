@@ -116,7 +116,6 @@ export const contactSubmissions = pgTable("contact_submissions", {
   message: text("message").notNull(),
   
   // Additional fields for legal referrals
-  exposure: text("exposure"), // Potential exposure details
   diagnosis: text("diagnosis"), // Medical diagnosis information
   pathologyReport: text("pathology_report"), // Yes/No for pathology report availability
   diagnosisTimeline: text("diagnosis_timeline"), // When was diagnosis: within_2_years, more_than_2_years
