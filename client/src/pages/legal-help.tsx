@@ -85,12 +85,6 @@ export default function LegalHelpPage() {
     console.log("Form data:", data);
     console.log("Form errors:", form.formState.errors);
     
-    // Map exposure details to message field for consistency with schema
-    const submissionData = {
-      ...data,
-      message: data.exposure || "Legal consultation request from legal-help page",
-    };
-    
     console.log("Submission data:", submissionData);
     contactMutation.mutate(submissionData);
   };
@@ -284,17 +278,7 @@ export default function LegalHelpPage() {
                     <label className="block text-sm font-medium mb-2">
                       Tell us about your case
                     </label>
-                    <Textarea
-                      {...form.register("exposure")}
-                      placeholder="When did you work? What was your job? Any health issues? Tell us about your situation."
-                      rows={4}
-                      className="w-full"
-                    />
-                    {form.formState.errors.exposure && (
-                      <p className="text-destructive text-sm mt-1">
-                        {form.formState.errors.exposure.message}
-                      </p>
-                    )}
+
                   </div>
 
                   {/* Diagnosis */}
