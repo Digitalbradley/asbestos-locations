@@ -380,24 +380,18 @@ if (path === '/api/contact' && req.method === 'POST') {
     };
 
     // Insert using CORRECT camelCase field names (removed exposure field)
-    const submission = await db.insert(schema.contactSubmissions).values({
-      name: name || '',
-      email: email || '',
-      phone: phone || null,
-      inquiryType: 'legal-consultation',  // ✅ Fixed: camelCase
-      subject: generateSubject(diagnosis),
-      message: message || '',
-      diagnosis: diagnosis || null,
-      pathologyReport: pathologyReport || null,  // ✅ Fixed: camelCase
-      diagnosisTimeline: diagnosisTimeline || null,  // ✅ Fixed: camelCase
-      pageUrl: req.headers.referer || '',  // ✅ Fixed: camelCase
-      userAgent: req.headers['user-agent'] || '',  // ✅ Fixed: camelCase
-      ipAddress: req.headers['x-forwarded-for'] || req.connection.remoteAddress || '',  // ✅ Fixed: camelCase
-      status: 'new',
-      priority: 'normal',
-      referralSource: 'website',  // ✅ Fixed: camelCase
-      contacted: false
-    }).returning();
+const submission = await db.insert(schema.contactSubmissions).values({
+  name: name || '',
+  email: email || '',
+  phone: phone || null,
+  inquiryType: 'legal-consultation',
+  subject: generateSubject(diagnosis),
+  message: message || '',
+  diagnosis: diagnosis || null,
+  pathology_report: pathologyReport || null,  // ✅ Fixed: snake_case
+  diagnosis_timeline: diagnosisTimeline || null,  // ✅ Fixed: snake_case
+  status: 'new'
+}).returning();
     
     console.log('Database insertion successful:', submission[0].id);
         
