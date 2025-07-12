@@ -360,30 +360,32 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       return;
     }
 
-    // Handle contact form submissions
-    if (path === '/api/contact' && req.method === 'POST') {
-      const { name, email, phone, message, diagnosis, pathologyReport, diagnosisTimeline, facilityId, cityId, stateId } = req.body;
-      
-      try {
-        const submission = await db.insert(schema.contactSubmissions).values({
-          name: name || '',
-          email: email || '',
-          phone: phone || '',
-          message: message || '',
-          diagnosis: diagnosis || '',
-          pathologyReport: pathologyReport || '',
-          diagnosisTimeline: diagnosisTimeline || '',
-          inquiryType: 'legal-consultation',
-          subject: diagnosis === 'mesothelioma' ? 'Mesothelioma Lead' : 
-                   diagnosis === 'lung-cancer' ? 'Lung Cancer Lead' : 
-                   diagnosis === 'asbestosis' ? 'Asbestosis Lead' : 
-                   'Asbestos Exposure Lead',
-          facilityId: facilityId || null,
-          cityId: cityId || null,
-          stateId: stateId || null,
-          status: 'new',
-          pageUrl: req.headers.referer || ''
-        }).returning();
+// Handle contact form submissions
+if (path === '/api/contact' && req.method === 'POST') {
+  const { name, email, phone, message, diagnosis, pathologyReport, diagnosisTimeline, facilityId, cityId, stateId } = req.body;
+  
+  try {
+    const submission = await db.insert(schema.contactSubmissions).values({
+      name: name || '',
+      email: email || '',
+      phone: phone || '',
+      message: message || '',
+      diagnosis: diagnosis || '',
+      pathology_report: pathologyReport || '',  // Fixed: snake_case
+      diagnosis_timeline: diagnosisTimeline || '',  // Fixed: snake_case
+      inquiry_type: 'legal-consultation',  // Fixed: snake_case
+      subject: diagnosis === 'mesothelioma' ? 'Mesothelioma Lead' : 
+               diagnosis === 'lung-cancer' ? 'Lung Cancer Lead' : 
+               diagnosis === 'asbestosis' ? 'Asbestosis Lead' : 
+               'Asbestos Exposure Lead',
+      facility_id: facilityId || null,  // Fixed: snake_case
+      city_id: cityId || null,  // Fixed: snake_case
+      state_id: stateId || null,  // Fixed: snake_case
+      status: 'new',
+      page_url: req.headers.referer || ''  // Fixed: snake_case
+    }).returning();
+    
+    // Rest of your Google Sheets code stays the same...
         
         // Post to Google Sheets (if credentials are available)
         if (process.env.GOOGLE_SHEETS_CLIENT_EMAIL && process.env.GOOGLE_SHEETS_PRIVATE_KEY) {
