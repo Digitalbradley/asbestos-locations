@@ -3,8 +3,6 @@ import { Pool, neonConfig } from '@neondatabase/serverless';
 import { drizzle } from 'drizzle-orm/neon-serverless';
 import { eq, like, and, desc, asc, sql, ne, or, ilike } from 'drizzle-orm';
 import * as schema from '../shared/schema.js';
-import { qualifyLead } from '../utils/leadQualification';
-import { createGoogleSheetsService } from '../utils/googleSheets';
 
 // Configure WebSocket for serverless environments
 if (typeof window === 'undefined') {
