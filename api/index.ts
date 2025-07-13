@@ -395,72 +395,61 @@ const submission = await db.insert(schema.contactSubmissions).values({
     
     console.log('Database insertion successful:', submission[0].id);
         
-// Run lead qualification
-const qualification = qualifyLead(
-  name,
-  email,
-  phone,
-  inquiryType,
-  message,
-  undefined, // exposure (we removed this)
-  diagnosis,
-  pathologyReport,
-  diagnosisTimeline
-);
-
-console.log('Lead qualification result:', {
-  score: qualification.qualityScore,
-  level: qualification.qualificationLevel,
-  reasons: qualification.qualificationReasons
-});
-
-// Enhanced Google Sheets integration
+// Post to Google Sheets (if credentials are available)
 if (process.env.GOOGLE_SHEETS_CLIENT_EMAIL && process.env.GOOGLE_SHEETS_PRIVATE_KEY) {
   try {
-    console.log('Adding to Google Sheets with qualification...');
+    console.log('Adding to Google Sheets...');
     
-    const googleSheetsService = createGoogleSheetsService();
-    if (googleSheetsService) {
-      const leadData = {
-        id: submission[0].id,
-        name: submission[0].name,
-        email: submission[0].email,
-        phone: submission[0].phone || '',
-        inquiryType: submission[0].inquiryType,
-        subject: submission[0].subject,
-        message: submission[0].message,
-        diagnosis: submission[0].diagnosis || '',
-        pathologyReport: submission[0].pathologyReport || '',
-        diagnosisTimeline: submission[0].diagnosisTimeline || '',
-        submittedAt: new Date(),
-        pageUrl: submission[0].pageUrl || '',
-        qualification: qualification
-      };
-
-      // Add to "All Leads" tab (every submission)
-      await googleSheetsService.addAllLeadsToSheet(leadData);
-      
-      // Add to "Qualified Leads" tab only if not rejected
-      if (qualification.qualificationLevel !== 'rejected') {
-        await googleSheetsService.addLeadToSheet(leadData);
-      }
-      
-      console.log(`Lead added to sheets. Score: ${qualification.qualityScore}, Level: ${qualification.qualificationLevel}`);
-    }
+    const { google } = await import('googleapis');
+    const auth = new google.auth.GoogleAuth({
+      credentials: {
+        client_email: process.env.GOOGLE_SHEETS_CLIENT_EMAIL,
+        private_key: process.env.GOOGLE_SHEETS_PRIVATE_KEY.replace(/\\n/g, '\n'),
+      },
+      scopes: ['https://www.googleapis.com/auth/spreadsheets'],
+    });
+    
+    const sheets = google.sheets({ version: 'v4', auth });
+    const spreadsheetId = '1nIBlcGbxaXw_2LxlOSb9BW8G1xmboAktAAgBaVtmsBQ';
+    
+    await sheets.spreadsheets.values.append({
+      spreadsheetId: spreadsheetId,
+      range: 'All Leads!A:V',
+      valueInputOption: 'RAW',
+      insertDataOption: 'INSERT_ROWS',
+      requestBody: {
+        values: [[
+          submission[0].id.toString(),
+          new Date().toISOString(),
+          submission[0].name,
+          submission[0].email,
+          submission[0].phone || '',
+          submission[0].inquiryType,
+          submission[0].subject,
+          submission[0].message,
+          submission[0].diagnosis || '',
+          submission[0].pathologyReport || '',
+          submission[0].diagnosisTimeline || '',
+          '', // quality_score
+          '', // qualification_level
+          '', // high_value_keywords
+          '', // contact_quality
+          '', // word_count
+          'new', // status
+          '', // assigned_to_firm
+          '', // date_sent_to_firm
+          '', // firm_response
+          '', // notes
+          req.headers.referer || ''
+        ]],
+      },
+    });
+    
+    console.log('Google Sheets integration successful');
   } catch (sheetsError) {
-    console.error('Google Sheets integration error:', sheetsError);
+    console.error('Failed to add lead to Google Sheets:', sheetsError);
   }
 }
-
-res.status(201).json({ 
-  success: true,
-  message: 'Form submitted successfully',
-  submissionId: submission[0].id,
-  qualityScore: qualification.qualityScore,
-  qualificationLevel: qualification.qualificationLevel,
-  redirectUrl: '/thank-you'
-});
-return;
 
     // Handle content templates
     if (path?.startsWith('/api/content-templates/')) {
