@@ -290,9 +290,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
       }
 
-      const validatedData = validationResult.data;
-
-      // Qualify the lead using our scoring system
+// Qualify the lead using our scoring system
 const validatedData = validationResult.data;
 
 const qualification = qualifyLead(
@@ -305,12 +303,7 @@ const qualification = qualifyLead(
   validatedData.diagnosis || null,
   validatedData.pathologyReport || null,
   validatedData.diagnosisTimeline || null
-);
-
-      // Generate dynamic subject based on diagnosis type
-      const generateSubject = (originalSubject: string, diagnosis: string | null) => {
-        let diagnosisType = 'Asbestos Exposure';
-        
+); 
         if (diagnosis) {
           switch (diagnosis.toLowerCase()) {
             case 'mesothelioma':
