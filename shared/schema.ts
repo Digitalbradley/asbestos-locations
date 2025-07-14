@@ -114,6 +114,7 @@ export const contactSubmissions = pgTable("contact_submissions", {
   inquiryType: text("inquiry_type").notNull(),
   subject: text("subject").notNull(),
   message: text("message").notNull(),
+  updatedAt: timestamp("updated_at").defaultNow(),
   
   // Additional fields for legal referrals
   diagnosis: text("diagnosis"), // Medical diagnosis information
