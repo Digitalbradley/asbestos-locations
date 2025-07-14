@@ -31,6 +31,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
     res.json({ message: 'Server is working!', timestamp: new Date().toISOString() });
   });
 
+  app.get('/debug-ssr', (req, res) => {
+  console.log('Debug SSR called');
+  console.log('NODE_ENV:', process.env.NODE_ENV);
+  console.log('Host:', req.get('host'));
+  res.json({
+    nodeEnv: process.env.NODE_ENV,
+    host: req.get('host'),
+    ssrShouldRun: process.env.NODE_ENV === "production"
+  });
+});
+
   // Add SSR routes for production
   if (process.env.NODE_ENV === "production") {
     // ... [all the SSR code] ...
