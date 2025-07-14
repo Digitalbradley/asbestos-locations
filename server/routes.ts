@@ -293,17 +293,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const validatedData = validationResult.data;
 
       // Qualify the lead using our scoring system
-      const qualification = qualifyLead(
-        validatedData.name,
-        validatedData.email,
-        validatedData.phone || '',
-        validatedData.inquiryType,
-        validatedData.message,
-        validatedData.exposure || null,
-        validatedData.diagnosis || null,
-        validatedData.pathologyReport || null,
-        validatedData.diagnosisTimeline || null
-      );
+const validatedData = validationResult.data;
+
+const qualification = qualifyLead(
+  validatedData.name,
+  validatedData.email,
+  validatedData.phone || '',
+  validatedData.inquiryType,
+  validatedData.message,
+  null, // exposure field doesn't exist
+  validatedData.diagnosis || null,
+  validatedData.pathologyReport || null,
+  validatedData.diagnosisTimeline || null
+);
 
       // Generate dynamic subject based on diagnosis type
       const generateSubject = (originalSubject: string, diagnosis: string | null) => {
@@ -329,12 +331,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
       };
 
       // Add additional tracking data and qualification results
-      const submissionData = {
-        ...validatedData,
-        subject: generateSubject(validatedData.subject || '', validatedData.diagnosis),
-        pageUrl: req.headers.referer || req.body.pageUrl || '',
-        userAgent: req.headers['user-agent'] || '',
-        ipAddress: Array.isArray(req.headers['x-forwarded-for']) ? req.headers['x-forwarded-for'][0] : req.headers['x-forwarded-for'] || req.connection.remoteAddress || '',
+ const submissionData = {
+  name: validatedData.name,
+  email: validatedData.email,
+  phone: validatedData.phone,
+  inquiryType: validatedData.inquiryType,
+  subject: generateSubject(validatedData.subject, validatedData.diagnosis),
+  message: validatedData.message,
+  diagnosis: validatedData.diagnosis,
+  pathologyReport: validatedData.pathologyReport,
+  diagnosisTimeline: validatedData.diagnosisTimeline,
+  status: 'new',
+  pageUrl: req.headers.referer || '',
+   '',
         // Add qualification data to notes
         notes: `Quality Score: ${qualification.qualityScore}/100 | Level: ${qualification.qualificationLevel}\n` +
                `Reasons: ${qualification.qualificationReasons.join('; ')}\n` +
