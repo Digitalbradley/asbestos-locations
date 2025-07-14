@@ -445,10 +445,21 @@ if (process.env.GOOGLE_SHEETS_CLIENT_EMAIL && process.env.GOOGLE_SHEETS_PRIVATE_
       },
     });
     
-    console.log('Google Sheets integration successful');
+console.log('Google Sheets integration successful');
   } catch (sheetsError) {
     console.error('Failed to add lead to Google Sheets:', sheetsError);
   }
+
+  res.status(201).json({ 
+    message: 'Contact form submitted successfully',
+    id: submission[0].id
+  });
+  return;
+
+} catch (error) {
+  console.error('Contact form error:', error);
+  res.status(500).json({ message: 'Failed to submit contact form' });
+  return;
 }
 
     // Handle content templates
