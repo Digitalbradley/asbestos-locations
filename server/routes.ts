@@ -300,7 +300,7 @@ const qualification = qualifyLead(
   validatedData.inquiryType,
   validatedData.message,
   undefined, // exposure field doesn't exist
-  validatedData.diagnosis || null,
+  validatedData.diagnosis || undefined,
   validatedData.pathologyReport || null,
   validatedData.diagnosisTimeline || null
 ); 
