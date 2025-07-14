@@ -62,7 +62,7 @@ export async function generateSEOMetadata(req: Request): Promise<SEOMetadata> {
       }
       
       // Get cities count for the state
-      const cities = await storage.getCitiesByState(state.id);
+      const cities = await storage.getCitiesByStateId(state.id);
       const cityCount = cities.length;
       
       return {
