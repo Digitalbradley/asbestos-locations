@@ -9,6 +9,13 @@
       }
     },
     {
+      "src": "server/index.ts", 
+      "use": "@vercel/node",
+      "config": {
+        "includeFiles": ["server/**", "shared/**"]
+      }
+    },
+    {
       "src": "package.json",
       "use": "@vercel/static-build",
       "config": {
@@ -16,10 +23,18 @@
       }
     }
   ],
-"routes": [
+  "routes": [
     {
       "src": "/api/(.*)",
       "dest": "/api/index.ts"
+    },
+    {
+      "src": "/test",
+      "dest": "/server/index.ts"
+    },
+    {
+      "src": "/debug-ssr",
+      "dest": "/server/index.ts"
     },
     {
       "src": "/sitemap(.*)\\.xml",
@@ -31,10 +46,9 @@
     },
     {
       "src": "/(.*)",
-      "dest": "/index.html"
+      "dest": "/server/index.ts"
     }
   ],
-  
   "env": {
     "NODE_ENV": "production"
   }
