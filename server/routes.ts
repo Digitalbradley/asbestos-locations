@@ -304,24 +304,28 @@ const qualification = qualifyLead(
   validatedData.pathologyReport || null,
   validatedData.diagnosisTimeline || null
 ); 
-        if (diagnosis) {
-          switch (diagnosis.toLowerCase()) {
-            case 'mesothelioma':
-              diagnosisType = 'Mesothelioma';
-              break;
-            case 'lung-cancer':
-              diagnosisType = 'Lung Cancer';
-              break;
-            case 'asbestosis':
-              diagnosisType = 'Asbestosis';
-              break;
-            default:
-              diagnosisType = 'Asbestos Exposure';
-          }
-        }
-        
-        return `${diagnosisType} Lead`;
-      };
+// Generate dynamic subject based on diagnosis type
+const generateSubject = (originalSubject: string | undefined, diagnosis: string | null | undefined) => {
+  let diagnosisType = 'Asbestos Exposure';
+  
+  if (diagnosis) {
+    switch (diagnosis.toLowerCase()) {
+      case 'mesothelioma':
+        diagnosisType = 'Mesothelioma';
+        break;
+      case 'lung-cancer':
+        diagnosisType = 'Lung Cancer';
+        break;
+      case 'asbestosis':
+        diagnosisType = 'Asbestosis';
+        break;
+      default:
+        diagnosisType = 'Asbestos Exposure';
+    }
+  }
+  
+  return `${diagnosisType} Lead`;
+};
 
       // Add additional tracking data and qualification results
 const submissionData = {
