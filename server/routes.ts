@@ -1,12 +1,43 @@
-import type { Express } from "express";
+import type { Express, Request, Response, NextFunction } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { insertContactSubmissionSchema } from "@shared/schema";
 import { qualifyLead } from "./utils/leadQualification";
 import { createGoogleSheetsService } from "./utils/googleSheets";
+import { generateSEOMetadata, generateMetaTagsHTML } from "./seo";
 import { z } from "zod";
+import fs from "fs";
+import path from "path";
 
 export async function registerRoutes(app: Express): Promise<Server> {
+  // Import SSR function
+  const { generateSSRContent } = await import("./ssr");
+  
+  // Add a simple test route
+  app.get('/test', (req, res) => {
+    res.json({ message: 'Server is working!', timestamp: new Date().toISOString() });
+  });
+
+  // Add SSR routes for production
+  if (process.env.NODE_ENV === "production") {
+    // ... [all the SSR code] ...
+  }
+
+  // States routes
+  // Import SSR function
+  const { generateSSRContent } = await import("./ssr");
+  
+  // Add a simple test route
+  app.get('/test', (req, res) => {
+    res.json({ message: 'Server is working!', timestamp: new Date().toISOString() });
+  });
+
+  // Add SSR routes for production
+  if (process.env.NODE_ENV === "production") {
+    // ... [all the SSR code] ...
+  }
+
+  // States routes
   // States routes
   app.get("/api/states", async (req, res) => {
     try {
