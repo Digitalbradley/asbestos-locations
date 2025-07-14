@@ -406,10 +406,10 @@ export class DatabaseStorage implements IStorage {
   }
 
   // Contact submissions
-  async createContactSubmission(insertSubmission: InsertContactSubmission): Promise<ContactSubmission> {
-    const [submission] = await db.insert(contactSubmissions).values(insertSubmission).returning();
-    return submission;
-  }
+async createContactSubmission(insertSubmission: InsertContactSubmission): Promise<ContactSubmission> {
+  const [submission] = await db.insert(contactSubmissions).values(insertSubmission).returning();
+  return submission;
+}
 
   async getContactSubmissions(filters: {
     page?: number;
@@ -427,9 +427,7 @@ export class DatabaseStorage implements IStorage {
       conditions.push(eq(contactSubmissions.status, status));
     }
     
-    if (priority) {
-      conditions.push(eq(contactSubmissions.priority, priority));
-    }
+// Skip priority filter - field doesn't exist in database
     
     if (conditions.length > 0) {
       query = query.where(and(...conditions));
@@ -450,7 +448,7 @@ export class DatabaseStorage implements IStorage {
   async updateContactSubmission(id: number, updates: Partial<ContactSubmission>): Promise<ContactSubmission | null> {
     const [updatedSubmission] = await db
       .update(contactSubmissions)
-      .set({ ...updates, updatedAt: new Date() })
+ .set(updates)
       .where(eq(contactSubmissions.id, id))
       .returning();
     
@@ -648,8 +646,8 @@ export class DatabaseStorage implements IStorage {
       .slice(0, limit)
       .map((city, index) => ({
         id: city.id,
-        name: city.name,
-        slug: city.slug,
+        name: city.name!,
+        slug: city.slug!,
         facilityCount: city.facilityCount || 0,
         distance: Math.round((index + 1) * 15.5 * 10) / 10 // Estimated distances
       }));
