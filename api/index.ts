@@ -610,9 +610,9 @@ if (process.env.GOOGLE_SHEETS_CLIENT_EMAIL && process.env.GOOGLE_SHEETS_PRIVATE_
           .leftJoin(schema.states, eq(schema.cities.stateId, schema.states.id))
           .leftJoin(schema.categories, eq(schema.facilities.categoryId, schema.categories.id))
           .where(and(
-            eq(schema.facilities.categoryId, facility[0].categoryId),
-            ne(schema.facilities.id, facilityId)
-          ))
+  facility[0].categoryId ? eq(schema.facilities.categoryId, facility[0].categoryId) : sql`1=1`,
+  ne(schema.facilities.id, facilityId)
+))
           .orderBy(asc(schema.facilities.name))
           .limit(10);
           
