@@ -18,36 +18,58 @@ export async function registerRoutes(app: Express): Promise<Server> {
     res.json({ message: 'Server is working!', timestamp: new Date().toISOString() });
   });
 
-  // Add SSR routes for production
-  if (process.env.NODE_ENV === "production") {
-    // ... [all the SSR code] ...
-  }
-
-  // States routes
-  // Import SSR function
- 
-  // Add a simple test route
-  app.get('/test', (req, res) => {
-    res.json({ message: 'Server is working!', timestamp: new Date().toISOString() });
-  });
-
   app.get('/debug-ssr', (req, res) => {
-  console.log('Debug SSR called');
-  console.log('NODE_ENV:', process.env.NODE_ENV);
-  console.log('Host:', req.get('host'));
-  res.json({
-    nodeEnv: process.env.NODE_ENV,
-    host: req.get('host'),
-    ssrShouldRun: process.env.NODE_ENV === "production"
+    console.log('Debug SSR called');
+    console.log('NODE_ENV:', process.env.NODE_ENV);
+    console.log('Host:', req.get('host'));
+    res.json({
+      nodeEnv: process.env.NODE_ENV,
+      host: req.get('host'),
+      ssrShouldRun: process.env.NODE_ENV === "production"
+    });
   });
-});
 
   // Add SSR routes for production
   if (process.env.NODE_ENV === "production") {
-    // ... [all the SSR code] ...
+    // Main SSR route handler for all non-API routes
+    app.get('*', async (req: Request, res: Response, next: NextFunction) => {
+      // Skip API routes and static files
+      if (req.path.startsWith('/api/') || 
+          req.path.startsWith('/assets/') || 
+          req.path.startsWith('/public/') ||
+          req.path.includes('.')) {
+        return next();
+      }
+
+      try {
+        const { html, meta } = await generateSSRContent(req);
+        const seoTags = generateMetaTagsHTML(await generateSEOMetadata(req));
+        
+        const fullHtml = `
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  ${seoTags}
+  <link rel="stylesheet" href="/assets/index-BmCV3NCo.css">
+</head>
+<body>
+  <div id="root">${html}</div>
+  <script src="/assets/index--1n4U5wd.js"></script>
+</body>
+</html>
+        `;
+        
+        res.setHeader('Content-Type', 'text/html');
+        res.send(fullHtml);
+      } catch (error) {
+        console.error('SSR Error:', error);
+        next();
+      }
+    });
   }
 
-  // States routes
   // States routes
   app.get("/api/states", async (req, res) => {
     try {
@@ -268,17 +290,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
       }
 
+      const validatedData = validationResult.data;
+
       // Qualify the lead using our scoring system
       const qualification = qualifyLead(
-        validationResult.data.name,
-        validationResult.data.email,
-        validationResult.data.phone || '',
-        validationResult.data.inquiryType,
-        validationResult.data.message,
-        validationResult.data.exposure || null,
-        validationResult.data.diagnosis || null,
-        validationResult.data.pathologyReport || null,
-        validationResult.data.diagnosisTimeline || null
+        validatedData.name,
+        validatedData.email,
+        validatedData.phone || '',
+        validatedData.inquiryType,
+        validatedData.message,
+        validatedData.exposure || null,
+        validatedData.diagnosis || null,
+        validatedData.pathologyReport || null,
+        validatedData.diagnosisTimeline || null
       );
 
       // Generate dynamic subject based on diagnosis type
@@ -306,15 +330,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       // Add additional tracking data and qualification results
       const submissionData = {
-        ...validationResult.data,
-        subject: generateSubject(validationResult.data.subject || '', validationResult.data.diagnosis),
+        ...validatedData,
+        subject: generateSubject(validatedData.subject || '', validatedData.diagnosis),
         pageUrl: req.headers.referer || req.body.pageUrl || '',
         userAgent: req.headers['user-agent'] || '',
         ipAddress: Array.isArray(req.headers['x-forwarded-for']) ? req.headers['x-forwarded-for'][0] : req.headers['x-forwarded-for'] || req.connection.remoteAddress || '',
-        // Set priority based on qualification level
-        priority: qualification.qualificationLevel === 'high' ? 'urgent' :
-                 qualification.qualificationLevel === 'medium' ? 'high' :
-                 qualification.qualificationLevel === 'low' ? 'normal' : 'low',
         // Add qualification data to notes
         notes: `Quality Score: ${qualification.qualityScore}/100 | Level: ${qualification.qualificationLevel}\n` +
                `Reasons: ${qualification.qualificationReasons.join('; ')}\n` +
@@ -434,6 +454,32 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const { type, name } = req.params;
       const template = await storage.getContentTemplate(type, name);
+      if (!template) {
+        return res.status(404).json({ message: "Content template not found" });
+      }
+      res.json(template);
+    } catch (error) {
+      console.error("Error fetching content template:", error);
+      res.status(500).json({ message: "Failed to fetch content template" });
+    }
+  });
+
+  // Additional content template routes for your database content
+  app.get("/api/content-templates", async (req, res) => {
+    try {
+      const templateType = req.query.type as string;
+      const templates = await storage.getContentTemplates(templateType);
+      res.json(templates);
+    } catch (error) {
+      console.error("Error fetching content templates:", error);
+      res.status(500).json({ message: "Failed to fetch content templates" });
+    }
+  });
+
+  app.get("/api/content-templates/by-name/:name", async (req, res) => {
+    try {
+      const { name } = req.params;
+      const template = await storage.getContentTemplateByName(name);
       if (!template) {
         return res.status(404).json({ message: "Content template not found" });
       }
