@@ -429,9 +429,9 @@ async createContactSubmission(insertSubmission: InsertContactSubmission): Promis
     
 // Skip priority filter - field doesn't exist in database
     
-    if (conditions.length > 0) {
-      query = query.where(and(...conditions));
-    }
+if (conditions.length > 0) {
+  query = query.where(and(...conditions)) as any;
+}
 
     const submissions = await query
       .orderBy(desc(contactSubmissions.createdAt))
