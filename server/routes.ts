@@ -324,7 +324,7 @@ const qualification = qualifyLead(
       };
 
       // Add additional tracking data and qualification results
- const submissionData = {
+const submissionData = {
   name: validatedData.name,
   email: validatedData.email,
   phone: validatedData.phone,
@@ -336,7 +336,8 @@ const qualification = qualifyLead(
   diagnosisTimeline: validatedData.diagnosisTimeline,
   status: 'new',
   pageUrl: req.headers.referer || '',
-   '',
+  notes: `Quality Score: ${qualification.qualityScore}/100 | Level: ${qualification.qualificationLevel}\nReasons: ${qualification.qualificationReasons.join('; ')}\nUser Agent: ${req.headers['user-agent'] || 'Unknown'}\nIP Address: ${Array.isArray(req.headers['x-forwarded-for']) ? req.headers['x-forwarded-for'][0] : req.headers['x-forwarded-for'] || req.connection.remoteAddress || 'Unknown'}`
+};
         // Add qualification data to notes
         notes: `Quality Score: ${qualification.qualityScore}/100 | Level: ${qualification.qualificationLevel}\n` +
                `Reasons: ${qualification.qualificationReasons.join('; ')}\n` +
