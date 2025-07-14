@@ -25,8 +25,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // States routes
   // Import SSR function
-  const { generateSSRContent } = await import("./ssr");
-  
+ 
   // Add a simple test route
   app.get('/test', (req, res) => {
     res.json({ message: 'Server is working!', timestamp: new Date().toISOString() });
