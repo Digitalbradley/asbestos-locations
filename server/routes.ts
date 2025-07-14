@@ -299,7 +299,7 @@ const qualification = qualifyLead(
   validatedData.phone || '',
   validatedData.inquiryType,
   validatedData.message,
-  null, // exposure field doesn't exist
+  undefined, // exposure field doesn't exist
   validatedData.diagnosis || null,
   validatedData.pathologyReport || null,
   validatedData.diagnosisTimeline || null
