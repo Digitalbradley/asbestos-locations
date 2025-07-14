@@ -11,7 +11,7 @@ interface MetaData {
 
 export async function generateSSRContent(req: Request): Promise<{ html: string; meta: MetaData }> {
   const url = req.originalUrl;
-  const host = req.get('host') || 'asbestosexposuresites.com';
+  const host = req.get('host') || req.get('host') || 'asbestos-locations.vercel.app';
   const protocol = req.secure ? 'https' : 'http';
   const baseUrl = `${protocol}://${host}`;
   
