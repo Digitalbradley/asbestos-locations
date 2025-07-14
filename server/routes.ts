@@ -340,20 +340,19 @@ const submissionData = {
   diagnosisTimeline: validatedData.diagnosisTimeline,
   status: 'new',
   pageUrl: req.headers.referer || '',
-  notes: `Quality Score: ${qualification.qualityScore}/100 | Level: ${qualification.qualificationLevel}\nReasons: ${qualification.qualificationReasons.join('; ')}\nUser Agent: ${req.headers['user-agent'] || 'Unknown'}\nIP Address: ${Array.isArray(req.headers['x-forwarded-for']) ? req.headers['x-forwarded-for'][0] : req.headers['x-forwarded-for'] || req.connection.remoteAddress || 'Unknown'}`
+  notes: `Quality Score: ${qualification.qualityScore}/100 | Level: ${qualification.qualificationLevel}\n` +
+         `Reasons: ${qualification.qualificationReasons.join('; ')}\n` +
+         `Contact Quality - Email: ${qualification.contactQuality.emailValid ? 'Valid' : 'Invalid'}, ` +
+         `Phone: ${qualification.contactQuality.phoneValid ? 'Valid' : 'Invalid'}, ` +
+         `Name: ${qualification.contactQuality.nameComplete ? 'Complete' : 'Incomplete'}\n` +
+         `Content Analysis - High-value keywords: ${qualification.contentAnalysis.highValueKeywords.length}, ` +
+         `Medium-value keywords: ${qualification.contentAnalysis.mediumValueKeywords.length}, ` +
+         `Word count: ${qualification.contentAnalysis.wordCount}, ` +
+         `Specific details: ${qualification.contentAnalysis.containsSpecificDetails ? 'Yes' : 'No'}` +
+         (qualification.contentAnalysis.redFlags.length > 0 ? `\nRed flags: ${qualification.contentAnalysis.redFlags.join(', ')}` : '') +
+         `\nUser Agent: ${req.headers['user-agent'] || 'Unknown'}` +
+         `\nIP Address: ${Array.isArray(req.headers['x-forwarded-for']) ? req.headers['x-forwarded-for'][0] : req.headers['x-forwarded-for'] || req.connection.remoteAddress || 'Unknown'}`
 };
-        // Add qualification data to notes
-        notes: `Quality Score: ${qualification.qualityScore}/100 | Level: ${qualification.qualificationLevel}\n` +
-               `Reasons: ${qualification.qualificationReasons.join('; ')}\n` +
-               `Contact Quality - Email: ${qualification.contactQuality.emailValid ? 'Valid' : 'Invalid'}, ` +
-               `Phone: ${qualification.contactQuality.phoneValid ? 'Valid' : 'Invalid'}, ` +
-               `Name: ${qualification.contactQuality.nameComplete ? 'Complete' : 'Incomplete'}\n` +
-               `Content Analysis - High-value keywords: ${qualification.contentAnalysis.highValueKeywords.length}, ` +
-               `Medium-value keywords: ${qualification.contentAnalysis.mediumValueKeywords.length}, ` +
-               `Word count: ${qualification.contentAnalysis.wordCount}, ` +
-               `Specific details: ${qualification.contentAnalysis.containsSpecificDetails ? 'Yes' : 'No'}` +
-               (qualification.contentAnalysis.redFlags.length > 0 ? `\nRed flags: ${qualification.contentAnalysis.redFlags.join(', ')}` : ''),
-      };
 
       // Save to database
       const submission = await storage.createContactSubmission(submissionData);
