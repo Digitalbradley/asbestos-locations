@@ -11,7 +11,7 @@ interface MetaData {
 
 export async function generateSSRContent(req: Request): Promise<{ html: string; meta: MetaData }> {
   const url = req.originalUrl;
-  const host = req.get('host') || 'asbestos-locations.vercel.app';
+  const host = req.get('host') || 'asbestosexposuresites.com';
   const protocol = req.secure ? 'https' : 'http';
   const baseUrl = `${protocol}://${host}`;
   
@@ -51,8 +51,8 @@ export async function generateSSRContent(req: Request): Promise<{ html: string; 
 }
 
 async function generateHomepageSSR(baseUrl: string): Promise<{ html: string; meta: MetaData }> {
-  let states: any[] = [];
-  let categories: any[] = [];
+  let states = [];
+  let categories = [];
   
   try {
     states = await storage.getStates();
@@ -95,7 +95,7 @@ async function generateHomepageSSR(baseUrl: string): Promise<{ html: string; met
           ${states.map(state => `
             <a href="/${state.slug}" class="block p-3 bg-white rounded-lg shadow hover:shadow-md transition-shadow">
               <div class="font-medium text-gray-900">${state.name}</div>
-              <div class="text-sm text-gray-500">${state.facilityCount || 0} facilities</div>
+              <div class="text-sm text-gray-500">${state.facilityCount} facilities</div>
             </a>
           `).join('')}
         </div>
@@ -107,7 +107,7 @@ async function generateHomepageSSR(baseUrl: string): Promise<{ html: string; met
           ${categories.map(category => `
             <a href="/facility-types/${category.slug}" class="block p-3 bg-white rounded-lg shadow hover:shadow-md transition-shadow">
               <div class="font-medium text-gray-900">${category.name}</div>
-              <div class="text-sm text-gray-500">${category.facilityCount || 0} facilities</div>
+              <div class="text-sm text-gray-500">${category.facilityCount} facilities</div>
             </a>
           `).join('')}
         </div>
@@ -139,8 +139,8 @@ async function generateHomepageSSR(baseUrl: string): Promise<{ html: string; met
 
 async function generateStatePageSSR(stateSlug: string, baseUrl: string): Promise<{ html: string; meta: MetaData }> {
   let state = null;
-  let cities: any[] = [];
-  let facilities: any[] = [];
+  let cities = [];
+  let facilities = [];
   
   try {
     state = await storage.getStateBySlug(stateSlug);
@@ -148,12 +148,21 @@ async function generateStatePageSSR(stateSlug: string, baseUrl: string): Promise
       return generateHomepageSSR(baseUrl);
     }
     
-    cities = await storage.getCitiesByStateId(state.id);
-    facilities = await storage.getFacilitiesByStateId(state.id, 10); // Get top 10 facilities
+    cities = await storage.getCitiesByState(state.id);
+    facilities = await storage.getFacilitiesByState(state.id, 10); // Get top 10 facilities
   } catch (error) {
     console.error('Database error in state SSR:', error);
     return generateHomepageSSR(baseUrl);
   }
+  
+  // Add additional properties needed for rendering
+  const facilitiesWithSlug = facilities.map(facility => ({
+    ...facility,
+    citySlug: facility.city.slug,
+    stateName: facility.state.name,
+    cityName: facility.city.name,
+    categoryName: facility.category?.name
+  }));
   
   const html = `
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -162,7 +171,7 @@ async function generateStatePageSSR(stateSlug: string, baseUrl: string): Promise
           Asbestos Exposure Sites in ${state.name}
         </h1>
         <p class="text-xl text-gray-600 mb-8">
-          There are ${state.facilityCount || 0} facilities for you to review across ${cities.length} cities and towns
+          There are ${state.facilityCount} facilities for you to review across ${cities.length} cities and towns
         </p>
       </div>
       
@@ -172,7 +181,7 @@ async function generateStatePageSSR(stateSlug: string, baseUrl: string): Promise
           ${cities.map(city => `
             <a href="/${state.slug}/${city.slug}" class="block p-3 bg-white rounded-lg shadow hover:shadow-md transition-shadow">
               <div class="font-medium text-gray-900">${city.name}</div>
-              <div class="text-sm text-gray-500">${city.facilityCount || 0} facilities</div>
+              <div class="text-sm text-gray-500">${city.facilityCount} facilities</div>
             </a>
           `).join('')}
         </div>
@@ -181,14 +190,14 @@ async function generateStatePageSSR(stateSlug: string, baseUrl: string): Promise
       <div class="mb-12">
         <h2 class="text-2xl font-bold text-gray-900 mb-6">Featured Facilities in ${state.name}</h2>
         <div class="space-y-4">
-          ${facilities.map(facility => `
+          ${facilitiesWithSlug.map(facility => `
             <div class="bg-white rounded-lg shadow p-6">
               <h3 class="text-lg font-semibold text-gray-900 mb-2">
-                <a href="/${state.slug}/${facility.city.slug}/${facility.slug}-asbestos-exposure" class="text-teal-600 hover:text-teal-800">
+                <a href="/${state.slug}/${facility.citySlug}/${facility.slug}-asbestos-exposure" class="text-teal-600 hover:text-teal-800">
                   ${facility.name}
                 </a>
               </h3>
-              <p class="text-gray-600 mb-2">${facility.city.name}, ${state.name}</p>
+              <p class="text-gray-600 mb-2">${facility.city}, ${state.name}</p>
               ${facility.description ? `<p class="text-gray-700">${facility.description}</p>` : ''}
             </div>
           `).join('')}
@@ -198,7 +207,7 @@ async function generateStatePageSSR(stateSlug: string, baseUrl: string): Promise
   `;
   
   const meta: MetaData = {
-    title: `Asbestos Exposure Sites in ${state.name} - ${state.facilityCount || 0} Documented Facilities`,
+    title: `Asbestos Exposure Sites in ${state.name} - ${state.facilityCount} Documented Facilities`,
     description: `Comprehensive list of asbestos exposure sites in ${state.name}. Find facilities across ${cities.length} cities where workers may have been exposed to asbestos.`,
     keywords: `asbestos exposure ${state.name}, mesothelioma ${state.name}, asbestos sites ${state.name}, industrial facilities ${state.name}`,
     canonicalUrl: `${baseUrl}/${state.slug}`,
@@ -211,7 +220,7 @@ async function generateStatePageSSR(stateSlug: string, baseUrl: string): Promise
       "mainEntity": {
         "@type": "Dataset",
         "name": `${state.name} Asbestos Exposure Sites`,
-        "description": `Database of ${state.facilityCount || 0} asbestos exposure facilities in ${state.name}`,
+        "description": `Database of ${state.facilityCount} asbestos exposure facilities in ${state.name}`,
         "creator": {
           "@type": "Organization",
           "name": "Asbestos Exposure Sites Directory"
@@ -225,7 +234,7 @@ async function generateStatePageSSR(stateSlug: string, baseUrl: string): Promise
 
 async function generateCityPageSSR(stateSlug: string, citySlug: string, baseUrl: string): Promise<{ html: string; meta: MetaData }> {
   let city = null;
-  let facilities: any[] = [];
+  let facilities = [];
   
   try {
     city = await storage.getCityBySlug(stateSlug, citySlug);
@@ -233,33 +242,42 @@ async function generateCityPageSSR(stateSlug: string, citySlug: string, baseUrl:
       return generateHomepageSSR(baseUrl);
     }
     
-    facilities = await storage.getFacilitiesByCityId(city.id);
+    facilities = await storage.getFacilitiesByCity(city.id);
   } catch (error) {
     console.error('Database error in city SSR:', error);
     return generateHomepageSSR(baseUrl);
   }
   
+  // Add additional properties needed for rendering
+  const facilitiesWithSlug = facilities.map(facility => ({
+    ...facility,
+    citySlug: facility.city.slug,
+    stateName: facility.state.name,
+    cityName: facility.city.name,
+    categoryName: facility.category?.name
+  }));
+  
   const html = `
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
       <div class="py-8">
         <h1 class="text-4xl font-bold text-gray-900 mb-4">
-          Asbestos Exposure Sites in ${city.name}, ${city.state.name}
+          Asbestos Exposure Sites in ${city.name}, ${city.stateName}
         </h1>
         <p class="text-xl text-gray-600 mb-8">
-          ${city.facilityCount || 0} documented asbestos exposure facilities in ${city.name}
+          ${city.facilityCount} documented asbestos exposure facilities in ${city.name}
         </p>
       </div>
       
       <div class="space-y-6">
-        ${facilities.map(facility => `
+        ${facilitiesWithSlug.map(facility => `
           <div class="bg-white rounded-lg shadow p-6">
             <h2 class="text-xl font-semibold text-gray-900 mb-2">
               <a href="/${stateSlug}/${citySlug}/${facility.slug}-asbestos-exposure" class="text-teal-600 hover:text-teal-800">
                 ${facility.name}
               </a>
             </h2>
-            <p class="text-gray-600 mb-2">${facility.address || city.name}, ${city.state.name}</p>
-            ${facility.category ? `<p class="text-sm text-gray-500 mb-2">Category: ${facility.category.name}</p>` : ''}
+            <p class="text-gray-600 mb-2">${facility.address || city.name}, ${city.stateName}</p>
+            ${facility.categoryName ? `<p class="text-sm text-gray-500 mb-2">Category: ${facility.categoryName}</p>` : ''}
             ${facility.description ? `<p class="text-gray-700 mb-4">${facility.description}</p>` : ''}
             <a href="/${stateSlug}/${citySlug}/${facility.slug}-asbestos-exposure" class="text-teal-600 hover:text-teal-800 font-medium">
               Learn More →
@@ -271,20 +289,20 @@ async function generateCityPageSSR(stateSlug: string, citySlug: string, baseUrl:
   `;
   
   const meta: MetaData = {
-    title: `Asbestos Exposure Sites in ${city.name}, ${city.state.name} - ${city.facilityCount || 0} Facilities`,
-    description: `Complete list of asbestos exposure sites in ${city.name}, ${city.state.name}. Find facilities where workers may have been exposed to asbestos-containing materials.`,
-    keywords: `asbestos exposure ${city.name}, mesothelioma ${city.name}, asbestos sites ${city.name} ${city.state.name}, industrial facilities ${city.name}`,
+    title: `Asbestos Exposure Sites in ${city.name}, ${city.stateName} - ${city.facilityCount} Facilities`,
+    description: `Complete list of asbestos exposure sites in ${city.name}, ${city.stateName}. Find facilities where workers may have been exposed to asbestos-containing materials.`,
+    keywords: `asbestos exposure ${city.name}, mesothelioma ${city.name}, asbestos sites ${city.name} ${city.stateName}, industrial facilities ${city.name}`,
     canonicalUrl: `${baseUrl}/${stateSlug}/${citySlug}`,
     structuredData: {
       "@context": "https://schema.org",
       "@type": "WebPage",
-      "name": `Asbestos Exposure Sites in ${city.name}, ${city.state.name}`,
-      "description": `Complete list of asbestos exposure sites in ${city.name}, ${city.state.name}`,
+      "name": `Asbestos Exposure Sites in ${city.name}, ${city.stateName}`,
+      "description": `Complete list of asbestos exposure sites in ${city.name}, ${city.stateName}`,
       "url": `${baseUrl}/${stateSlug}/${citySlug}`,
       "mainEntity": {
         "@type": "Dataset",
         "name": `${city.name} Asbestos Exposure Sites`,
-        "description": `Database of ${city.facilityCount || 0} asbestos exposure facilities in ${city.name}, ${city.state.name}`
+        "description": `Database of ${city.facilityCount} asbestos exposure facilities in ${city.name}, ${city.stateName}`
       }
     }
   };
@@ -311,8 +329,8 @@ async function generateFacilityPageSSR(stateSlug: string, citySlug: string, faci
         <h1 class="text-4xl font-bold text-gray-900 mb-4">
           ${facility.name} - Asbestos Exposure Site
         </h1>
-        <p class="text-xl text-gray-600 mb-2">${facility.address || facility.city.name}, ${facility.state.name}</p>
-        ${facility.category ? `<p class="text-lg text-gray-500 mb-8">Category: ${facility.category.name}</p>` : ''}
+        <p class="text-xl text-gray-600 mb-2">${facility.address || facility.cityName}, ${facility.stateName}</p>
+        ${facility.categoryName ? `<p class="text-lg text-gray-500 mb-8">Category: ${facility.categoryName}</p>` : ''}
       </div>
       
       <div class="bg-white rounded-lg shadow p-8 mb-8">
@@ -322,27 +340,17 @@ async function generateFacilityPageSSR(stateSlug: string, citySlug: string, faci
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
           <div>
             <h3 class="text-lg font-semibold text-gray-900 mb-2">Location Details</h3>
-            <p class="text-gray-600">City: ${facility.city.name}</p>
-            <p class="text-gray-600">State: ${facility.state.name}</p>
+            <p class="text-gray-600">City: ${facility.cityName}</p>
+            <p class="text-gray-600">State: ${facility.stateName}</p>
             ${facility.address ? `<p class="text-gray-600">Address: ${facility.address}</p>` : ''}
-            ${facility.county ? `<p class="text-gray-600">County: ${facility.county}</p>` : ''}
           </div>
           
           <div>
             <h3 class="text-lg font-semibold text-gray-900 mb-2">Facility Information</h3>
-            ${facility.category ? `<p class="text-gray-600">Type: ${facility.category.name}</p>` : ''}
+            ${facility.categoryName ? `<p class="text-gray-600">Type: ${facility.categoryName}</p>` : ''}
             ${facility.companyName ? `<p class="text-gray-600">Company: ${facility.companyName}</p>` : ''}
-            ${facility.operationalPeriod ? `<p class="text-gray-600">Operational Period: ${facility.operationalPeriod}</p>` : ''}
-            ${facility.exposureRisk ? `<p class="text-gray-600">Exposure Risk: ${facility.exposureRisk}</p>` : ''}
           </div>
         </div>
-        
-        ${facility.historicalDescription ? `
-        <div class="mb-6">
-          <h3 class="text-lg font-semibold text-gray-900 mb-2">Historical Information</h3>
-          <p class="text-gray-700">${facility.historicalDescription}</p>
-        </div>
-        ` : ''}
         
         <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-6">
           <h3 class="text-lg font-semibold text-yellow-800 mb-2">Important Information</h3>
@@ -367,19 +375,19 @@ async function generateFacilityPageSSR(stateSlug: string, citySlug: string, faci
   `;
   
   const meta: MetaData = {
-    title: `${facility.name} - Asbestos Exposure Site in ${facility.city.name}, ${facility.state.name}`,
-    description: `Information about asbestos exposure at ${facility.name} in ${facility.city.name}, ${facility.state.name}. Learn about potential health risks and legal options for workers.`,
-    keywords: `${facility.name} asbestos, ${facility.name} mesothelioma, asbestos exposure ${facility.city.name}, ${facility.name} ${facility.state.name}`,
+    title: `${facility.name} - Asbestos Exposure Site in ${facility.cityName}, ${facility.stateName}`,
+    description: `Information about asbestos exposure at ${facility.name} in ${facility.cityName}, ${facility.stateName}. Learn about potential health risks and legal options for workers.`,
+    keywords: `${facility.name} asbestos, ${facility.name} mesothelioma, asbestos exposure ${facility.cityName}, ${facility.name} ${facility.stateName}`,
     canonicalUrl: `${baseUrl}/${stateSlug}/${citySlug}/${facilitySlug}-asbestos-exposure`,
     structuredData: {
       "@context": "https://schema.org",
       "@type": "Place",
       "name": `${facility.name}`,
-      "description": `Asbestos exposure site in ${facility.city.name}, ${facility.state.name}`,
+      "description": `Asbestos exposure site in ${facility.cityName}, ${facility.stateName}`,
       "address": {
         "@type": "PostalAddress",
-        "addressLocality": facility.city.name,
-        "addressRegion": facility.state.name,
+        "addressLocality": facility.cityName,
+        "addressRegion": facility.stateName,
         "addressCountry": "US"
       },
       "url": `${baseUrl}/${stateSlug}/${citySlug}/${facilitySlug}-asbestos-exposure`
