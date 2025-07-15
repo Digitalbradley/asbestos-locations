@@ -49,13 +49,13 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
     // Main sitemap route
     if (path === '/sitemap.xml') {
-      let sitemapContent = `<?xml version="1.0" encoding="UTF-8"?>
+      let sitemapContent = \`<?xml version="1.0" encoding="UTF-8"?>
 <sitemapindex xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <sitemap>
     <loc>https://asbestos-locations.vercel.app/sitemap-florida.xml</loc>
     <lastmod>2025-01-10</lastmod>
   </sitemap>
-</sitemapindex>`;
+</sitemapindex>\`;
 
       res.setHeader('Content-Type', 'application/xml');
       res.status(200).send(sitemapContent);
@@ -86,7 +86,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         .where(eq(schema.cities.stateId, 3))
         .orderBy(schema.cities.slug, schema.facilities.slug);
 
-      let sitemapContent = `<?xml version="1.0" encoding="UTF-8"?>
+      let sitemapContent = \`<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <!-- Florida State Page -->
   <url>
@@ -96,36 +96,36 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     <priority>0.9</priority>
   </url>
   
-  <!-- Florida Cities (${floridaCities.length} cities) -->`;
+  <!-- Florida Cities (\${floridaCities.length} cities) -->\`;
 
       // Add city URLs
       for (const city of floridaCities) {
-        sitemapContent += `
+        sitemapContent += \`
   <url>
-    <loc>https://asbestosexposuresites.com/florida/${city.slug}</loc>
+    <loc>https://asbestosexposuresites.com/florida/\${city.slug}</loc>
     <lastmod>2025-01-10</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
-  </url>`;
+  </url>\`;
       }
 
-      sitemapContent += `
+      sitemapContent += \`
   
-  <!-- Florida Facilities (${facilityUrls.length} facilities) -->`;
+  <!-- Florida Facilities (\${facilityUrls.length} facilities) -->\`;
 
       // Add facility URLs
       for (const facility of facilityUrls) {
-        sitemapContent += `
+        sitemapContent += \`
   <url>
-    <loc>https://asbestosexposuresites.com/florida/${facility.citySlug}/${facility.facilitySlug}-asbestos-exposure</loc>
+    <loc>https://asbestosexposuresites.com/florida/\${facility.citySlug}/\${facility.facilitySlug}-asbestos-exposure</loc>
     <lastmod>2025-01-10</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
-  </url>`;
+  </url>\`;
       }
 
-      sitemapContent += `
-</urlset>`;
+      sitemapContent += \`
+</urlset>\`;
 
       res.setHeader('Content-Type', 'application/xml');
       res.status(200).send(sitemapContent);
@@ -353,189 +353,11 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       .from(schema.facilities)
       .leftJoin(schema.cities, eq(schema.facilities.cityId, schema.cities.id))
       .leftJoin(schema.states, eq(schema.cities.stateId, schema.states.id))
-      .where(like(schema.facilities.name, `%${query}%`))
+      .where(like(schema.facilities.name, \`%\${query}%\`))
       .limit(limit);
       
       res.status(200).json(results);
       return;
-    }
-
-// Handle contact form submissions - FIXED VERSION (exposure field removed)
-if (path === '/api/contact' && req.method === 'POST') {
-  const { name, email, phone, message, diagnosis, pathologyReport, diagnosisTimeline } = req.body;
-  
-  try {
-    console.log('Contact form data received:', req.body);
-    
-    // Generate subject based on diagnosis
-    const generateSubject = (diagnosis: string) => {
-      if (!diagnosis) return 'Asbestos Exposure Lead';
-      
-      switch (diagnosis.toLowerCase()) {
-        case 'mesothelioma': return 'Mesothelioma Lead';
-        case 'lung-cancer': return 'Lung Cancer Lead';
-        case 'asbestosis': return 'Asbestosis Lead';
-        default: return 'Asbestos Exposure Lead';
-      }
-    };
-
-    // Insert using CORRECT camelCase field names (removed exposure field)
-const submission = await db.insert(schema.contactSubmissions).values({
-  name: name || '',
-  email: email || '',
-  phone: phone || null,
-  inquiryType: 'legal-consultation',
-  subject: generateSubject(diagnosis),
-  message: message || '',
-  diagnosis: diagnosis || null,
-  pathologyReport: pathologyReport || null,     // ✅ Use camelCase (schema name)
-  diagnosisTimeline: diagnosisTimeline || null, // ✅ Use camelCase (schema name)
-  status: 'new'
-}).returning();
-    
-    console.log('Database insertion successful:', submission[0].id);
-        
-// Post to Google Sheets (if credentials are available)
-if (process.env.GOOGLE_SHEETS_CLIENT_EMAIL && process.env.GOOGLE_SHEETS_PRIVATE_KEY) {
-  try {
-    console.log('Adding to Google Sheets...');
-    
-    const { google } = await import('googleapis');
-    const auth = new google.auth.GoogleAuth({
-      credentials: {
-        client_email: process.env.GOOGLE_SHEETS_CLIENT_EMAIL,
-        private_key: process.env.GOOGLE_SHEETS_PRIVATE_KEY.replace(/\\n/g, '\n'),
-      },
-      scopes: ['https://www.googleapis.com/auth/spreadsheets'],
-    });
-    
-    const sheets = google.sheets({ version: 'v4', auth });
-    const spreadsheetId = '1nIBlcGbxaXw_2LxlOSb9BW8G1xmboAktAAgBaVtmsBQ';
-    
-    await sheets.spreadsheets.values.append({
-      spreadsheetId: spreadsheetId,
-      range: 'All Leads!A:V',
-      valueInputOption: 'RAW',
-      insertDataOption: 'INSERT_ROWS',
-      requestBody: {
-        values: [[
-          submission[0].id.toString(),
-          new Date().toISOString(),
-          submission[0].name,
-          submission[0].email,
-          submission[0].phone || '',
-          submission[0].inquiryType,
-          submission[0].subject,
-          submission[0].message,
-          submission[0].diagnosis || '',
-          submission[0].pathologyReport || '',
-          submission[0].diagnosisTimeline || '',
-          '', // quality_score
-          '', // qualification_level
-          '', // high_value_keywords
-          '', // contact_quality
-          '', // word_count
-          'new', // status
-          '', // assigned_to_firm
-          '', // date_sent_to_firm
-          '', // firm_response
-          '', // notes
-          req.headers.referer || ''
-        ]],
-      },
-    });
-    
-console.log('Google Sheets integration successful');
-  } catch (sheetsError) {
-    console.error('Failed to add lead to Google Sheets:', sheetsError);
-  }
-
-  res.status(201).json({ 
-    message: 'Contact form submitted successfully',
-    id: submission[0].id
-  });
-  return;
-      
-} catch (error) {
-  console.error('Contact form error:', error);
-  res.status(500).json({ message: 'Failed to submit contact form' });
-  return;
-} 
-}
-    // Handle content templates
-    if (path?.startsWith('/api/content-templates/')) {
-      const pathParts = path.split('/');
-      const templateType = pathParts[3]; // state, city, or facility
-      const templateName = pathParts[4];
-
-      
-      if (templateType && templateName) {
-        const [template] = await db.select({
-          id: schema.contentTemplates.id,
-          templateType: schema.contentTemplates.templateType,
-          templateName: schema.contentTemplates.templateName,
-          contentBlocks: schema.contentTemplates.contentBlocks,
-          placeholders: schema.contentTemplates.placeholders,
-          isActive: schema.contentTemplates.isActive
-        })
-          .from(schema.contentTemplates)
-          .where(and(
-            eq(schema.contentTemplates.templateType, templateType),
-            eq(schema.contentTemplates.templateName, templateName)
-          ));
-        
-        if (!template) {
-          res.status(404).json({ message: 'Content template not found' });
-          return;
-        }
-        res.status(200).json(template);
-        return;
-      }
-    }
-
-    // Handle city facilities route
-    if (path?.startsWith('/api/cities/') && path.includes('/facilities')) {
-      const pathParts = path.split('/');
-      const stateSlug = pathParts[3];
-      const citySlug = pathParts[4];
-      
-      if (stateSlug && citySlug) {
-        const facilities = await db.select({
-          id: schema.facilities.id,
-          name: schema.facilities.name,
-          slug: schema.facilities.slug,
-          address: schema.facilities.address,
-          companyName: schema.facilities.companyName,
-          description: schema.facilities.description,
-          city: {
-            id: schema.cities.id,
-            name: schema.cities.name,
-            slug: schema.cities.slug
-          },
-          state: {
-            id: schema.states.id,
-            name: schema.states.name,
-            slug: schema.states.slug
-          },
-          category: {
-            id: schema.categories.id,
-            name: schema.categories.name,
-            slug: schema.categories.slug
-          }
-        })
-        .from(schema.facilities)
-        .leftJoin(schema.cities, eq(schema.facilities.cityId, schema.cities.id))
-        .leftJoin(schema.states, eq(schema.cities.stateId, schema.states.id))
-        .leftJoin(schema.categories, eq(schema.facilities.categoryId, schema.categories.id))
-        .where(and(
-          eq(schema.cities.slug, citySlug),
-          eq(schema.states.slug, stateSlug)
-        ))
-        .orderBy(asc(schema.facilities.name));
-        
-        res.status(200).json(facilities);
-        return;
-      }
     }
 
     // Handle nearby facilities route
@@ -622,15 +444,106 @@ console.log('Google Sheets integration successful');
           .leftJoin(schema.states, eq(schema.cities.stateId, schema.states.id))
           .leftJoin(schema.categories, eq(schema.facilities.categoryId, schema.categories.id))
           .where(and(
-  facility[0].categoryId ? eq(schema.facilities.categoryId, facility[0].categoryId) : sql`1=1`,
-  ne(schema.facilities.id, facilityId)
-))
+            eq(schema.facilities.categoryId, facility[0].categoryId),
+            ne(schema.facilities.id, facilityId)
+          ))
           .orderBy(asc(schema.facilities.name))
           .limit(10);
           
           res.status(200).json(relatedFacilities);
           return;
         }
+      }
+    }
+
+    // Handle contact form submissions - FIXED: method -> req.method
+    if (path === '/api/contact' && req.method === 'POST') {
+      const { name, email, phone, message, facilityId, cityId, stateId } = req.body;
+      
+      try {
+        const submission = await db.insert(schema.contactSubmissions).values({
+          name: name || '',
+          email: email || '',
+          phone: phone || '',
+          message: message || '',
+          inquiryType: 'facility-inquiry',
+          subject: 'Asbestos Exposure Inquiry',
+          exposure: '',
+          diagnosis: '',
+          facilityId: facilityId || null,
+          cityId: cityId || null,
+          stateId: stateId || null,
+          status: 'new',
+          priority: 'normal',
+          contacted: false
+        }).returning();
+        
+        // Post to Google Sheets (if credentials are available)
+        console.log('Checking Google Sheets credentials:', {
+          hasEmail: !!process.env.GOOGLE_SHEETS_CLIENT_EMAIL,
+          hasKey: !!process.env.GOOGLE_SHEETS_PRIVATE_KEY
+        });
+        
+        if (process.env.GOOGLE_SHEETS_CLIENT_EMAIL && process.env.GOOGLE_SHEETS_PRIVATE_KEY) {
+          console.log('Google Sheets credentials found, attempting to post lead...');
+          try {
+            const { google } = await import('googleapis');
+            const auth = new google.auth.GoogleAuth({
+              credentials: {
+                client_email: process.env.GOOGLE_SHEETS_CLIENT_EMAIL,
+                private_key: process.env.GOOGLE_SHEETS_PRIVATE_KEY.replace(/\\n/g, '\n'),
+              },
+              scopes: ['https://www.googleapis.com/auth/spreadsheets'],
+            });
+            
+            const sheets = google.sheets({ version: 'v4', auth });
+            const spreadsheetId = '1iDfJiJhQKhFbh9Tt4wOHcJZKQRYo_1s2fNjrDt8PxKs';
+            
+            await sheets.spreadsheets.values.append({
+              spreadsheetId: spreadsheetId,
+              range: 'Leads!A:U',
+              valueInputOption: 'RAW',
+              insertDataOption: 'INSERT_ROWS',
+              requestBody: {
+                values: [[
+                  submission[0].id.toString(),
+                  new Date().toISOString(),
+                  submission[0].name,
+                  submission[0].email,
+                  submission[0].phone || '',
+                  submission[0].inquiryType,
+                  submission[0].subject,
+                  submission[0].message,
+                  submission[0].exposure || '',
+                  submission[0].diagnosis || '',
+                  '50', // Default qualification score
+                  'qualified', // Default qualification level
+                  'facility inquiry', // Keywords
+                  'Valid contact info', // Contact quality
+                  '1', // Word count
+                  'New', // Status
+                  '', // Assigned to Firm
+                  '', // Date Sent to Firm
+                  '', // Firm Response
+                  'Facility inquiry submission', // Notes
+                  req.headers.referer || '', // Page URL
+                ]],
+              },
+            });
+            
+            console.log(\`Lead \${submission[0].id} added to Google Sheets\`);
+          } catch (sheetsError) {
+            console.error('Failed to add lead to Google Sheets:', sheetsError);
+            // Continue processing even if Google Sheets fails
+          }
+        }
+        
+        res.status(201).json(submission[0]);
+        return;
+      } catch (error) {
+        console.error('Contact form submission error:', error);
+        res.status(500).json({ message: 'Failed to submit contact form' });
+        return;
       }
     }
 
@@ -669,9 +582,9 @@ console.log('Google Sheets integration successful');
       .leftJoin(schema.states, eq(schema.cities.stateId, schema.states.id))
       .leftJoin(schema.categories, eq(schema.facilities.categoryId, schema.categories.id))
       .where(or(
-        ilike(schema.facilities.name, `%${query}%`),
-        ilike(schema.cities.name, `%${query}%`),
-        ilike(schema.facilities.companyName, `%${query}%`)
+        ilike(schema.facilities.name, \`%\${query}%\`),
+        ilike(schema.cities.name, \`%\${query}%\`),
+        ilike(schema.facilities.companyName, \`%\${query}%\`)
       ))
       .orderBy(asc(schema.facilities.name))
       .limit(limit);
@@ -689,5 +602,4 @@ console.log('Google Sheets integration successful');
       error: error instanceof Error ? error.message : 'Unknown error'
     });
   }
-}
 }
