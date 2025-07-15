@@ -301,8 +301,8 @@ const qualification = qualifyLead(
   validatedData.message,
   undefined, // exposure field doesn't exist
   validatedData.diagnosis || undefined,
-  validatedData.pathologyReport || null,
-  validatedData.diagnosisTimeline || null
+  validatedData.pathologyReport || undefined,
+  validatedData.diagnosisTimeline || undefined
 ); 
 // Generate dynamic subject based on diagnosis type
 const generateSubject = (originalSubject: string | undefined, diagnosis: string | null | undefined) => {
