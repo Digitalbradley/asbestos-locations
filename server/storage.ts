@@ -388,3 +388,4 @@ async function generateFacilityPageSSR(stateSlug: string, citySlug: string, faci
   
   return { html, meta };
 }
+export const storage = new DatabaseStorage();
