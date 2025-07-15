@@ -124,6 +124,18 @@ export const contactSubmissions = pgTable("contact_submissions", {
   // Lead tracking
   status: text("status").default("new"), // new, contacted, qualified, converted, closed
  
+  // Lead qualification fields
+  qualityScore: integer("quality_score"), // Lead scoring (0-100)
+  qualificationLevel: text("qualification_level"), // high, medium, low, rejected
+  highValueKeywords: text("high_value_keywords"), // Keywords found in submission
+  contactQuality: text("contact_quality"), // Assessment of contact quality
+  wordCount: integer("word_count"), // Text analysis word count
+  
+  // Firm assignment fields
+  assignedToFirm: text("assigned_to_firm"), // Firm assignment
+  dateSentToFirm: timestamp("date_sent_to_firm"), // Date sent to firm
+  firmResponse: text("firm_response"), // Firm response
+  
   // Source tracking
   pageUrl: text("page_url"), // What page they were on when they submitted
   
