@@ -514,7 +514,24 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         const googleSheetsService = createGoogleSheetsService();
         if (googleSheetsService) {
           try {
-            await googleSheetsService.addLeadToSheet(submission[0]);
+            // Transform database submission to match LeadData interface
+            const leadData = {
+              id: submission[0].id,
+              name: submission[0].name,
+              email: submission[0].email,
+              phone: submission[0].phone || '',
+              inquiryType: submission[0].inquiryType,
+              subject: submission[0].subject,
+              message: submission[0].message,
+              diagnosis: submission[0].diagnosis || undefined,
+              pathologyReport: submission[0].pathologyReport || undefined,
+              diagnosisTimeline: submission[0].diagnosisTimeline || undefined,
+              submittedAt: submission[0].createdAt || new Date(),
+              pageUrl: submission[0].pageUrl || undefined,
+              qualification: qualification
+            };
+            
+            await googleSheetsService.addLeadToSheet(leadData);
             console.log(`Lead ${submission[0].id} added to Google Sheets with qualification data`);
           } catch (sheetsError) {
             console.error('Failed to add lead to Google Sheets:', sheetsError);
