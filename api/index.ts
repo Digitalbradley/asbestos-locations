@@ -455,18 +455,19 @@ console.log('Google Sheets integration successful');
     id: submission[0].id
   });
   return;
-
+      
 } catch (error) {
   console.error('Contact form error:', error);
   res.status(500).json({ message: 'Failed to submit contact form' });
   return;
-}
-
+} }
+  
     // Handle content templates
     if (path?.startsWith('/api/content-templates/')) {
       const pathParts = path.split('/');
       const templateType = pathParts[3]; // state, city, or facility
       const templateName = pathParts[4];
+
       
       if (templateType && templateName) {
         const [template] = await db.select({
