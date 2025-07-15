@@ -1,13 +1,13 @@
 {
   "version": 2,
-  "routes": [
+  "rewrites": [
     {
-      "src": "/api/(.*)",
-      "dest": "/api/$1"
+      "source": "/api/(.*)",
+      "destination": "/api/$1"
     },
     {
-      "src": "/((?!api|_next|favicon.ico).*)",
-      "dest": "/api/ssr-handler"
+      "source": "/((?!api|_next|favicon.ico).*)",
+      "destination": "/api/ssr-handler"
     }
   ],
   "functions": {
