@@ -62,7 +62,7 @@ export async function generateSEOMetadata(req: Request): Promise<SEOMetadata> {
       }
       
       // Get cities count for the state
-      const cities = await storage.getCitiesByStateId(state.id);
+      const cities = await storage.getCitiesByState(state.id);
       const cityCount = cities.length;
       
       return {
@@ -129,7 +129,9 @@ export async function generateSEOMetadata(req: Request): Promise<SEOMetadata> {
     
     // Facility page: /florida/miami/facility-name-asbestos-exposure
     if (pathSegments.length === 3) {
-      const [stateSlug, citySlug, facilitySlug] = pathSegments;
+      const [stateSlug, citySlug, facilitySlugWithSuffix] = pathSegments;
+      // Remove the -asbestos-exposure suffix if present
+      const facilitySlug = facilitySlugWithSuffix.replace('-asbestos-exposure', '');
       const facility = await storage.getFacilityBySlug(stateSlug, citySlug, facilitySlug);
       if (!facility) {
         return generateHomepageMetadata();
