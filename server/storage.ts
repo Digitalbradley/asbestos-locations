@@ -646,8 +646,8 @@ if (conditions.length > 0) {
       .slice(0, limit)
       .map((city, index) => ({
         id: city.id,
-        name: city.name!,
-        slug: city.slug!,
+        name: city.name || '',
+        slug: city.slug || '',
         facilityCount: city.facilityCount || 0,
         distance: Math.round((index + 1) * 15.5 * 10) / 10 // Estimated distances
       }));
