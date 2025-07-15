@@ -1,556 +1,390 @@
-import { drizzle } from 'drizzle-orm/neon-serverless';
-import { Pool } from '@neondatabase/serverless';
-import { eq, like, and, desc, asc, sql, ne, or, ilike } from 'drizzle-orm';
-import * as schema from '../shared/schema';
-import { 
-  State, 
-  City, 
-  Category, 
-  Facility, 
-  ContactSubmission,
-  ContentTemplate,
-  FacilityProximity,
-  InsertState,
-  InsertCity,
-  InsertCategory,
-  InsertFacility,
-  InsertContactSubmission,
-  InsertContentTemplate,
-  InsertFacilityProximity,
-  StateWithCities,
-  CityWithState,
-  FacilityWithRelations
-} from '../shared/schema';
+import { storage } from "./storage";
+import type { Request, Response } from "express";
 
-const { 
-  states, 
-  cities, 
-  categories, 
-  facilities, 
-  contactSubmissions,
-  contentTemplates,
-  facilityProximity
-} = schema;
-
-const pool = new Pool({ 
-  connectionString: process.env.DATABASE_URL,
-  max: 10,
-  idleTimeoutMillis: 30000,
-  connectionTimeoutMillis: 2000,
-});
-
-const db = drizzle({ client: pool, schema });
-
-export interface IStorage {
-  // States
-  getStates(): Promise<State[]>;
-  getStateById(id: number): Promise<State | undefined>;
-  getStateBySlug(slug: string): Promise<StateWithCities | undefined>;
-  createState(state: InsertState): Promise<State>;
-  updateState(id: number, updates: Partial<InsertState>): Promise<State | null>;
-  deleteState(id: number): Promise<boolean>;
-
-  // Cities
-  getCities(stateId?: number): Promise<City[]>;
-  getCityById(id: number): Promise<City | undefined>;
-  getCityBySlug(stateSlug: string, citySlug: string): Promise<CityWithState | undefined>;
-  createCity(city: InsertCity): Promise<City>;
-  updateCity(id: number, updates: Partial<InsertCity>): Promise<City | null>;
-  deleteCity(id: number): Promise<boolean>;
-
-  // Categories
-  getCategories(): Promise<Category[]>;
-  getCategoryById(id: number): Promise<Category | undefined>;
-  getCategoryBySlug(slug: string): Promise<Category | undefined>;
-  createCategory(category: InsertCategory): Promise<Category>;
-  updateCategory(id: number, updates: Partial<InsertCategory>): Promise<Category | null>;
-  deleteCategory(id: number): Promise<boolean>;
-
-  // Facilities
-  getFacilities(cityId?: number, limit?: number): Promise<Facility[]>;
-  getFacilityById(id: number): Promise<Facility | undefined>;
-  getFacilityBySlug(stateSlug: string, citySlug: string, facilitySlug: string): Promise<FacilityWithRelations | undefined>;
-  searchFacilities(query: string, limit?: number): Promise<FacilityWithRelations[]>;
-  createFacility(facility: InsertFacility): Promise<Facility>;
-  updateFacility(id: number, updates: Partial<InsertFacility>): Promise<Facility | null>;
-  deleteFacility(id: number): Promise<boolean>;
-
-  // Contact Submissions
-  getContactSubmissions(facilityId?: number, limit?: number): Promise<ContactSubmission[]>;
-  getContactSubmissionById(id: number): Promise<ContactSubmission | undefined>;
-  createContactSubmission(submission: InsertContactSubmission): Promise<ContactSubmission>;
-  updateContactSubmission(id: number, updates: Partial<ContactSubmission>): Promise<ContactSubmission | null>;
-  deleteContactSubmission(id: number): Promise<boolean>;
-
-  // Content Templates
-  getContentTemplates(templateType?: string): Promise<ContentTemplate[]>;
-  getContentTemplateByName(templateName: string): Promise<ContentTemplate | undefined>;
-  createContentTemplate(template: InsertContentTemplate): Promise<ContentTemplate>;
-  updateContentTemplate(id: number, updates: Partial<InsertContentTemplate>): Promise<ContentTemplate | null>;
-  deleteContentTemplate(id: number): Promise<boolean>;
-
-  // Facility Proximity
-  getFacilityProximity(facilityId: number, limit?: number): Promise<FacilityProximity[]>;
-  getNearbyFacilitiesWithDistance(facilityId: number, limit?: number): Promise<FacilityWithRelations[]>;
-  createFacilityProximity(insertProximity: InsertFacilityProximity): Promise<FacilityProximity>;
-  calculateAndStoreProximity(facilityId: number): Promise<void>;
+interface MetaData {
+  title: string;
+  description: string;
+  keywords: string;
+  canonicalUrl: string;
+  structuredData?: any;
 }
 
-export class DatabaseStorage implements IStorage {
-  // States
-  async getStates(): Promise<State[]> {
-    return await db.select().from(states);
-  }
-
-  async getStateById(id: number): Promise<State | undefined> {
-    const result = await db.select().from(states).where(eq(states.id, id));
-    return result[0];
-  }
-
-  async getStateBySlug(slug: string): Promise<StateWithCities | undefined> {
-    const stateResult = await db.select().from(states).where(eq(states.slug, slug));
-    if (stateResult.length === 0) return undefined;
-    
-    const state = stateResult[0];
-    const citiesResult = await db.select().from(cities).where(eq(cities.stateId, state.id));
-    
-    return {
-      ...state,
-      cities: citiesResult
-    };
-  }
-
-  async createState(state: InsertState): Promise<State> {
-    const result = await db.insert(states).values(state).returning();
-    return result[0];
-  }
-
-  async updateState(id: number, updates: Partial<InsertState>): Promise<State | null> {
-    const result = await db.update(states)
-      .set(updates)
-      .where(eq(states.id, id))
-      .returning();
-    return result[0] || null;
-  }
-
-  async deleteState(id: number): Promise<boolean> {
-    const result = await db.delete(states).where(eq(states.id, id)).returning();
-    return result.length > 0;
-  }
-
-  // Cities
-  async getCities(stateId?: number): Promise<City[]> {
-    if (stateId) {
-      return await db.select().from(cities).where(eq(cities.stateId, stateId));
+export async function generateSSRContent(req: Request): Promise<{ html: string; meta: MetaData }> {
+  const url = req.originalUrl;
+  const host = req.get('host') || 'asbestos-locations.vercel.app';
+  const protocol = req.secure ? 'https' : 'http';
+  const baseUrl = `${protocol}://${host}`;
+  
+  // Parse URL to determine page type
+  const pathSegments = url.split('/').filter(Boolean);
+  
+  try {
+    // Homepage
+    if (pathSegments.length === 0) {
+      return generateHomepageSSR(baseUrl);
     }
-    return await db.select().from(cities);
+    
+    // State page: /florida
+    if (pathSegments.length === 1) {
+      const stateSlug = pathSegments[0];
+      return generateStatePageSSR(stateSlug, baseUrl);
+    }
+    
+    // City page: /florida/miami
+    if (pathSegments.length === 2) {
+      const [stateSlug, citySlug] = pathSegments;
+      return generateCityPageSSR(stateSlug, citySlug, baseUrl);
+    }
+    
+    // Facility page: /florida/miami/facility-name-asbestos-exposure
+    if (pathSegments.length === 3) {
+      const [stateSlug, citySlug, facilitySlug] = pathSegments;
+      return generateFacilityPageSSR(stateSlug, citySlug, facilitySlug, baseUrl);
+    }
+    
+    // Fallback
+    return generateHomepageSSR(baseUrl);
+  } catch (error) {
+    console.error('SSR generation error:', error);
+    return generateHomepageSSR(baseUrl);
   }
+}
 
-  async getCityById(id: number): Promise<City | undefined> {
-    const result = await db.select().from(cities).where(eq(cities.id, id));
-    return result[0];
+async function generateHomepageSSR(baseUrl: string): Promise<{ html: string; meta: MetaData }> {
+  let states: any[] = [];
+  let categories: any[] = [];
+  
+  try {
+    states = await storage.getStates();
+    categories = await storage.getCategories();
+  } catch (error) {
+    console.error('Database error in SSR:', error);
+    // Fallback to empty arrays if database fails
   }
-
-  async getCityBySlug(stateSlug: string, citySlug: string): Promise<CityWithState | undefined> {
-    const result = await db.select({
-      id: cities.id,
-      name: cities.name,
-      slug: cities.slug,
-      stateId: cities.stateId,
-      facilityCount: cities.facilityCount,
-      createdAt: cities.createdAt,
-      state: {
-        id: states.id,
-        name: states.name,
-        slug: states.slug,
-        facilityCount: states.facilityCount,
-        createdAt: states.createdAt
+  
+  const html = `
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="text-center py-12">
+        <h1 class="text-4xl font-bold text-gray-900 mb-4">
+          Asbestos Exposure Sites Directory
+        </h1>
+        <p class="text-xl text-gray-600 mb-8">
+          Comprehensive database of 87,000+ documented asbestos exposure locations across all 50 states.
+          Essential resource for patients, families, and legal professionals.
+        </p>
+      </div>
+      
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-8 mb-12">
+        <div class="text-center">
+          <div class="text-4xl font-bold text-teal-600 mb-2">87K+</div>
+          <div class="text-gray-600">Documented Sites</div>
+        </div>
+        <div class="text-center">
+          <div class="text-4xl font-bold text-teal-600 mb-2">50</div>
+          <div class="text-gray-600">States Covered</div>
+        </div>
+        <div class="text-center">
+          <div class="text-4xl font-bold text-teal-600 mb-2">Legal</div>
+          <div class="text-gray-600">Professional Verified</div>
+        </div>
+      </div>
+      
+      <div class="mb-12">
+        <h2 class="text-2xl font-bold text-gray-900 mb-6">Browse by State</h2>
+        <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
+          ${states.map(state => `
+            <a href="/${state.slug}" class="block p-3 bg-white rounded-lg shadow hover:shadow-md transition-shadow">
+              <div class="font-medium text-gray-900">${state.name}</div>
+              <div class="text-sm text-gray-500">${state.facilityCount || 0} facilities</div>
+            </a>
+          `).join('')}
+        </div>
+      </div>
+      
+      <div class="mb-12">
+        <h2 class="text-2xl font-bold text-gray-900 mb-6">Facility Categories</h2>
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+          ${categories.map(category => `
+            <a href="/facility-types/${category.slug}" class="block p-3 bg-white rounded-lg shadow hover:shadow-md transition-shadow">
+              <div class="font-medium text-gray-900">${category.name}</div>
+              <div class="text-sm text-gray-500">${category.facilityCount || 0} facilities</div>
+            </a>
+          `).join('')}
+        </div>
+      </div>
+    </div>
+  `;
+  
+  const meta: MetaData = {
+    title: "Asbestos Exposure Sites Directory - 87,000+ Documented Locations",
+    description: "Comprehensive database of asbestos exposure sites across all 50 states. Find facilities where you may have been exposed to asbestos. Essential resource for mesothelioma patients and legal professionals.",
+    keywords: "asbestos exposure, mesothelioma, lung cancer, asbestos sites, exposure locations, industrial facilities, shipyards, power plants, manufacturing",
+    canonicalUrl: baseUrl,
+    structuredData: {
+      "@context": "https://schema.org",
+      "@type": "WebSite",
+      "name": "Asbestos Exposure Sites Directory",
+      "description": "Comprehensive database of asbestos exposure sites across all 50 states",
+      "url": baseUrl,
+      "potentialAction": {
+        "@type": "SearchAction",
+        "target": `${baseUrl}/search?q={search_term_string}`,
+        "query-input": "required name=search_term_string"
       }
-    })
-    .from(cities)
-    .leftJoin(states, eq(cities.stateId, states.id))
-    .where(and(
-      eq(cities.slug, citySlug),
-      eq(states.slug, stateSlug)
-    ));
-    
-    return result[0];
-  }
+    }
+  };
+  
+  return { html, meta };
+}
 
-  async createCity(city: InsertCity): Promise<City> {
-    const result = await db.insert(cities).values(city).returning();
-    return result[0];
-  }
-
-  async updateCity(id: number, updates: Partial<InsertCity>): Promise<City | null> {
-    const result = await db.update(cities)
-      .set(updates)
-      .where(eq(cities.id, id))
-      .returning();
-    return result[0] || null;
-  }
-
-  async deleteCity(id: number): Promise<boolean> {
-    const result = await db.delete(cities).where(eq(cities.id, id)).returning();
-    return result.length > 0;
-  }
-
-  // Categories
-  async getCategories(): Promise<Category[]> {
-    return await db.select().from(categories);
-  }
-
-  async getCategoryById(id: number): Promise<Category | undefined> {
-    const result = await db.select().from(categories).where(eq(categories.id, id));
-    return result[0];
-  }
-
-  async getCategoryBySlug(slug: string): Promise<Category | undefined> {
-    const result = await db.select().from(categories).where(eq(categories.slug, slug));
-    return result[0];
-  }
-
-  async createCategory(category: InsertCategory): Promise<Category> {
-    const result = await db.insert(categories).values(category).returning();
-    return result[0];
-  }
-
-  async updateCategory(id: number, updates: Partial<InsertCategory>): Promise<Category | null> {
-    const result = await db.update(categories)
-      .set(updates)
-      .where(eq(categories.id, id))
-      .returning();
-    return result[0] || null;
-  }
-
-  async deleteCategory(id: number): Promise<boolean> {
-    const result = await db.delete(categories).where(eq(categories.id, id)).returning();
-    return result.length > 0;
-  }
-
-  // Facilities
-  async getFacilities(cityId?: number, limit: number = 100): Promise<Facility[]> {
-    let query = db.select().from(facilities);
-    
-    if (cityId) {
-      query = query.where(eq(facilities.cityId, cityId));
+async function generateStatePageSSR(stateSlug: string, baseUrl: string): Promise<{ html: string; meta: MetaData }> {
+  let state = null;
+  let cities: any[] = [];
+  let facilities: any[] = [];
+  
+  try {
+    state = await storage.getStateBySlug(stateSlug);
+    if (!state) {
+      return generateHomepageSSR(baseUrl);
     }
     
-    return await query.limit(limit);
+    cities = await storage.getCitiesByStateId(state.id);
+    facilities = await storage.getFacilitiesByStateId(state.id, 10); // Get top 10 facilities
+  } catch (error) {
+    console.error('Database error in state SSR:', error);
+    return generateHomepageSSR(baseUrl);
   }
-
-  async getFacilityById(id: number): Promise<Facility | undefined> {
-    const result = await db.select().from(facilities).where(eq(facilities.id, id));
-    return result[0];
-  }
-
-  async getFacilityBySlug(stateSlug: string, citySlug: string, facilitySlug: string): Promise<FacilityWithRelations | undefined> {
-    const result = await db.select({
-      id: facilities.id,
-      name: facilities.name,
-      slug: facilities.slug,
-      address: facilities.address,
-      cityId: facilities.cityId,
-      stateId: facilities.stateId,
-      categoryId: facilities.categoryId,
-      companyName: facilities.companyName,
-      description: facilities.description,
-      metaTitle: facilities.metaTitle,
-      metaDescription: facilities.metaDescription,
-      seoKeyword: facilities.seoKeyword,
-      operationalYears: facilities.operationalYears,
-      facilityType: facilities.facilityType,
-      latitude: facilities.latitude,
-      longitude: facilities.longitude,
-      createdAt: facilities.createdAt,
-      state: {
-        id: states.id,
-        name: states.name,
-        slug: states.slug,
-        facilityCount: states.facilityCount,
-        createdAt: states.createdAt
-      },
-      city: {
-        id: cities.id,
-        name: cities.name,
-        slug: cities.slug,
-        stateId: cities.stateId,
-        facilityCount: cities.facilityCount,
-        createdAt: cities.createdAt
-      },
-      category: {
-        id: categories.id,
-        name: categories.name,
-        slug: categories.slug,
-        facilityCount: categories.facilityCount,
-        createdAt: categories.createdAt
+  
+  const html = `
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="py-8">
+        <h1 class="text-4xl font-bold text-gray-900 mb-4">
+          Asbestos Exposure Sites in ${state.name}
+        </h1>
+        <p class="text-xl text-gray-600 mb-8">
+          There are ${state.facilityCount || 0} facilities for you to review across ${cities.length} cities and towns
+        </p>
+      </div>
+      
+      <div class="mb-12">
+        <h2 class="text-2xl font-bold text-gray-900 mb-6">Cities in ${state.name}</h2>
+        <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
+          ${cities.map(city => `
+            <a href="/${state.slug}/${city.slug}" class="block p-3 bg-white rounded-lg shadow hover:shadow-md transition-shadow">
+              <div class="font-medium text-gray-900">${city.name}</div>
+              <div class="text-sm text-gray-500">${city.facilityCount || 0} facilities</div>
+            </a>
+          `).join('')}
+        </div>
+      </div>
+      
+      <div class="mb-12">
+        <h2 class="text-2xl font-bold text-gray-900 mb-6">Featured Facilities in ${state.name}</h2>
+        <div class="space-y-4">
+          ${facilities.map(facility => `
+            <div class="bg-white rounded-lg shadow p-6">
+              <h3 class="text-lg font-semibold text-gray-900 mb-2">
+                <a href="/${state.slug}/${facility.city.slug}/${facility.slug}-asbestos-exposure" class="text-teal-600 hover:text-teal-800">
+                  ${facility.name}
+                </a>
+              </h3>
+              <p class="text-gray-600 mb-2">${facility.city.name}, ${state.name}</p>
+              ${facility.description ? `<p class="text-gray-700">${facility.description}</p>` : ''}
+            </div>
+          `).join('')}
+        </div>
+      </div>
+    </div>
+  `;
+  
+  const meta: MetaData = {
+    title: `Asbestos Exposure Sites in ${state.name} - ${state.facilityCount || 0} Documented Facilities`,
+    description: `Comprehensive list of asbestos exposure sites in ${state.name}. Find facilities across ${cities.length} cities where workers may have been exposed to asbestos.`,
+    keywords: `asbestos exposure ${state.name}, mesothelioma ${state.name}, asbestos sites ${state.name}, industrial facilities ${state.name}`,
+    canonicalUrl: `${baseUrl}/${state.slug}`,
+    structuredData: {
+      "@context": "https://schema.org",
+      "@type": "WebPage",
+      "name": `Asbestos Exposure Sites in ${state.name}`,
+      "description": `Comprehensive list of asbestos exposure sites in ${state.name}`,
+      "url": `${baseUrl}/${state.slug}`,
+      "mainEntity": {
+        "@type": "Dataset",
+        "name": `${state.name} Asbestos Exposure Sites`,
+        "description": `Database of ${state.facilityCount || 0} asbestos exposure facilities in ${state.name}`,
+        "creator": {
+          "@type": "Organization",
+          "name": "Asbestos Exposure Sites Directory"
+        }
       }
-    })
-    .from(facilities)
-    .leftJoin(states, eq(facilities.stateId, states.id))
-    .leftJoin(cities, eq(facilities.cityId, cities.id))
-    .leftJoin(categories, eq(facilities.categoryId, categories.id))
-    .where(and(
-      eq(facilities.slug, facilitySlug),
-      eq(cities.slug, citySlug),
-      eq(states.slug, stateSlug)
-    ));
-    
-    return result[0];
-  }
+    }
+  };
+  
+  return { html, meta };
+}
 
-  async searchFacilities(query: string, limit: number = 10): Promise<FacilityWithRelations[]> {
-    const result = await db.select({
-      id: facilities.id,
-      name: facilities.name,
-      slug: facilities.slug,
-      address: facilities.address,
-      cityId: facilities.cityId,
-      stateId: facilities.stateId,
-      categoryId: facilities.categoryId,
-      companyName: facilities.companyName,
-      description: facilities.description,
-      metaTitle: facilities.metaTitle,
-      metaDescription: facilities.metaDescription,
-      seoKeyword: facilities.seoKeyword,
-      operationalYears: facilities.operationalYears,
-      facilityType: facilities.facilityType,
-      latitude: facilities.latitude,
-      longitude: facilities.longitude,
-      createdAt: facilities.createdAt,
-      state: {
-        id: states.id,
-        name: states.name,
-        slug: states.slug,
-        facilityCount: states.facilityCount,
-        createdAt: states.createdAt
-      },
-      city: {
-        id: cities.id,
-        name: cities.name,
-        slug: cities.slug,
-        stateId: cities.stateId,
-        facilityCount: cities.facilityCount,
-        createdAt: cities.createdAt
-      },
-      category: {
-        id: categories.id,
-        name: categories.name,
-        slug: categories.slug,
-        facilityCount: categories.facilityCount,
-        createdAt: categories.createdAt
+async function generateCityPageSSR(stateSlug: string, citySlug: string, baseUrl: string): Promise<{ html: string; meta: MetaData }> {
+  let city = null;
+  let facilities: any[] = [];
+  
+  try {
+    city = await storage.getCityBySlug(stateSlug, citySlug);
+    if (!city) {
+      return generateHomepageSSR(baseUrl);
+    }
+    
+    facilities = await storage.getFacilitiesByCityId(city.id);
+  } catch (error) {
+    console.error('Database error in city SSR:', error);
+    return generateHomepageSSR(baseUrl);
+  }
+  
+  const html = `
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="py-8">
+        <h1 class="text-4xl font-bold text-gray-900 mb-4">
+          Asbestos Exposure Sites in ${city.name}, ${city.state.name}
+        </h1>
+        <p class="text-xl text-gray-600 mb-8">
+          ${city.facilityCount || 0} documented asbestos exposure facilities in ${city.name}
+        </p>
+      </div>
+      
+      <div class="space-y-6">
+        ${facilities.map(facility => `
+          <div class="bg-white rounded-lg shadow p-6">
+            <h2 class="text-xl font-semibold text-gray-900 mb-2">
+              <a href="/${stateSlug}/${citySlug}/${facility.slug}-asbestos-exposure" class="text-teal-600 hover:text-teal-800">
+                ${facility.name}
+              </a>
+            </h2>
+            <p class="text-gray-600 mb-2">${facility.address || city.name}, ${city.state.name}</p>
+            ${facility.category ? `<p class="text-sm text-gray-500 mb-2">Category: ${facility.category.name}</p>` : ''}
+            ${facility.description ? `<p class="text-gray-700 mb-4">${facility.description}</p>` : ''}
+            <a href="/${stateSlug}/${citySlug}/${facility.slug}-asbestos-exposure" class="text-teal-600 hover:text-teal-800 font-medium">
+              Learn More →
+            </a>
+          </div>
+        `).join('')}
+      </div>
+    </div>
+  `;
+  
+  const meta: MetaData = {
+    title: `Asbestos Exposure Sites in ${city.name}, ${city.state.name} - ${city.facilityCount || 0} Facilities`,
+    description: `Complete list of asbestos exposure sites in ${city.name}, ${city.state.name}. Find facilities where workers may have been exposed to asbestos-containing materials.`,
+    keywords: `asbestos exposure ${city.name}, mesothelioma ${city.name}, asbestos sites ${city.name} ${city.state.name}, industrial facilities ${city.name}`,
+    canonicalUrl: `${baseUrl}/${stateSlug}/${citySlug}`,
+    structuredData: {
+      "@context": "https://schema.org",
+      "@type": "WebPage",
+      "name": `Asbestos Exposure Sites in ${city.name}, ${city.state.name}`,
+      "description": `Complete list of asbestos exposure sites in ${city.name}, ${city.state.name}`,
+      "url": `${baseUrl}/${stateSlug}/${citySlug}`,
+      "mainEntity": {
+        "@type": "Dataset",
+        "name": `${city.name} Asbestos Exposure Sites`,
+        "description": `Database of ${city.facilityCount || 0} asbestos exposure facilities in ${city.name}, ${city.state.name}`
       }
-    })
-    .from(facilities)
-    .leftJoin(states, eq(facilities.stateId, states.id))
-    .leftJoin(cities, eq(facilities.cityId, cities.id))
-    .leftJoin(categories, eq(facilities.categoryId, categories.id))
-    .where(like(facilities.name, `%${query}%`))
-    .limit(limit);
-    
-    return result;
-  }
-
-  async createFacility(facility: InsertFacility): Promise<Facility> {
-    const result = await db.insert(facilities).values(facility).returning();
-    return result[0];
-  }
-
-  async updateFacility(id: number, updates: Partial<InsertFacility>): Promise<Facility | null> {
-    const result = await db.update(facilities)
-      .set(updates)
-      .where(eq(facilities.id, id))
-      .returning();
-    return result[0] || null;
-  }
-
-  async deleteFacility(id: number): Promise<boolean> {
-    const result = await db.delete(facilities).where(eq(facilities.id, id)).returning();
-    return result.length > 0;
-  }
-
-  // Contact Submissions
-  async getContactSubmissions(facilityId?: number, limit: number = 50): Promise<ContactSubmission[]> {
-    let query = db.select().from(contactSubmissions);
-    
-    if (facilityId) {
-      query = query.where(eq(contactSubmissions.facilityId, facilityId));
     }
-    
-    return await query.limit(limit);
-  }
+  };
+  
+  return { html, meta };
+}
 
-  async getContactSubmissionById(id: number): Promise<ContactSubmission | undefined> {
-    const result = await db.select().from(contactSubmissions).where(eq(contactSubmissions.id, id));
-    return result[0];
-  }
-
-  async createContactSubmission(submission: InsertContactSubmission): Promise<ContactSubmission> {
-    const result = await db.insert(contactSubmissions).values(submission).returning();
-    return result[0];
-  }
-
-  async updateContactSubmission(id: number, updates: Partial<ContactSubmission>): Promise<ContactSubmission | null> {
-    const result = await db.update(contactSubmissions)
-      .set(updates)
-      .where(eq(contactSubmissions.id, id))
-      .returning();
-    return result[0] || null;
-  }
-
-  async deleteContactSubmission(id: number): Promise<boolean> {
-    const result = await db.delete(contactSubmissions).where(eq(contactSubmissions.id, id)).returning();
-    return result.length > 0;
-  }
-
-  // Content Templates
-  async getContentTemplates(templateType?: string): Promise<ContentTemplate[]> {
-    let query = db.select().from(contentTemplates);
-    
-    if (templateType) {
-      query = query.where(eq(contentTemplates.templateType, templateType));
+async function generateFacilityPageSSR(stateSlug: string, citySlug: string, facilitySlug: string, baseUrl: string): Promise<{ html: string; meta: MetaData }> {
+  let facility = null;
+  
+  try {
+    facility = await storage.getFacilityBySlug(stateSlug, citySlug, facilitySlug);
+    if (!facility) {
+      return generateHomepageSSR(baseUrl);
     }
-    
-    return await query;
+  } catch (error) {
+    console.error('Database error in facility SSR:', error);
+    return generateHomepageSSR(baseUrl);
   }
-
-  async getContentTemplateByName(templateName: string): Promise<ContentTemplate | undefined> {
-    const result = await db.select().from(contentTemplates).where(eq(contentTemplates.templateName, templateName));
-    return result[0];
-  }
-
-  async createContentTemplate(template: InsertContentTemplate): Promise<ContentTemplate> {
-    const result = await db.insert(contentTemplates).values(template).returning();
-    return result[0];
-  }
-
-  async updateContentTemplate(id: number, updates: Partial<InsertContentTemplate>): Promise<ContentTemplate | null> {
-    const result = await db.update(contentTemplates)
-      .set(updates)
-      .where(eq(contentTemplates.id, id))
-      .returning();
-    return result[0] || null;
-  }
-
-  async deleteContentTemplate(id: number): Promise<boolean> {
-    const result = await db.delete(contentTemplates).where(eq(contentTemplates.id, id)).returning();
-    return result.length > 0;
-  }
-
-  // Facility Proximity
-  async getFacilityProximity(facilityId: number, limit: number = 10): Promise<FacilityProximity[]> {
-    return await db
-      .select()
-      .from(facilityProximity)
-      .where(eq(facilityProximity.facilityId, facilityId))
-      .orderBy(asc(facilityProximity.distance))
-      .limit(limit);
-  }
-
-  async getNearbyFacilitiesWithDistance(facilityId: number, limit: number = 5): Promise<FacilityWithRelations[]> {
-    const proximityData = await db
-      .select({
-        facility: facilities,
-        state: states,
-        city: cities,
-        category: categories,
-        distance: facilityProximity.distance,
-      })
-      .from(facilityProximity)
-      .innerJoin(facilities, eq(facilityProximity.nearbyFacilityId, facilities.id))
-      .innerJoin(states, eq(facilities.stateId, states.id))
-      .innerJoin(cities, eq(facilities.cityId, cities.id))
-      .leftJoin(categories, eq(facilities.categoryId, categories.id))
-      .where(eq(facilityProximity.facilityId, facilityId))
-      .orderBy(asc(facilityProximity.distance))
-      .limit(limit);
-
-    return proximityData.map(row => ({
-      ...row.facility,
-      state: row.state,
-      city: row.city,
-      category: row.category ? row.category : undefined,
-    }));
-  }
-
-  async createFacilityProximity(insertProximity: InsertFacilityProximity): Promise<FacilityProximity> {
-    const [proximity] = await db
-      .insert(facilityProximity)
-      .values(insertProximity)
-      .returning();
-    return proximity;
-  }
-
-  async calculateAndStoreProximity(facilityId: number): Promise<void> {
-    // Get the facility for which we're calculating proximity
-    const [facility] = await db
-      .select()
-      .from(facilities)
-      .where(eq(facilities.id, facilityId));
-    
-    if (!facility || !facility.latitude || !facility.longitude) {
-      return;
-    }
-
-    // Get all other facilities in the same state with coordinates
-    const otherFacilities = await db
-      .select()
-      .from(facilities)
-      .where(and(
-        eq(facilities.stateId, facility.stateId),
-        sql`${facilities.id} != ${facilityId}`,
-        sql`${facilities.latitude} IS NOT NULL`,
-        sql`${facilities.longitude} IS NOT NULL`
-      ));
-
-    // Calculate distances and store proximity data
-    const proximityData: InsertFacilityProximity[] = [];
-    
-    for (const otherFacility of otherFacilities) {
-      if (otherFacility.latitude && otherFacility.longitude) {
-        const distance = this.calculateDistance(
-          parseFloat(facility.latitude),
-          parseFloat(facility.longitude),
-          parseFloat(otherFacility.latitude),
-          parseFloat(otherFacility.longitude)
-        );
+  
+  const html = `
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="py-8">
+        <h1 class="text-4xl font-bold text-gray-900 mb-4">
+          ${facility.name} - Asbestos Exposure Site
+        </h1>
+        <p class="text-xl text-gray-600 mb-2">${facility.address || facility.city.name}, ${facility.state.name}</p>
+        ${facility.category ? `<p class="text-lg text-gray-500 mb-8">Category: ${facility.category.name}</p>` : ''}
+      </div>
+      
+      <div class="bg-white rounded-lg shadow p-8 mb-8">
+        <h2 class="text-2xl font-bold text-gray-900 mb-4">About This Facility</h2>
+        ${facility.description ? `<p class="text-gray-700 mb-4">${facility.description}</p>` : ''}
         
-        proximityData.push({
-          facilityId: facilityId,
-          nearbyFacilityId: otherFacility.id,
-          distance: distance
-        });
-      }
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+          <div>
+            <h3 class="text-lg font-semibold text-gray-900 mb-2">Location Details</h3>
+            <p class="text-gray-600">City: ${facility.city.name}</p>
+            <p class="text-gray-600">State: ${facility.state.name}</p>
+            ${facility.address ? `<p class="text-gray-600">Address: ${facility.address}</p>` : ''}
+            ${facility.county ? `<p class="text-gray-600">County: ${facility.county}</p>` : ''}
+          </div>
+          
+          <div>
+            <h3 class="text-lg font-semibold text-gray-900 mb-2">Facility Information</h3>
+            ${facility.category ? `<p class="text-gray-600">Type: ${facility.category.name}</p>` : ''}
+            ${facility.companyName ? `<p class="text-gray-600">Company: ${facility.companyName}</p>` : ''}
+            ${facility.operationalPeriod ? `<p class="text-gray-600">Operational Period: ${facility.operationalPeriod}</p>` : ''}
+            ${facility.exposureRisk ? `<p class="text-gray-600">Exposure Risk: ${facility.exposureRisk}</p>` : ''}
+          </div>
+        </div>
+        
+        ${facility.historicalDescription ? `
+        <div class="mb-6">
+          <h3 class="text-lg font-semibold text-gray-900 mb-2">Historical Information</h3>
+          <p class="text-gray-700">${facility.historicalDescription}</p>
+        </div>
+        ` : ''}
+        
+        <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-6">
+          <h3 class="text-lg font-semibold text-yellow-800 mb-2">Important Information</h3>
+          <p class="text-yellow-700">
+            If you worked at this facility and have been diagnosed with mesothelioma, lung cancer, or other asbestos-related diseases, 
+            you may be entitled to compensation. Contact a qualified attorney to discuss your legal options.
+          </p>
+        </div>
+      </div>
+      
+      <div class="bg-teal-50 border border-teal-200 rounded-lg p-8">
+        <h2 class="text-2xl font-bold text-teal-900 mb-4">Get Legal Help</h2>
+        <p class="text-teal-700 mb-4">
+          If you were exposed to asbestos at this facility, you may be entitled to compensation. 
+          Our legal partners specialize in asbestos litigation and can help you understand your rights.
+        </p>
+        <a href="/legal-help" class="inline-block bg-teal-600 text-white px-6 py-3 rounded-lg font-medium hover:bg-teal-700 transition-colors">
+          Get Free Legal Consultation
+        </a>
+      </div>
+    </div>
+  `;
+  
+  const meta: MetaData = {
+    title: `${facility.name} - Asbestos Exposure Site in ${facility.city.name}, ${facility.state.name}`,
+    description: `Information about asbestos exposure at ${facility.name} in ${facility.city.name}, ${facility.state.name}. Learn about potential health risks and legal options for workers.`,
+    keywords: `${facility.name} asbestos, ${facility.name} mesothelioma, asbestos exposure ${facility.city.name}, ${facility.name} ${facility.state.name}`,
+    canonicalUrl: `${baseUrl}/${stateSlug}/${citySlug}/${facilitySlug}-asbestos-exposure`,
+    structuredData: {
+      "@context": "https://schema.org",
+      "@type": "Place",
+      "name": `${facility.name}`,
+      "description": `Asbestos exposure site in ${facility.city.name}, ${facility.state.name}`,
+      "address": {
+        "@type": "PostalAddress",
+        "addressLocality": facility.city.name,
+        "addressRegion": facility.state.name,
+        "addressCountry": "US"
+      },
+      "url": `${baseUrl}/${stateSlug}/${citySlug}/${facilitySlug}-asbestos-exposure`
     }
-
-    // Sort by distance and take only the closest 20
-    proximityData.sort((a, b) => a.distance - b.distance);
-    const closestFacilities = proximityData.slice(0, 20);
-
-    // Delete existing proximity data for this facility
-    await db
-      .delete(facilityProximity)
-      .where(eq(facilityProximity.facilityId, facilityId));
-
-    // Insert new proximity data
-    if (closestFacilities.length > 0) {
-      await db
-        .insert(facilityProximity)
-        .values(closestFacilities);
-    }
-  }
-
-  private calculateDistance(lat1: number, lon1: number, lat2: number, lon2: number): number {
-    const R = 3959; // Earth's radius in miles
-    const dLat = (lat2 - lat1) * Math.PI / 180;
-    const dLon = (lon2 - lon1) * Math.PI / 180;
-    const a = 
-      Math.sin(dLat/2) * Math.sin(dLat/2) +
-      Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * 
-      Math.sin(dLon/2) * Math.sin(dLon/2);
-    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
-    return R * c;
-  }
+  };
+  
+  return { html, meta };
 }
-
-export const storage = new DatabaseStorage();
