@@ -29,20 +29,98 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     const userAgent = req.headers['user-agent'] || '';
     const isBot = /bot|crawler|spider|crawling/i.test(userAgent);
     
-    // Only serve SSR for bots/crawlers, redirect users to React app
+    // For human users, serve a basic HTML page that makes API calls
     if (!isBot) {
-      // For human users, serve the React app
+      // Generate basic SEO metadata for the current page
+      const ssrContent = await generateSSRContent(req);
+      
       const htmlTemplate = `
         <!DOCTYPE html>
         <html lang="en">
           <head>
             <meta charset="UTF-8">
             <meta name="viewport" content="width=device-width, initial-scale=1.0">
-            <title>Asbestos Exposure Sites Directory</title>
-            <script type="module" src="/src/main.tsx"></script>
+            <title>${ssrContent.meta.title}</title>
+            <meta name="description" content="${ssrContent.meta.description}">
+            <meta name="keywords" content="${ssrContent.meta.keywords}">
+            <link rel="canonical" href="${ssrContent.meta.canonicalUrl}">
+            
+            <!-- Open Graph Tags -->
+            <meta property="og:title" content="${ssrContent.meta.title}">
+            <meta property="og:description" content="${ssrContent.meta.description}">
+            <meta property="og:url" content="${ssrContent.meta.canonicalUrl}">
+            <meta property="og:type" content="website">
+            
+            <!-- Twitter Cards -->
+            <meta name="twitter:card" content="summary_large_image">
+            <meta name="twitter:title" content="${ssrContent.meta.title}">
+            <meta name="twitter:description" content="${ssrContent.meta.description}">
+            
+            <!-- Tailwind CSS -->
+            <script src="https://cdn.tailwindcss.com"></script>
+            <style>
+              body { font-family: 'Inter', sans-serif; }
+              .loading { animation: pulse 2s infinite; }
+            </style>
           </head>
-          <body>
-            <div id="root"></div>
+          <body class="bg-gray-50">
+            <div class="min-h-screen">
+              <!-- Header -->
+              <header class="bg-white shadow-sm border-b">
+                <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+                  <div class="flex items-center justify-between">
+                    <h1 class="text-2xl font-bold text-gray-900">Asbestos Exposure Sites Directory</h1>
+                    <div class="text-sm text-gray-600">87,000+ Documented Locations</div>
+                  </div>
+                </div>
+              </header>
+
+              <!-- Main Content -->
+              <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+                <div class="text-center">
+                  <h2 class="text-3xl font-bold text-gray-900 mb-4">${ssrContent.meta.title}</h2>
+                  <p class="text-lg text-gray-600 mb-8">${ssrContent.meta.description}</p>
+                  
+                  <!-- Loading State -->
+                  <div class="loading bg-white p-8 rounded-lg shadow-sm">
+                    <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto mb-4"></div>
+                    <p class="text-gray-600">Loading directory data...</p>
+                  </div>
+                </div>
+              </main>
+
+              <!-- Footer -->
+              <footer class="bg-gray-900 text-white py-8 mt-16">
+                <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+                  <p>&copy; 2024 Asbestos Exposure Sites Directory. All rights reserved.</p>
+                </div>
+              </footer>
+            </div>
+
+            <!-- JavaScript to load dynamic content -->
+            <script>
+              // Load dynamic content via API
+              fetch('/api/states')
+                .then(response => response.json())
+                .then(data => {
+                  // Replace loading with actual content
+                  document.querySelector('.loading').innerHTML = 
+                    '<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">' +
+                    data.map(state => 
+                      '<div class="bg-white p-6 rounded-lg shadow-sm hover:shadow-md transition-shadow">' +
+                      '<h3 class="text-xl font-semibold text-gray-900 mb-2">' + state.name + '</h3>' +
+                      '<p class="text-gray-600">' + state.facilityCount + ' facilities</p>' +
+                      '<a href="/' + state.slug + '" class="text-blue-600 hover:text-blue-800 font-medium">View Details →</a>' +
+                      '</div>'
+                    ).join('') +
+                    '</div>';
+                })
+                .catch(error => {
+                  console.error('Error loading data:', error);
+                  document.querySelector('.loading').innerHTML = 
+                    '<p class="text-red-600">Unable to load directory data. Please try again later.</p>';
+                });
+            </script>
           </body>
         </html>
       `;
