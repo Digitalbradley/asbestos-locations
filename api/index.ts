@@ -410,7 +410,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         
         if (facility.length > 0) {
           const whereClause = and(
-            eq(schema.facilities.categoryId, facility[0].categoryId),
+            facility[0].categoryId ? eq(schema.facilities.categoryId, facility[0].categoryId) : undefined,
             ne(schema.facilities.id, facilityId)
           );
           
@@ -441,7 +441,17 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         }
 
         // Qualify the lead
-        const qualification = await qualifyLead(req.body);
+        const qualification = qualifyLead(
+          req.body.name,
+          req.body.email,
+          req.body.phone,
+          req.body.inquiryType || 'facility-inquiry',
+          req.body.message,
+          req.body.exposure || undefined,
+          req.body.diagnosis || undefined,
+          req.body.pathologyReport || undefined,
+          req.body.diagnosisTimeline || undefined
+        );
         
         // Generate subject based on diagnosis
         const generateSubject = (originalSubject: string, diagnosis: string | null) => {
@@ -504,7 +514,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         const googleSheetsService = createGoogleSheetsService();
         if (googleSheetsService) {
           try {
-            await googleSheetsService.addLead(submission[0]);
+            await googleSheetsService.addLeadToSheet(submission[0]);
             console.log(`Lead ${submission[0].id} added to Google Sheets with qualification data`);
           } catch (sheetsError) {
             console.error('Failed to add lead to Google Sheets:', sheetsError);
