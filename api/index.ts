@@ -460,8 +460,8 @@ console.log('Google Sheets integration successful');
   console.error('Contact form error:', error);
   res.status(500).json({ message: 'Failed to submit contact form' });
   return;
-} }
-  
+} 
+}
     // Handle content templates
     if (path?.startsWith('/api/content-templates/')) {
       const pathParts = path.split('/');
