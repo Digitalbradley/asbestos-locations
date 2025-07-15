@@ -224,8 +224,18 @@ async function generateSSRContent(req: VercelRequest): Promise<SSRResponse> {
 }
 
 async function generateHomepageSSR(baseUrl: string): Promise<SSRResponse> {
-  let states: typeof schema.states.$inferSelect[] = [];
-  let categories: typeof schema.categories.$inferSelect[] = [];
+  let states: Array<{
+    id: number;
+    name: string;
+    slug: string;
+    facilityCount: number | null;
+  }> = [];
+  let categories: Array<{
+    id: number;
+    name: string;
+    slug: string;
+    facilityCount: number | null;
+  }> = [];
   
   try {
     // Fetch states with facility counts
