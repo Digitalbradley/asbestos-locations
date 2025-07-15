@@ -345,7 +345,7 @@ export class DatabaseStorage implements IStorage {
     .leftJoin(states, eq(facilities.stateId, states.id))
     .leftJoin(cities, eq(facilities.cityId, cities.id))
     .leftJoin(categories, eq(facilities.categoryId, categories.id))
-    .where(like(facilities.name, \`%\${query}%\`))
+    .where(like(facilities.name, `%${query}%`))
     .limit(limit);
     
     return result;
@@ -498,9 +498,9 @@ export class DatabaseStorage implements IStorage {
       .from(facilities)
       .where(and(
         eq(facilities.stateId, facility.stateId),
-        sql\`\${facilities.id} != \${facilityId}\`,
-        sql\`\${facilities.latitude} IS NOT NULL\`,
-        sql\`\${facilities.longitude} IS NOT NULL\`
+        sql`${facilities.id} != ${facilityId}`,
+        sql`${facilities.latitude} IS NOT NULL`,
+        sql`${facilities.longitude} IS NOT NULL`
       ));
 
     // Calculate distances and store proximity data
