@@ -1,5 +1,6 @@
 import { storage } from "./storage";
 import type { Request } from "express";
+import type { State, Category, StateWithCities, CityWithState, FacilityWithRelations } from "../shared/schema";
 
 interface MetaData {
   title: string;
@@ -7,41 +8,6 @@ interface MetaData {
   keywords: string;
   canonicalUrl: string;
   structuredData?: any;
-}
-
-// Add proper types for your database objects
-interface State {
-  id: number;
-  name: string;
-  slug: string;
-  facilityCount: number;
-}
-
-interface Category {
-  id: number;
-  name: string;
-  slug: string;
-  facilityCount: number;
-}
-
-interface City {
-  id: number;
-  name: string;
-  slug: string;
-  facilityCount: number;
-  state: State;
-}
-
-interface Facility {
-  id: number;
-  name: string;
-  slug: string;
-  description?: string;
-  address?: string;
-  companyName?: string;
-  city: City;
-  state: State;
-  category?: Category;
 }
 
 export async function generateSSRContent(req: Request): Promise<{ html: string; meta: MetaData }> {
@@ -130,7 +96,7 @@ async function generateHomepageSSR(baseUrl: string): Promise<{ html: string; met
           ${states.map(state => `
             <a href="/${state.slug}" class="block p-3 bg-white rounded-lg shadow hover:shadow-md transition-shadow">
               <div class="font-medium text-gray-900">${state.name}</div>
-              <div class="text-sm text-gray-500">${state.facilityCount} facilities</div>
+              <div class="text-sm text-gray-500">${state.facilityCount || 0} facilities</div>
             </a>
           `).join('')}
         </div>
@@ -142,7 +108,7 @@ async function generateHomepageSSR(baseUrl: string): Promise<{ html: string; met
           ${categories.map(category => `
             <a href="/facility-types/${category.slug}" class="block p-3 bg-white rounded-lg shadow hover:shadow-md transition-shadow">
               <div class="font-medium text-gray-900">${category.name}</div>
-              <div class="text-sm text-gray-500">${category.facilityCount} facilities</div>
+              <div class="text-sm text-gray-500">${category.facilityCount || 0} facilities</div>
             </a>
           `).join('')}
         </div>
@@ -173,9 +139,9 @@ async function generateHomepageSSR(baseUrl: string): Promise<{ html: string; met
 }
 
 async function generateStatePageSSR(stateSlug: string, baseUrl: string): Promise<{ html: string; meta: MetaData }> {
-  let state: State | null = null;
-  let cities: City[] = [];
-  let facilities: Facility[] = [];
+  let state: StateWithCities | null = null;
+  let cities: any[] = [];
+  let facilities: FacilityWithRelations[] = [];
   
   try {
     state = await storage.getStateBySlug(stateSlug);
@@ -197,7 +163,7 @@ async function generateStatePageSSR(stateSlug: string, baseUrl: string): Promise
           Asbestos Exposure Sites in ${state.name}
         </h1>
         <p class="text-xl text-gray-600 mb-8">
-          There are ${state.facilityCount} facilities for you to review across ${cities.length} cities and towns
+          There are ${state.facilityCount || 0} facilities for you to review across ${cities.length} cities and towns
         </p>
       </div>
       
@@ -207,7 +173,7 @@ async function generateStatePageSSR(stateSlug: string, baseUrl: string): Promise
           ${cities.map(city => `
             <a href="/${state.slug}/${city.slug}" class="block p-3 bg-white rounded-lg shadow hover:shadow-md transition-shadow">
               <div class="font-medium text-gray-900">${city.name}</div>
-              <div class="text-sm text-gray-500">${city.facilityCount} facilities</div>
+              <div class="text-sm text-gray-500">${city.facilityCount || 0} facilities</div>
             </a>
           `).join('')}
         </div>
@@ -233,7 +199,7 @@ async function generateStatePageSSR(stateSlug: string, baseUrl: string): Promise
   `;
   
   const meta: MetaData = {
-    title: `Asbestos Exposure Sites in ${state.name} - ${state.facilityCount} Documented Facilities`,
+    title: `Asbestos Exposure Sites in ${state.name} - ${state.facilityCount || 0} Documented Facilities`,
     description: `Comprehensive list of asbestos exposure sites in ${state.name}. Find facilities across ${cities.length} cities where workers may have been exposed to asbestos.`,
     keywords: `asbestos exposure ${state.name}, mesothelioma ${state.name}, asbestos sites ${state.name}, industrial facilities ${state.name}`,
     canonicalUrl: `${baseUrl}/${state.slug}`,
@@ -246,7 +212,7 @@ async function generateStatePageSSR(stateSlug: string, baseUrl: string): Promise
       "mainEntity": {
         "@type": "Dataset",
         "name": `${state.name} Asbestos Exposure Sites`,
-        "description": `Database of ${state.facilityCount} asbestos exposure facilities in ${state.name}`,
+        "description": `Database of ${state.facilityCount || 0} asbestos exposure facilities in ${state.name}`,
         "creator": {
           "@type": "Organization",
           "name": "Asbestos Exposure Sites Directory"
@@ -259,8 +225,8 @@ async function generateStatePageSSR(stateSlug: string, baseUrl: string): Promise
 }
 
 async function generateCityPageSSR(stateSlug: string, citySlug: string, baseUrl: string): Promise<{ html: string; meta: MetaData }> {
-  let city: City | null = null;
-  let facilities: Facility[] = [];
+  let city: CityWithState | null = null;
+  let facilities: FacilityWithRelations[] = [];
   
   try {
     city = await storage.getCityBySlug(stateSlug, citySlug);
@@ -281,7 +247,7 @@ async function generateCityPageSSR(stateSlug: string, citySlug: string, baseUrl:
           Asbestos Exposure Sites in ${city.name}, ${city.state.name}
         </h1>
         <p class="text-xl text-gray-600 mb-8">
-          ${city.facilityCount} documented asbestos exposure facilities in ${city.name}
+          ${city.facilityCount || 0} documented asbestos exposure facilities in ${city.name}
         </p>
       </div>
       
@@ -306,7 +272,7 @@ async function generateCityPageSSR(stateSlug: string, citySlug: string, baseUrl:
   `;
   
   const meta: MetaData = {
-    title: `Asbestos Exposure Sites in ${city.name}, ${city.state.name} - ${city.facilityCount} Facilities`,
+    title: `Asbestos Exposure Sites in ${city.name}, ${city.state.name} - ${city.facilityCount || 0} Facilities`,
     description: `Complete list of asbestos exposure sites in ${city.name}, ${city.state.name}. Find facilities where workers may have been exposed to asbestos-containing materials.`,
     keywords: `asbestos exposure ${city.name}, mesothelioma ${city.name}, asbestos sites ${city.name} ${city.state.name}, industrial facilities ${city.name}`,
     canonicalUrl: `${baseUrl}/${stateSlug}/${citySlug}`,
@@ -319,7 +285,7 @@ async function generateCityPageSSR(stateSlug: string, citySlug: string, baseUrl:
       "mainEntity": {
         "@type": "Dataset",
         "name": `${city.name} Asbestos Exposure Sites`,
-        "description": `Database of ${city.facilityCount} asbestos exposure facilities in ${city.name}, ${city.state.name}`
+        "description": `Database of ${city.facilityCount || 0} asbestos exposure facilities in ${city.name}, ${city.state.name}`
       }
     }
   };
@@ -328,7 +294,7 @@ async function generateCityPageSSR(stateSlug: string, citySlug: string, baseUrl:
 }
 
 async function generateFacilityPageSSR(stateSlug: string, citySlug: string, facilitySlug: string, baseUrl: string): Promise<{ html: string; meta: MetaData }> {
-  let facility: Facility | null = null;
+  let facility: FacilityWithRelations | null = null;
   
   try {
     facility = await storage.getFacilityBySlug(stateSlug, citySlug, facilitySlug);
