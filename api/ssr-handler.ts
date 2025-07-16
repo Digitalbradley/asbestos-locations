@@ -129,37 +129,95 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             </div>
           `;
         }
-        } else if (pathSegments.length === 2) {
-        // Simple hardcoded city test
+      } else if (pathSegments.length === 2) {
+        // Real city page with API calls
         const [stateSlug, citySlug] = pathSegments;
         
-        pageTitle = `Test City Page - ${citySlug}`;
-        pageDescription = `Test description for ${citySlug}`;
-        
-        ssrContent = `
-          <div style="max-width: 1200px; margin: 0 auto; padding: 20px;">
-            <nav style="margin-bottom: 1rem;">
-              <a href="/" style="color: #0066cc;">Home</a> > 
-              <a href="/${stateSlug}" style="color: #0066cc;">${stateSlug}</a> > 
-              ${citySlug}
-            </nav>
+        try {
+          // Get city data
+          const cityResponse = await fetch(`${baseUrl}/api/cities/${stateSlug}/${citySlug}`);
+          const cityData = await cityResponse.json();
+          
+          if (cityData && !cityData.message) {
+            // Get facilities for this city
+            const facilitiesResponse = await fetch(`${baseUrl}/api/cities/${stateSlug}/${citySlug}/facilities`);
+            const facilities = await facilitiesResponse.json();
             
-            <h1 style="font-size: 2.5rem; margin-bottom: 1rem;">Test City Page: ${citySlug}</h1>
-            <p style="font-size: 1.25rem; margin-bottom: 2rem;">
-              This is a test page for ${stateSlug}/${citySlug}
-            </p>
+            pageTitle = `Asbestos Exposure Sites in ${cityData.name}, ${cityData.state.name} - ${cityData.facilityCount || 0} Facilities`;
+            pageDescription = `Complete list of asbestos exposure sites in ${cityData.name}, ${cityData.state.name}. Find facilities where workers may have been exposed to asbestos-containing materials.`;
             
-            <div style="background: #e0f2fe; padding: 20px; border-radius: 8px; margin-bottom: 2rem;">
-              <h2 style="margin-bottom: 1rem;">🎯 Routing Test Success!</h2>
-              <p><strong>State:</strong> ${stateSlug}</p>
-              <p><strong>City:</strong> ${citySlug}</p>
-              <p><strong>Path Segments:</strong> ${pathSegments.length}</p>
-              <p>If you see this, the city-level routing is working correctly!</p>
+            ssrContent = `
+              <div style="max-width: 1200px; margin: 0 auto; padding: 20px;">
+                <nav style="margin-bottom: 1rem;">
+                  <a href="/" style="color: #0066cc;">Home</a> > 
+                  <a href="/${cityData.state.slug}" style="color: #0066cc;">${cityData.state.name}</a> > 
+                  ${cityData.name}
+                </nav>
+                
+                <h1 style="font-size: 2.5rem; margin-bottom: 1rem;">Asbestos Exposure Sites in ${cityData.name}, ${cityData.state.name}</h1>
+                <p style="font-size: 1.25rem; margin-bottom: 2rem;">
+                  ${cityData.facilityCount || 0} documented asbestos exposure facilities in ${cityData.name}
+                </p>
+                
+                <div style="margin-bottom: 2rem;">
+                  <h2 style="font-size: 2rem; margin-bottom: 1rem;">About Asbestos Exposure in ${cityData.name}</h2>
+                  <p style="line-height: 1.6; margin-bottom: 1rem;">
+                    ${cityData.name}, ${cityData.state.name} has ${cityData.facilityCount || 0} documented asbestos exposure sites. These facilities represent decades of industrial activity where workers may have encountered asbestos-containing materials across various industries including manufacturing, construction, shipbuilding, and power generation.
+                  </p>
+                  <p style="line-height: 1.6; margin-bottom: 1rem;">
+                    Workers in ${cityData.name} facilities were exposed to asbestos through various applications including insulation, fireproofing materials, gaskets, and construction products. This directory provides detailed information about exposure sites to help individuals and legal professionals identify relevant exposure locations for mesothelioma and other asbestos-related disease cases.
+                  </p>
+                </div>
+                
+                <div style="margin-bottom: 2rem;">
+                  <h2 style="font-size: 2rem; margin-bottom: 1rem;">Asbestos Exposure Facilities in ${cityData.name}</h2>
+                  <div style="display: grid; gap: 1rem;">
+                    ${Array.isArray(facilities) && facilities.length > 0 ? facilities.map(facility => `
+                      <div style="background: white; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); padding: 1.5rem;">
+                        <h3 style="font-size: 1.25rem; font-weight: bold; margin-bottom: 0.5rem;">
+                          <a href="/${cityData.state.slug}/${cityData.slug}/${facility.slug}-asbestos-exposure" style="color: #0891b2; text-decoration: none;">
+                            ${facility.name}
+                          </a>
+                        </h3>
+                        <p style="color: #666; margin-bottom: 0.5rem;">${facility.address || `${cityData.name}, ${cityData.state.name}`}</p>
+                        ${facility.category ? `<p style="color: #888; font-size: 0.9rem; margin-bottom: 0.5rem;">Category: ${facility.category.name}</p>` : ''}
+                        ${facility.description ? `<p style="color: #333; line-height: 1.6; margin-bottom: 1rem;">${facility.description}</p>` : ''}
+                        <a href="/${cityData.state.slug}/${cityData.slug}/${facility.slug}-asbestos-exposure" style="color: #0891b2; font-weight: 500; text-decoration: none;">
+                          Learn More →
+                        </a>
+                      </div>
+                    `).join('') : '<p style="color: #666;">No facilities found for this city.</p>'}
+                  </div>
+                </div>
+                
+                <div style="background: #fef3c7; border: 1px solid #f59e0b; border-radius: 8px; padding: 1.5rem; margin-bottom: 2rem;">
+                  <h3 style="font-size: 1.25rem; font-weight: bold; color: #92400e; margin-bottom: 0.5rem;">Important Information</h3>
+                  <p style="color: #92400e; line-height: 1.6;">
+                    If you worked at any of these facilities in ${cityData.name} and have been diagnosed with mesothelioma, lung cancer, or other asbestos-related diseases, 
+                    you may be entitled to compensation. Contact a qualified attorney to discuss your legal options.
+                  </p>
+                </div>
+              </div>
+            `;
+          } else {
+            ssrContent = `
+              <div style="max-width: 1200px; margin: 0 auto; padding: 20px; text-align: center;">
+                <h1>City Not Found</h1>
+                <p>The requested city could not be found.</p>
+                <a href="/" style="color: #0066cc;">Return to Homepage</a>
+              </div>
+            `;
+          }
+        } catch (apiError) {
+          console.error('City API Error:', apiError);
+          ssrContent = `
+            <div style="max-width: 1200px; margin: 0 auto; padding: 20px; text-align: center;">
+              <h1>Error Loading City Data</h1>
+              <p>Unable to load city information. Please try again later.</p>
+              <a href="/" style="color: #0066cc;">Return to Homepage</a>
             </div>
-            
-            <p>Next step: Replace this with real API calls to get city data and facilities.</p>
-          </div>
-        `;
+          `;
+        }
       } else {
         // Other pages - basic fallback
         ssrContent = `
