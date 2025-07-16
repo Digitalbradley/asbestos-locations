@@ -1,4 +1,4 @@
-import { storage } from "./storage";
+import { storage } from "../server/storage";
 import type { Request } from "express";
 import type { State, Category, StateWithCities, CityWithState, FacilityWithRelations } from "../shared/schema";
 
