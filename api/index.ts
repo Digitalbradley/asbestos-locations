@@ -363,6 +363,12 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
     // Handle city facilities route
     if (path?.startsWith('/api/cities/') && path.includes('/facilities')) {
+      console.log('🎯 CITY FACILITIES ROUTE HANDLER TRIGGERED');
+      const pathParts = path.split('/');
+      const stateSlug = pathParts[3];
+      const citySlug = pathParts[4];
+      
+      if (stateSlug && citySlug) {
       const pathParts = path.split('/');
       const stateSlug = pathParts[3];
       const citySlug = pathParts[4];
