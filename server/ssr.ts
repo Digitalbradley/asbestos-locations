@@ -139,7 +139,7 @@ async function generateHomepageSSR(baseUrl: string): Promise<{ html: string; met
 }
 
 async function generateStatePageSSR(stateSlug: string, baseUrl: string): Promise<{ html: string; meta: MetaData }> {
-  let state: StateWithCities | null = null;
+  let state: StateWithCities | undefined = undefined;
   let cities: any[] = [];
   let facilities: FacilityWithRelations[] = [];
   
@@ -225,7 +225,7 @@ async function generateStatePageSSR(stateSlug: string, baseUrl: string): Promise
 }
 
 async function generateCityPageSSR(stateSlug: string, citySlug: string, baseUrl: string): Promise<{ html: string; meta: MetaData }> {
-  let city: CityWithState | null = null;
+  let city: CityWithState | undefined = undefined;
   let facilities: FacilityWithRelations[] = [];
   
   try {
@@ -294,7 +294,7 @@ async function generateCityPageSSR(stateSlug: string, citySlug: string, baseUrl:
 }
 
 async function generateFacilityPageSSR(stateSlug: string, citySlug: string, facilitySlug: string, baseUrl: string): Promise<{ html: string; meta: MetaData }> {
-  let facility: FacilityWithRelations | null = null;
+  let facility: FacilityWithRelations | undefined = undefined;
   
   try {
     facility = await storage.getFacilityBySlug(stateSlug, citySlug, facilitySlug);
