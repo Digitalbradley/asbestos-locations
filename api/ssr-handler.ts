@@ -219,82 +219,95 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
           `;
         }
 
-} else if (pathSegments.length === 3) {
-  // Facility page: /florida/jacksonville/facility-name-asbestos-exposure
-  const [stateSlug, citySlug, facilitySlugWithSuffix] = pathSegments;
-  const facilitySlug = facilitySlugWithSuffix.replace('-asbestos-exposure', '');
-  
-  try {
-    // Get facility data from your working API
-    const facilityResponse = await fetch(`${baseUrl}/api/facilities/${stateSlug}/${citySlug}/${facilitySlug}`);
-    const facility = await facilityResponse.json();
-    
-    if (facility && !facility.message) {
-      pageTitle = `${facility.name} - Asbestos Exposure Site in ${facility.city.name}, ${facility.state.name}`;
-      pageDescription = `Information about asbestos exposure at ${facility.name} in ${facility.city.name}, ${facility.state.name}. Learn about potential health risks and legal options for workers.`;
-      
-      ssrContent = `
-        <div style="max-width: 1200px; margin: 0 auto; padding: 20px;">
-          <nav style="margin-bottom: 1rem;">
-            <a href="/" style="color: #0066cc;">Home</a> > 
-            <a href="/${facility.state.slug}" style="color: #0066cc;">${facility.state.name}</a> > 
-            <a href="/${facility.state.slug}/${facility.city.slug}" style="color: #0066cc;">${facility.city.name}</a> > 
-            ${facility.name}
-          </nav>
+      } else if (pathSegments.length === 3) {
+        // Facility page: /florida/jacksonville/facility-name-asbestos-exposure
+        const [stateSlug, citySlug, facilitySlugWithSuffix] = pathSegments;
+        const facilitySlug = facilitySlugWithSuffix.replace('-asbestos-exposure', '');
+        
+        try {
+          // Get facility data from your working API
+          const facilityResponse = await fetch(`${baseUrl}/api/facilities/${stateSlug}/${citySlug}/${facilitySlug}`);
+          const facility = await facilityResponse.json();
           
-          <h1 style="font-size: 2.5rem; margin-bottom: 1rem;">${facility.name} - Asbestos Exposure Site</h1>
-          <p style="font-size: 1.25rem; margin-bottom: 2rem;">
-            ${facility.address || `${facility.city.name}, ${facility.state.name}`}
-          </p>
-          
-          <div style="background: white; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); padding: 2rem; margin-bottom: 2rem;">
-            <h2 style="font-size: 2rem; margin-bottom: 1rem;">About This Facility</h2>
-            ${facility.description ? `<p style="line-height: 1.6; margin-bottom: 1rem;">${facility.description}</p>` : ''}
+          if (facility && !facility.message) {
+            // ALSO get template content (this is what was missing!)
+            let templateContent = '';
+            try {
+              const templateResponse = await fetch(`${baseUrl}/api/content-templates/facility/${facility.name.toLowerCase().replace(/[^a-z0-9]/g, '-')}_content_v1`);
+              const template = await templateResponse.json();
+              if (template && template.contentBlocks) {
+                templateContent = template.contentBlocks.join('\n');
+              }
+            } catch (templateError) {
+              console.log('Template not found, using basic content');
+            }
             
-            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1.5rem; margin-bottom: 1.5rem;">
-              <div>
-                <h3 style="font-size: 1.25rem; font-weight: bold; margin-bottom: 0.5rem;">Location Details</h3>
-                <p style="color: #666;">City: ${facility.city.name}</p>
-                <p style="color: #666;">State: ${facility.state.name}</p>
-                ${facility.address ? `<p style="color: #666;">Address: ${facility.address}</p>` : ''}
+            pageTitle = `${facility.name} - Asbestos Exposure Site in ${facility.city.name}, ${facility.state.name}`;
+            pageDescription = `Information about asbestos exposure at ${facility.name} in ${facility.city.name}, ${facility.state.name}. Learn about potential health risks and legal options for workers.`;
+            
+            ssrContent = `
+              <div style="max-width: 1200px; margin: 0 auto; padding: 20px;">
+                <nav style="margin-bottom: 1rem;">
+                  <a href="/" style="color: #0066cc;">Home</a> > 
+                  <a href="/${facility.state.slug}" style="color: #0066cc;">${facility.state.name}</a> > 
+                  <a href="/${facility.state.slug}/${facility.city.slug}" style="color: #0066cc;">${facility.city.name}</a> > 
+                  ${facility.name}
+                </nav>
+                
+                <h1 style="font-size: 2.5rem; margin-bottom: 1rem;">${facility.name} - Asbestos Exposure Site</h1>
+                <p style="font-size: 1.25rem; margin-bottom: 2rem;">
+                  ${facility.address || `${facility.city.name}, ${facility.state.name}`}
+                </p>
+                
+                <div style="background: white; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); padding: 2rem; margin-bottom: 2rem;">
+                  <h2 style="font-size: 2rem; margin-bottom: 1rem;">About This Facility</h2>
+                  ${facility.description ? `<p style="line-height: 1.6; margin-bottom: 1rem;">${facility.description}</p>` : ''}
+                  ${templateContent ? `<div style="line-height: 1.6; margin-bottom: 1rem;">${templateContent}</div>` : ''}
+                  
+                  <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1.5rem; margin-bottom: 1.5rem;">
+                    <div>
+                      <h3 style="font-size: 1.25rem; font-weight: bold; margin-bottom: 0.5rem;">Location Details</h3>
+                      <p style="color: #666;">City: ${facility.city.name}</p>
+                      <p style="color: #666;">State: ${facility.state.name}</p>
+                      ${facility.address ? `<p style="color: #666;">Address: ${facility.address}</p>` : ''}
+                    </div>
+                    
+                    <div>
+                      <h3 style="font-size: 1.25rem; font-weight: bold; margin-bottom: 0.5rem;">Facility Information</h3>
+                      ${facility.category ? `<p style="color: #666;">Type: ${facility.category.name}</p>` : ''}
+                      ${facility.companyName ? `<p style="color: #666;">Company: ${facility.companyName}</p>` : ''}
+                    </div>
+                  </div>
+                </div>
+                
+                <div style="background: #fef3c7; border: 1px solid #f59e0b; border-radius: 8px; padding: 1.5rem; margin-bottom: 2rem;">
+                  <h3 style="font-size: 1.25rem; font-weight: bold; color: #92400e; margin-bottom: 0.5rem;">Important Information</h3>
+                  <p style="color: #92400e; line-height: 1.6;">
+                    If you worked at ${facility.name} and have been diagnosed with mesothelioma, lung cancer, or other asbestos-related diseases, 
+                    you may be entitled to compensation. Contact a qualified attorney to discuss your legal options.
+                  </p>
+                </div>
               </div>
-              
-              <div>
-                <h3 style="font-size: 1.25rem; font-weight: bold; margin-bottom: 0.5rem;">Facility Information</h3>
-                ${facility.category ? `<p style="color: #666;">Type: ${facility.category.name}</p>` : ''}
-                ${facility.companyName ? `<p style="color: #666;">Company: ${facility.companyName}</p>` : ''}
+            `;
+          } else {
+            ssrContent = `
+              <div style="max-width: 1200px; margin: 0 auto; padding: 20px; text-align: center;">
+                <h1>Facility Not Found</h1>
+                <p>The requested facility could not be found.</p>
+                <a href="/" style="color: #0066cc;">Return to Homepage</a>
               </div>
+            `;
+          }
+        } catch (apiError) {
+          console.error('Facility API Error:', apiError);
+          ssrContent = `
+            <div style="max-width: 1200px; margin: 0 auto; padding: 20px; text-align: center;">
+              <h1>Error Loading Facility Data</h1>
+              <p>Unable to load facility information. Please try again later.</p>
+              <a href="/" style="color: #0066cc;">Return to Homepage</a>
             </div>
-          </div>
-          
-          <div style="background: #fef3c7; border: 1px solid #f59e0b; border-radius: 8px; padding: 1.5rem; margin-bottom: 2rem;">
-            <h3 style="font-size: 1.25rem; font-weight: bold; color: #92400e; margin-bottom: 0.5rem;">Important Information</h3>
-            <p style="color: #92400e; line-height: 1.6;">
-              If you worked at ${facility.name} and have been diagnosed with mesothelioma, lung cancer, or other asbestos-related diseases, 
-              you may be entitled to compensation. Contact a qualified attorney to discuss your legal options.
-            </p>
-          </div>
-        </div>
-      `;
-    } else {
-      ssrContent = `
-        <div style="max-width: 1200px; margin: 0 auto; padding: 20px; text-align: center;">
-          <h1>Facility Not Found</h1>
-          <p>The requested facility could not be found.</p>
-          <a href="/" style="color: #0066cc;">Return to Homepage</a>
-        </div>
-      `;
-    }
-  } catch (apiError) {
-    console.error('Facility API Error:', apiError);
-    ssrContent = `
-      <div style="max-width: 1200px; margin: 0 auto; padding: 20px; text-align: center;">
-        <h1>Error Loading Facility Data</h1>
-        <p>Unable to load facility information. Please try again later.</p>
-        <a href="/" style="color: #0066cc;">Return to Homepage</a>
-      </div>
-    `;
-  }
+          `;
+        }
         
       } else {
         // Other pages - basic fallback
