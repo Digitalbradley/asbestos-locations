@@ -81,12 +81,12 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     console.log('API Request:', req.method, path);
 
     // Add this debug block
-  if (path?.includes('facilities')) {
-    console.log('🔍 FACILITIES REQUEST DETECTED');
-    console.log('🔍 Full path:', path);
-    const pathParts = path.split('/');
-    console.log('🔍 Path parts:', pathParts);
-  }
+    if (path?.includes('facilities')) {
+      console.log('🔍 FACILITIES REQUEST DETECTED');
+      console.log('🔍 Full path:', path);
+      const pathParts = path.split('/');
+      console.log('🔍 Path parts:', pathParts);
+    }
 
     // Health check
     if (path === '/api/health') {
@@ -261,7 +261,27 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       }
     }
 
-    // Handle city routes
+    // FIXED: Handle city facilities route (more specific) - MOVED ABOVE general city route
+    if (path?.startsWith('/api/cities/') && path.includes('/facilities')) {
+      console.log('🎯 CITY FACILITIES ROUTE HANDLER TRIGGERED');
+      const pathParts = path.split('/');
+      const stateSlug = pathParts[3];
+      const citySlug = pathParts[4];
+      
+      if (stateSlug && citySlug) {
+        const whereClause = and(
+          eq(schema.cities.slug, citySlug),
+          eq(schema.states.slug, stateSlug)
+        );
+        
+        const facilities = await buildFacilityQuery(whereClause);
+        
+        res.status(200).json(facilities);
+        return;
+      }
+    }
+
+    // Handle city routes (general) - MOVED BELOW city facilities route
     if (path?.includes('/api/cities/')) {
       const pathParts = path.split('/');
       const stateSlug = pathParts[3];
@@ -361,33 +381,6 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       }
     }
 
-    // Handle city facilities route
-    if (path?.startsWith('/api/cities/') && path.includes('/facilities')) {
-      console.log('🎯 CITY FACILITIES ROUTE HANDLER TRIGGERED');
-      const pathParts = path.split('/');
-      const stateSlug = pathParts[3];
-      const citySlug = pathParts[4];
-      
-      if (stateSlug && citySlug) {
-      const pathParts = path.split('/');
-      const stateSlug = pathParts[3];
-      const citySlug = pathParts[4];
-      
-      if (stateSlug && citySlug) {
-        const whereClause = and(
-          eq(schema.cities.slug, citySlug),
-          eq(schema.states.slug, stateSlug)
-        );
-        
-        const facilities = await buildFacilityQuery(whereClause);
-        
-        res.status(200).json(facilities);
-        return;
-      }
-    }
-
-
-
     // Handle nearby facilities route
     if (path?.includes('/api/facilities/') && path.endsWith('/nearby')) {
       const facilityId = parseInt(path.split('/')[3]);
@@ -398,17 +391,24 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
           .where(eq(schema.facilities.id, facilityId))
           .limit(1);
         
-        if (facility.length > 0) {
-          const whereClause = and(
-            eq(schema.facilities.cityId, facility[0].cityId),
-            ne(schema.facilities.id, facilityId)
-          );
-          
-          const nearbyFacilities = await buildFacilityQuery(whereClause, 10);
-          
-          res.status(200).json(nearbyFacilities);
+        if (!facility || facility.length === 0) {
+          res.status(404).json({ message: 'Facility not found' });
           return;
         }
+        
+        const targetFacility = facility[0];
+        
+        // Get nearby facilities in the same city
+        const nearbyFacilities = await buildFacilityQuery(
+          and(
+            eq(schema.facilities.cityId, targetFacility.cityId),
+            ne(schema.facilities.id, facilityId)
+          ),
+          10
+        );
+        
+        res.status(200).json(nearbyFacilities);
+        return;
       }
     }
 
@@ -422,180 +422,130 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
           .where(eq(schema.facilities.id, facilityId))
           .limit(1);
         
-        if (facility.length > 0) {
-          const whereClause = and(
-            facility[0].categoryId ? eq(schema.facilities.categoryId, facility[0].categoryId) : undefined,
-            ne(schema.facilities.id, facilityId)
-          );
-          
-          const relatedFacilities = await buildFacilityQuery(whereClause, 10);
-          
-          res.status(200).json(relatedFacilities);
+        if (!facility || facility.length === 0) {
+          res.status(404).json({ message: 'Facility not found' });
           return;
         }
+        
+        const targetFacility = facility[0];
+        
+        // Get related facilities (same category)
+        let relatedFacilities = [];
+        if (targetFacility.categoryId !== null) {
+          relatedFacilities = await buildFacilityQuery(
+            and(
+              eq(schema.facilities.categoryId, targetFacility.categoryId),
+              ne(schema.facilities.id, facilityId)
+            ),
+            10
+          );
+        }
+        
+        res.status(200).json(relatedFacilities);
+        return;
       }
     }
 
-    // Handle contact form submissions
-    if (path === '/api/contact' && req.method === 'POST') {
+    // Handle lead qualification and Google Sheets POST request
+    if (req.method === 'POST' && path === '/api/leads') {
+      const { 
+        name, 
+        email, 
+        phone, 
+        message, 
+        cityName, 
+        facilityName, 
+        companyName,
+        inquiryType = 'general',
+        subject = 'Contact Form Submission'
+      } = req.body;
+      
+      if (!name || !email || !phone || !message) {
+        res.status(400).json({ message: 'Missing required fields' });
+        return;
+      }
+      
       try {
-        // Import lead qualification system
+        // Import lead qualification and Google Sheets utilities
         const { qualifyLead } = await import('../server/utils/leadQualification.js');
-        const { createGoogleSheetsService } = await import('../server/utils/googleSheets.js');
+        const { addLeadToSheet } = await import('../server/utils/googleSheets.js');
         
-        // Validate required fields
-        const requiredFields = ['name', 'email', 'phone', 'message'];
-        const missingFields = requiredFields.filter(field => !req.body[field]);
-        
-        if (missingFields.length > 0) {
-          res.status(400).json({ 
-            message: `Missing required fields: ${missingFields.join(', ')}` 
-          });
-          return;
-        }
-
         // Qualify the lead
-        const qualification = qualifyLead(
-          req.body.name,
-          req.body.email,
-          req.body.phone,
-          req.body.inquiryType || 'facility-inquiry',
-          req.body.message,
-          req.body.exposure || undefined,
-          req.body.diagnosis || undefined,
-          req.body.pathologyReport || undefined,
-          req.body.diagnosisTimeline || undefined
+        const qualificationResult = qualifyLead(
+          name, 
+          email, 
+          phone, 
+          message, 
+          inquiryType, 
+          subject, 
+          cityName, 
+          facilityName, 
+          companyName
         );
         
-        // Generate subject based on diagnosis
-        const generateSubject = (originalSubject: string, diagnosis: string | null) => {
-          let diagnosisType = 'Asbestos Exposure';
-          
-          if (diagnosis) {
-            switch (diagnosis.toLowerCase()) {
-              case 'mesothelioma':
-                diagnosisType = 'Mesothelioma';
-                break;
-              case 'lung-cancer':
-                diagnosisType = 'Lung Cancer';
-                break;
-              case 'asbestosis':
-                diagnosisType = 'Asbestosis';
-                break;
-              default:
-                diagnosisType = 'Asbestos Exposure';
-            }
-          }
-          
-          return `${diagnosisType} Lead`;
-        };
-
-        // Create submission data with qualification
-        const submissionData = {
-          name: req.body.name,
-          email: req.body.email,
-          phone: req.body.phone,
-          inquiryType: req.body.inquiryType || 'facility-inquiry',
-          subject: generateSubject(req.body.subject || '', req.body.diagnosis),
-          message: req.body.message,
-          diagnosis: req.body.diagnosis || null,
-          pathologyReport: req.body.pathologyReport || null,
-          diagnosisTimeline: req.body.diagnosisTimeline || null,
-          pageUrl: req.headers.referer || req.body.pageUrl || '',
-          status: 'new',
-          // Qualification data
-          qualityScore: qualification.qualityScore,
-          qualificationLevel: qualification.qualificationLevel,
-          highValueKeywords: qualification.contentAnalysis.highValueKeywords.join(', '),
-          contactQuality: `Email: ${qualification.contactQuality.emailValid ? 'Valid' : 'Invalid'}, Phone: ${qualification.contactQuality.phoneValid ? 'Valid' : 'Invalid'}, Name: ${qualification.contactQuality.nameComplete ? 'Complete' : 'Incomplete'}`,
-          wordCount: qualification.contentAnalysis.wordCount,
-          notes: `Quality Score: ${qualification.qualityScore}/100 | Level: ${qualification.qualificationLevel}\n` +
-                 `Reasons: ${qualification.qualificationReasons.join('; ')}\n` +
-                 `Contact Quality - Email: ${qualification.contactQuality.emailValid ? 'Valid' : 'Invalid'}, ` +
-                 `Phone: ${qualification.contactQuality.phoneValid ? 'Valid' : 'Invalid'}, ` +
-                 `Name: ${qualification.contactQuality.nameComplete ? 'Complete' : 'Incomplete'}\n` +
-                 `Content Analysis - High-value keywords: ${qualification.contentAnalysis.highValueKeywords.length}, ` +
-                 `Medium-value keywords: ${qualification.contentAnalysis.mediumValueKeywords.length}, ` +
-                 `Word count: ${qualification.contentAnalysis.wordCount}, ` +
-                 `Specific details: ${qualification.contentAnalysis.containsSpecificDetails ? 'Yes' : 'No'}` +
-                 (qualification.contentAnalysis.redFlags.length > 0 ? `\nRed flags: ${qualification.contentAnalysis.redFlags.join(', ')}` : ''),
-        };
-
-        // Save to database
-        const submission = await db.insert(schema.contactSubmissions).values(submissionData).returning();
+        const { 
+          qualityScore, 
+          qualificationLevel, 
+          highValueKeywords, 
+          contactQuality, 
+          wordCount 
+        } = qualificationResult;
         
-        // Send to Google Sheets with enhanced qualification data
-        const googleSheetsService = createGoogleSheetsService();
-        if (googleSheetsService) {
-          try {
-            // Transform database submission to match LeadData interface
-            const leadData = {
-              id: submission[0].id,
-              name: submission[0].name,
-              email: submission[0].email,
-              phone: submission[0].phone || '',
-              inquiryType: submission[0].inquiryType,
-              subject: submission[0].subject,
-              message: submission[0].message,
-              diagnosis: submission[0].diagnosis || undefined,
-              pathologyReport: submission[0].pathologyReport || undefined,
-              diagnosisTimeline: submission[0].diagnosisTimeline || undefined,
-              submittedAt: submission[0].createdAt || new Date(),
-              pageUrl: submission[0].pageUrl || undefined,
-              qualification: qualification
-            };
-            
-            await googleSheetsService.addLeadToSheet(leadData);
-            console.log(`Lead ${submission[0].id} added to Google Sheets with qualification data`);
-          } catch (sheetsError) {
-            console.error('Failed to add lead to Google Sheets:', sheetsError);
-            // Continue processing even if Google Sheets fails
-          }
-        }
+        // Store in database
+        const [newSubmission] = await db.insert(schema.contactSubmissions).values({
+          name,
+          email,
+          phone,
+          message,
+          cityName,
+          facilityName,
+          companyName,
+          inquiryType,
+          subject,
+          qualityScore,
+          qualificationLevel,
+          highValueKeywords,
+          contactQuality,
+          wordCount,
+          submissionDate: new Date()
+        }).returning();
         
-        res.status(201).json({ 
-          message: 'Contact form submitted successfully',
-          id: submission[0].id,
-          qualificationLevel: submission[0].qualificationLevel,
-          qualityScore: submission[0].qualityScore
+        // Add to Google Sheets
+        const leadData = {
+          name, email, phone, message, inquiryType, subject,
+          cityName, facilityName, companyName,
+          qualityScore, qualificationLevel, highValueKeywords,
+          contactQuality, wordCount, submissionDate: new Date()
+        };
+        
+        await addLeadToSheet(leadData);
+        
+        res.status(200).json({ 
+          message: 'Lead submitted successfully',
+          qualificationResult,
+          submissionId: newSubmission.id
         });
         return;
       } catch (error) {
-        console.error('Contact form submission error:', error);
-        res.status(500).json({ message: 'Failed to submit contact form' });
+        console.error('Lead submission error:', error);
+        res.status(500).json({ message: 'Internal server error' });
         return;
       }
     }
 
-    // Handle search route
-    if (path?.startsWith('/api/search')) {
-      const query = req.query.q as string;
-      const limit = parseInt(req.query.limit as string) || 50;
-      
-      if (!query) {
-        res.status(400).json({ message: 'Search query is required' });
-        return;
-      }
-      
-      const whereClause = or(
-        ilike(schema.facilities.name, `%${query}%`),
-        ilike(schema.cities.name, `%${query}%`),
-        ilike(schema.facilities.companyName, `%${query}%`)
-      );
-      
-      const searchResults = await buildFacilityQuery(whereClause, limit);
-      
-      res.status(200).json(searchResults);
+    // Handle SEO metadata route
+    if (path?.startsWith('/api/seo-metadata')) {
+      const { generateSEOMetadata } = await import('../server/seo.js');
+      const metadata = await generateSEOMetadata(req.url || '/');
+      res.status(200).json(metadata);
       return;
     }
 
-    res.status(404).json({ message: 'API endpoint not found' });
+    // Default 404 for unhandled routes
+    res.status(404).json({ message: 'Route not found' });
     
   } catch (error) {
     console.error('API Error:', error);
-    res.status(500).json({ 
-      message: 'Internal server error',
-      error: error instanceof Error ? error.message : 'Unknown error'
-    });
+    res.status(500).json({ message: 'Internal server error' });
   }
 }
