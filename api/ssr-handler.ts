@@ -66,27 +66,6 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         const stateData = await stateResponse.json();
         
         if (stateData && !stateData.message) {
-          // Get state template content
-          let stateTemplateContent = '';
-          try {
-            const stateTemplateResponse = await fetch(`${baseUrl}/api/content-templates/state/${stateSlug}_state_content`);
-            const stateTemplate = await stateTemplateResponse.json();
-            if (stateTemplate && stateTemplate.contentBlocks) {
-              stateTemplateContent = stateTemplate.contentBlocks.join(' ');
-            }
-          } catch (templateError) {
-            console.log('State template not found, using basic content');
-          }
-          
-          // Get categories
-          let categories = [];
-          try {
-            const categoriesResponse = await fetch(`${baseUrl}/api/categories`);
-            categories = await categoriesResponse.json();
-          } catch (categoriesError) {
-            console.log('Categories not found');
-          }
-          
           pageTitle = `Asbestos Exposure Sites in ${stateData.name} - ${stateData.facilityCount || 0} Documented Facilities`;
           pageDescription = `Comprehensive list of asbestos exposure sites in ${stateData.name}. Find facilities across ${stateData.cities?.length || 0} cities where workers may have been exposed to asbestos.`;
           
@@ -103,36 +82,26 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
               
               <div style="margin-bottom: 2rem;">
                 <h2 style="font-size: 2rem; margin-bottom: 1rem;">About Asbestos Exposure in ${stateData.name}</h2>
-                ${stateTemplateContent ? `<div style="line-height: 1.6; margin-bottom: 1rem;">${stateTemplateContent}</div>` : `
                 <p style="line-height: 1.6; margin-bottom: 1rem;">
-                  ${stateData.name} has documented ${stateData.facilityCount || 0} asbestos exposure sites across ${stateData.cities?.length || 0} cities and towns throughout the state. These facilities span multiple industries including manufacturing, shipbuilding, power generation, and construction.
+                  ${stateData.name} has documented ${stateData.facilityCount || 0} asbestos exposure sites across ${stateData.cities?.length || 0} cities and towns throughout the state. These facilities span multiple industries including manufacturing, shipbuilding, power generation, and construction, representing decades of industrial activity where workers may have encountered asbestos-containing materials.
                 </p>
-                `}
+                <p style="line-height: 1.6; margin-bottom: 1rem;">
+                  The comprehensive ${stateData.name} asbestos exposure database serves as a critical resource for individuals seeking to identify potential exposure locations. From major industrial facilities to smaller operations, ${stateData.name}'s industrial history reveals extensive use of asbestos across diverse sectors.
+                </p>
+                <p style="line-height: 1.6;">
+                  Workers in ${stateData.name} facilities were exposed to asbestos through various applications including insulation, fireproofing materials, gaskets, and construction products. This statewide directory provides detailed information about exposure sites, operational periods, and facility types to help individuals and legal professionals identify relevant exposure locations for mesothelioma and other asbestos-related disease cases.
+                </p>
               </div>
               
               ${stateData.cities && stateData.cities.length > 0 ? `
               <div style="margin-bottom: 2rem;">
                 <h2 style="font-size: 2rem; margin-bottom: 1rem;">Cities in ${stateData.name}</h2>
                 <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem;">
-                  ${stateData.cities.slice(0, 12).map(city => `
+                  ${stateData.cities.slice(0, 12).map((city: any) => `
                     <a href="/${stateData.slug}/${city.slug}" style="display: block; padding: 1rem; background: white; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); text-decoration: none; color: inherit;">
                       <div style="font-weight: bold;">${city.name}</div>
                       <div style="color: #666; font-size: 0.9rem;">${city.facilityCount || 0} facilities</div>
                     </a>
-                  `).join('')}
-                </div>
-              </div>
-              ` : ''}
-              
-              ${Array.isArray(categories) && categories.length > 0 ? `
-              <div style="margin-bottom: 2rem;">
-                <h2 style="font-size: 2rem; margin-bottom: 1rem;">Facility Types in ${stateData.name}</h2>
-                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem;">
-                  ${categories.slice(0, 8).map(category => `
-                    <div style="padding: 1rem; background: white; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
-                      <div style="font-weight: bold;">${category.name}</div>
-                      <div style="color: #666; font-size: 0.9rem;">${category.facilityCount || 0} facilities</div>
-                    </div>
                   `).join('')}
                 </div>
               </div>
@@ -159,26 +128,15 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         `;
       }
     } else if (pathSegments.length === 2) {
-      // City page: /florida/cape-canaveral
+      // City page: /florida/jacksonville
       const [stateSlug, citySlug] = pathSegments;
       
       try {
+        // Get city data
         const cityResponse = await fetch(`${baseUrl}/api/cities/${stateSlug}/${citySlug}`);
         const cityData = await cityResponse.json();
         
         if (cityData && !cityData.message) {
-          // Get city template content
-          let cityTemplateContent = '';
-          try {
-            const cityTemplateResponse = await fetch(`${baseUrl}/api/content-templates/city/${citySlug}_content_adaptive`);
-            const cityTemplate = await cityTemplateResponse.json();
-            if (cityTemplate && cityTemplate.contentBlocks) {
-              cityTemplateContent = cityTemplate.contentBlocks.join(' ');
-            }
-          } catch (templateError) {
-            console.log('City template not found, using basic content');
-          }
-          
           // Get facilities for this city
           const facilitiesResponse = await fetch(`${baseUrl}/api/cities/${stateSlug}/${citySlug}/facilities`);
           const facilities = await facilitiesResponse.json();
@@ -201,11 +159,12 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
               
               <div style="margin-bottom: 2rem;">
                 <h2 style="font-size: 2rem; margin-bottom: 1rem;">About Asbestos Exposure in ${cityData.name}</h2>
-                ${cityTemplateContent ? `<div style="line-height: 1.6; margin-bottom: 1rem;">${cityTemplateContent}</div>` : `
                 <p style="line-height: 1.6; margin-bottom: 1rem;">
-                  ${cityData.name}, ${cityData.state.name} has ${cityData.facilityCount || 0} documented asbestos exposure sites. These facilities represent decades of industrial activity where workers may have encountered asbestos-containing materials.
+                  ${cityData.name}, ${cityData.state.name} has ${cityData.facilityCount || 0} documented asbestos exposure sites. These facilities represent decades of industrial activity where workers may have encountered asbestos-containing materials across various industries including manufacturing, construction, shipbuilding, and power generation.
                 </p>
-                `}
+                <p style="line-height: 1.6; margin-bottom: 1rem;">
+                  Workers in ${cityData.name} facilities were exposed to asbestos through various applications including insulation, fireproofing materials, gaskets, and construction products. This directory provides detailed information about exposure sites to help individuals and legal professionals identify relevant exposure locations for mesothelioma and other asbestos-related disease cases.
+                </p>
               </div>
               
               <div style="margin-bottom: 2rem;">
@@ -259,43 +218,26 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       }
 
     } else if (pathSegments.length === 3) {
-      // Facility page: /florida/cape-canaveral/cape-canaveral-asbestos-exposure
+      // Facility page: /florida/jacksonville/facility-name-asbestos-exposure
       const [stateSlug, citySlug, facilitySlugWithSuffix] = pathSegments;
       const facilitySlug = facilitySlugWithSuffix.replace('-asbestos-exposure', '');
       
       try {
+        // Get facility data from your working API
         const facilityResponse = await fetch(`${baseUrl}/api/facilities/${stateSlug}/${citySlug}/${facilitySlug}`);
         const facility = await facilityResponse.json();
         
         if (facility && !facility.message) {
-          // Get facility template content
-          let facilityTemplateContent = '';
+          // ALSO get template content (this is what was missing!)
+          let templateContent = '';
           try {
-            const facilityTemplateResponse = await fetch(`${baseUrl}/api/content-templates/facility/${facilitySlug}_content_v1`);
-            const facilityTemplate = await facilityTemplateResponse.json();
-            if (facilityTemplate && facilityTemplate.contentBlocks) {
-              facilityTemplateContent = facilityTemplate.contentBlocks.join(' ');
+            const templateResponse = await fetch(`${baseUrl}/api/content-templates/facility/${facilitySlug}_content_v1`);
+            const template = await templateResponse.json();
+            if (template && template.contentBlocks) {
+              templateContent = template.contentBlocks.join(' ');
             }
           } catch (templateError) {
-            console.log('Facility template not found, using basic content');
-          }
-          
-          // Get nearby facilities
-          let nearbyFacilities = [];
-          try {
-            const nearbyResponse = await fetch(`${baseUrl}/api/facilities/${facility.id}/nearby`);
-            nearbyFacilities = await nearbyResponse.json();
-          } catch (nearbyError) {
-            console.log('Nearby facilities not found');
-          }
-          
-          // Get related facilities
-          let relatedFacilities = [];
-          try {
-            const relatedResponse = await fetch(`${baseUrl}/api/facilities/${facility.id}/related`);
-            relatedFacilities = await relatedResponse.json();
-          } catch (relatedError) {
-            console.log('Related facilities not found');
+            console.log('Template not found, using basic content');
           }
           
           pageTitle = `${facility.name} - Asbestos Exposure Site in ${facility.city.name}, ${facility.state.name}`;
@@ -318,7 +260,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
               <div style="background: white; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); padding: 2rem; margin-bottom: 2rem;">
                 <h2 style="font-size: 2rem; margin-bottom: 1rem;">About This Facility</h2>
                 ${facility.description ? `<p style="line-height: 1.6; margin-bottom: 1rem;">${facility.description}</p>` : ''}
-                ${facilityTemplateContent ? `<div style="line-height: 1.6; margin-bottom: 1rem;">${facilityTemplateContent}</div>` : ''}
+                ${templateContent ? `<div style="line-height: 1.6; margin-bottom: 1rem;">${templateContent}</div>` : ''}
                 
                 <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1.5rem; margin-bottom: 1.5rem;">
                   <div>
@@ -335,42 +277,6 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
                   </div>
                 </div>
               </div>
-              
-              ${Array.isArray(nearbyFacilities) && nearbyFacilities.length > 0 ? `
-              <div style="background: white; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); padding: 2rem; margin-bottom: 2rem;">
-                <h2 style="font-size: 2rem; margin-bottom: 1rem;">Nearby Facilities in ${facility.city.name}</h2>
-                <div style="display: grid; gap: 1rem;">
-                  ${nearbyFacilities.slice(0, 5).map(nearbyFacility => `
-                    <div style="border: 1px solid #e5e7eb; border-radius: 8px; padding: 1rem;">
-                      <h3 style="font-size: 1.1rem; font-weight: bold; margin-bottom: 0.5rem;">
-                        <a href="/${facility.state.slug}/${facility.city.slug}/${nearbyFacility.slug}-asbestos-exposure" style="color: #0891b2; text-decoration: none;">
-                          ${nearbyFacility.name}
-                        </a>
-                      </h3>
-                      ${nearbyFacility.category ? `<p style="color: #888; font-size: 0.9rem;">Category: ${nearbyFacility.category.name}</p>` : ''}
-                    </div>
-                  `).join('')}
-                </div>
-              </div>
-              ` : ''}
-              
-              ${Array.isArray(relatedFacilities) && relatedFacilities.length > 0 ? `
-              <div style="background: white; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); padding: 2rem; margin-bottom: 2rem;">
-                <h2 style="font-size: 2rem; margin-bottom: 1rem;">Related ${facility.category ? facility.category.name : 'Facilities'}</h2>
-                <div style="display: grid; gap: 1rem;">
-                  ${relatedFacilities.slice(0, 5).map(relatedFacility => `
-                    <div style="border: 1px solid #e5e7eb; border-radius: 8px; padding: 1rem;">
-                      <h3 style="font-size: 1.1rem; font-weight: bold; margin-bottom: 0.5rem;">
-                        <a href="/${relatedFacility.state.slug}/${relatedFacility.city.slug}/${relatedFacility.slug}-asbestos-exposure" style="color: #0891b2; text-decoration: none;">
-                          ${relatedFacility.name}
-                        </a>
-                      </h3>
-                      <p style="color: #666; font-size: 0.9rem;">${relatedFacility.city.name}, ${relatedFacility.state.name}</p>
-                    </div>
-                  `).join('')}
-                </div>
-              </div>
-              ` : ''}
               
               <div style="background: #fef3c7; border: 1px solid #f59e0b; border-radius: 8px; padding: 1.5rem; margin-bottom: 2rem;">
                 <h3 style="font-size: 1.25rem; font-weight: bold; color: #92400e; margin-bottom: 0.5rem;">Important Information</h3>
@@ -400,7 +306,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
           </div>
         `;
       }
-      
+        
     } else {
       // Other pages - basic fallback
       ssrContent = `
@@ -461,4 +367,3 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     res.status(500).send(errorHtml);
   }
 }
-
