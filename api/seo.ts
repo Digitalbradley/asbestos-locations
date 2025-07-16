@@ -1,4 +1,4 @@
-import { storage } from "./storage";
+import { storage } from "../server/storage";
 import type { Request, Response } from "express";
 
 interface SEOMetadata {
