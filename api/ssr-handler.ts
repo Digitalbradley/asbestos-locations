@@ -129,108 +129,38 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             </div>
           `;
         }
-      } else {
-} else if (pathSegments.length === 2) {
-        // City page: /florida/jacksonville
+        } else if (pathSegments.length === 2) {
+        // Simple hardcoded city test
         const [stateSlug, citySlug] = pathSegments;
         
-        console.log('🔍 SSR Debug - State:', stateSlug, 'City:', citySlug);
-        console.log('🔍 SSR Debug - Full URL:', url);
-        console.log('🔍 SSR Debug - Base URL:', baseUrl);
+        pageTitle = `Test City Page - ${citySlug}`;
+        pageDescription = `Test description for ${citySlug}`;
         
-        try {
-          const cityApiUrl = `${baseUrl}/api/cities/${stateSlug}/${citySlug}`;
-          console.log('🔍 SSR Debug - City API URL:', cityApiUrl);
-          
-          // Get city data
-          const cityResponse = await fetch(cityApiUrl);
-          console.log('🔍 SSR Debug - City Response Status:', cityResponse.status);
-          
-          const cityData = await cityResponse.json();
-          console.log('🔍 SSR Debug - City Data:', cityData);
-          
-          if (cityData && !cityData.message) {
-            // Get facilities for this city
-            const facilitiesApiUrl = `${baseUrl}/api/cities/${stateSlug}/${citySlug}/facilities`;
-            console.log('🔍 SSR Debug - Facilities API URL:', facilitiesApiUrl);
+        ssrContent = `
+          <div style="max-width: 1200px; margin: 0 auto; padding: 20px;">
+            <nav style="margin-bottom: 1rem;">
+              <a href="/" style="color: #0066cc;">Home</a> > 
+              <a href="/${stateSlug}" style="color: #0066cc;">${stateSlug}</a> > 
+              ${citySlug}
+            </nav>
             
-            const facilitiesResponse = await fetch(facilitiesApiUrl);
-            console.log('🔍 SSR Debug - Facilities Response Status:', facilitiesResponse.status);
+            <h1 style="font-size: 2.5rem; margin-bottom: 1rem;">Test City Page: ${citySlug}</h1>
+            <p style="font-size: 1.25rem; margin-bottom: 2rem;">
+              This is a test page for ${stateSlug}/${citySlug}
+            </p>
             
-            const facilities = await facilitiesResponse.json();
-            console.log('🔍 SSR Debug - Facilities Data:', facilities);
-            
-            pageTitle = `Asbestos Exposure Sites in ${cityData.name}, ${cityData.state.name} - ${cityData.facilityCount || 0} Facilities`;
-            pageDescription = `Complete list of asbestos exposure sites in ${cityData.name}, ${cityData.state.name}. Find facilities where workers may have been exposed to asbestos-containing materials.`;
-            
-            ssrContent = `
-              <div style="max-width: 1200px; margin: 0 auto; padding: 20px;">
-                <div style="background: #e0f2fe; padding: 10px; margin-bottom: 20px; border-radius: 4px;">
-                  <strong>🔍 DEBUG:</strong> City: ${cityData.name}, Facilities: ${Array.isArray(facilities) ? facilities.length : 'Not array'}
-                </div>
-                
-                <nav style="margin-bottom: 1rem;">
-                  <a href="/" style="color: #0066cc;">Home</a> > 
-                  <a href="/${cityData.state.slug}" style="color: #0066cc;">${cityData.state.name}</a> > 
-                  ${cityData.name}
-                </nav>
-                
-                <h1 style="font-size: 2.5rem; margin-bottom: 1rem;">Asbestos Exposure Sites in ${cityData.name}, ${cityData.state.name}</h1>
-                <p style="font-size: 1.25rem; margin-bottom: 2rem;">
-                  ${cityData.facilityCount || 0} documented asbestos exposure facilities in ${cityData.name}
-                </p>
-                
-                <div style="margin-bottom: 2rem;">
-                  <h2 style="font-size: 2rem; margin-bottom: 1rem;">Asbestos Exposure Facilities in ${cityData.name}</h2>
-                  <div style="space-y: 1rem;">
-                    ${Array.isArray(facilities) ? facilities.slice(0, 5).map(facility => `
-                      <div style="background: white; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); padding: 1.5rem; margin-bottom: 1rem;">
-                        <h3 style="font-size: 1.25rem; font-weight: bold; margin-bottom: 0.5rem;">
-                          <a href="/${cityData.state.slug}/${cityData.slug}/${facility.slug}-asbestos-exposure" style="color: #0891b2; text-decoration: none;">
-                            ${facility.name}
-                          </a>
-                        </h3>
-                        <p style="color: #666; margin-bottom: 0.5rem;">${facility.address || cityData.name}, ${cityData.state.name}</p>
-                        ${facility.category ? `<p style="color: #888; font-size: 0.9rem; margin-bottom: 0.5rem;">Category: ${facility.category.name}</p>` : ''}
-                      </div>
-                    `).join('') : '<p>❌ No facilities found or facilities data is not an array</p>'}
-                  </div>
-                </div>
-              </div>
-            `;
-          } else {
-            console.log('🔍 SSR Debug - City not found or has error message');
-            ssrContent = `
-              <div style="max-width: 1200px; margin: 0 auto; padding: 20px; text-align: center;">
-                <h1>City Not Found</h1>
-                <p>The requested city could not be found.</p>
-                <p>Debug: ${JSON.stringify(cityData)}</p>
-                <a href="/" style="color: #0066cc;">Return to Homepage</a>
-              </div>
-            `;
-          }
-        } catch (apiError) {
-          console.error('🔍 SSR Debug - City API Error:', apiError);
-          ssrContent = `
-            <div style="max-width: 1200px; margin: 0 auto; padding: 20px; text-align: center;">
-              <h1>Error Loading City Data</h1>
-              <p>Unable to load city information. Please try again later.</p>
-              <p>Debug Error: ${apiError.message}</p>
-              <a href="/" style="color: #0066cc;">Return to Homepage</a>
+            <div style="background: #e0f2fe; padding: 20px; border-radius: 8px; margin-bottom: 2rem;">
+              <h2 style="margin-bottom: 1rem;">🎯 Routing Test Success!</h2>
+              <p><strong>State:</strong> ${stateSlug}</p>
+              <p><strong>City:</strong> ${citySlug}</p>
+              <p><strong>Path Segments:</strong> ${pathSegments.length}</p>
+              <p>If you see this, the city-level routing is working correctly!</p>
             </div>
-          `;
-        }
-        } catch (apiError) {
-          console.error('City API Error:', apiError);
-          ssrContent = `
-            <div style="max-width: 1200px; margin: 0 auto; padding: 20px; text-align: center;">
-              <h1>Error Loading City Data</h1>
-              <p>Unable to load city information. Please try again later.</p>
-              <a href="/" style="color: #0066cc;">Return to Homepage</a>
-            </div>
-          `;
-        }
-       
+            
+            <p>Next step: Replace this with real API calls to get city data and facilities.</p>
+          </div>
+        `;
+      } else {
         // Other pages - basic fallback
         ssrContent = `
           <div style="max-width: 1200px; margin: 0 auto; padding: 20px; text-align: center;">
@@ -310,4 +240,3 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     res.status(500).send(errorHtml);
   }
 }
-
