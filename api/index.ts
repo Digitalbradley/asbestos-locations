@@ -80,6 +80,14 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     const path = req.url;
     console.log('API Request:', req.method, path);
 
+    // Add this debug block
+  if (path?.includes('facilities')) {
+    console.log('🔍 FACILITIES REQUEST DETECTED');
+    console.log('🔍 Full path:', path);
+    const pathParts = path.split('/');
+    console.log('🔍 Path parts:', pathParts);
+  }
+
     // Health check
     if (path === '/api/health') {
       res.status(200).json({ status: 'ok', timestamp: new Date().toISOString() });
