@@ -10,7 +10,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     
     try {
       const url = req.url || '/';
-      const host = req.get('host') || 'localhost';
+      const host = req.headers.host || 'localhost';
       const baseUrl = `https://${host}`;
       
       // Parse URL to determine page type
@@ -99,7 +99,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
                 <div style="margin-bottom: 2rem;">
                   <h2 style="font-size: 2rem; margin-bottom: 1rem;">Cities in ${stateData.name}</h2>
                   <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem;">
-                    ${stateData.cities.slice(0, 12).map(city => `
+                    ${stateData.cities.slice(0, 12).map((city: any) => `
                       <a href="/${stateData.slug}/${city.slug}" style="display: block; padding: 1rem; background: white; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); text-decoration: none; color: inherit;">
                         <div style="font-weight: bold;">${city.name}</div>
                         <div style="color: #666; font-size: 0.9rem;">${city.facilityCount || 0} facilities</div>
