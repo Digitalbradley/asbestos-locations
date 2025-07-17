@@ -5,8 +5,26 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   console.log('Request URL:', req.url);
 
   try {
-    // TEMPORARY: Always serve SSR content for testing
-    console.log('🧪 TESTING MODE: Always serving SSR content via API');
+    // Bot detection
+    const userAgent = req.headers['user-agent'] || '';
+    const isBot = /bot|crawler|spider|crawling|facebook|twitter|google|bing|msn|duckduckbot|teoma|slurp|yandex/i.test(userAgent);
+    
+    console.log('User-Agent:', userAgent);
+    console.log('Is Bot:', isBot);
+
+    // If not a bot, serve the React app normally
+    if (!isBot) {
+      console.log('👤 HUMAN USER: Serving React app normally');
+      
+      // Redirect to React app - this will be handled by your main server
+      return res.status(200).json({ 
+        message: 'Not a bot, serve React app',
+        redirect: true
+      });
+    }
+
+    // For bots, generate SSR content
+    console.log('🤖 BOT DETECTED: Generating SSR content for:', userAgent);
 
     try {
       const url = req.url || '/';
@@ -622,15 +640,11 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   <link rel="canonical" href="${baseUrl}${url}">
   <style>
     body { font-family: Arial, sans-serif; line-height: 1.6; margin: 0; padding: 0; color: #333; background: #f9f9f9; }
-    .test-banner { background: #fef3c7; border: 1px solid #f59e0b; padding: 10px; margin-bottom: 20px; border-radius: 4px; text-align: center; }
     a { color: #0066cc; text-decoration: none; }
     a:hover { text-decoration: underline; }
   </style>
 </head>
 <body>
-  <div class="test-banner">
-    <strong>🧪 TESTING MODE:</strong> SSR content generated using your working API
-  </div>
   ${ssrContent}
 </body>
 </html>`;
