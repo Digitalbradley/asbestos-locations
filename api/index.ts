@@ -544,26 +544,35 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       }
       
       try {
+        console.log(`Getting nearest cities for city ID: ${cityId}`);
+        
         // Get the target city
-        const [targetCity] = await db.select()
+        const [targetCity] = await db
+          .select()
           .from(schema.cities)
           .where(eq(schema.cities.id, cityId))
           .limit(1);
-        
+
+        console.log(`Target city found:`, targetCity);
+
         if (!targetCity) {
+          console.log('No target city found');
           res.status(404).json({ message: 'City not found' });
           return;
         }
-        
-        // Get other cities in the same state with facilities > 0
-        const allCities = await db.select()
+
+        // For now, just get other cities in the same state with facilities
+        const allCities = await db
+          .select()
           .from(schema.cities)
           .where(and(
             eq(schema.cities.stateId, targetCity.stateId),
             sql`${schema.cities.facilityCount} > 0`
           ));
-        
-        // Return cities with estimated distances (matches server/storage.ts logic)
+
+        console.log(`Found ${allCities.length} cities in same state`);
+
+        // Return cities with estimated distances (placeholder)
         const citiesWithDistance = allCities
           .filter(city => city.id !== cityId)
           .slice(0, 10)
@@ -574,7 +583,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             facilityCount: city.facilityCount || 0,
             distance: Math.round((index + 1) * 15.5 * 10) / 10 // Estimated distances
           }));
-        
+
+        console.log(`Returning ${citiesWithDistance.length} cities`);
         res.status(200).json(citiesWithDistance);
         return;
       } catch (error) {
@@ -586,7 +596,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
     // Handle SEO metadata route
     if (path?.startsWith('/api/seo-metadata')) {
-      const { generateSEOMetadata } = await import('../server/seo.js');
+      const { generateSEOMetadata } = await import('./seo.js');
       const metadata = await generateSEOMetadata(req.url || '/');
       res.status(200).json(metadata);
       return;
