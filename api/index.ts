@@ -3,6 +3,7 @@ import { Pool, neonConfig } from '@neondatabase/serverless';
 import { drizzle } from 'drizzle-orm/neon-serverless';
 import { eq, like, and, desc, asc, sql, ne, or, ilike } from 'drizzle-orm';
 import * as schema from '../shared/schema.js';
+import { storage } from '../server/storage.js';
 
 // Configure WebSocket for serverless environments
 if (typeof window === 'undefined') {
@@ -62,7 +63,7 @@ async function buildFacilityQuery(whereClause?: any, limit?: number) {
   .leftJoin(schema.categories, eq(schema.facilities.categoryId, schema.categories.id))
   .where(whereClause)
   .orderBy(asc(schema.facilities.name))
-  .limit(limit || 100);
+  .limit(limit || 10000);
 }
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
@@ -544,38 +545,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       }
       
       try {
-        // Get the target city
-        const [targetCity] = await db.select()
-          .from(schema.cities)
-          .where(eq(schema.cities.id, cityId))
-          .limit(1);
-        
-        if (!targetCity) {
-          res.status(404).json({ message: 'City not found' });
-          return;
-        }
-        
-        // Get other cities in the same state with facilities > 0
-        const allCities = await db.select()
-          .from(schema.cities)
-          .where(and(
-            eq(schema.cities.stateId, targetCity.stateId),
-            sql`${schema.cities.facilityCount} > 0`
-          ));
-        
-        // Return cities with estimated distances (matches server/storage.ts logic)
-        const citiesWithDistance = allCities
-          .filter(city => city.id !== cityId)
-          .slice(0, 10)
-          .map((city, index) => ({
-            id: city.id,
-            name: city.name,
-            slug: city.slug,
-            facilityCount: city.facilityCount || 0,
-            distance: Math.round((index + 1) * 15.5 * 10) / 10 // Estimated distances
-          }));
-        
-        res.status(200).json(citiesWithDistance);
+        const nearestCities = await storage.getNearestCities(cityId, 10);
+        res.status(200).json(nearestCities);
         return;
       } catch (error) {
         console.error('Error fetching nearest cities:', error);
