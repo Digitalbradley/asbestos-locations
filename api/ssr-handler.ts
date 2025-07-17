@@ -122,6 +122,12 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
                   There are ${stateData.facilityCount || 0} facilities for you to review across ${stateData.cities?.length || 0} cities and towns
                 </p>
 
+                ${stateTemplateContent ? `
+                <div style="margin-bottom: 2rem;">
+                  <div style="line-height: 1.6; margin-bottom: 1rem;">${stateTemplateContent}</div>
+                </div>
+                ` : ''}
+
                 ${stateData.cities && stateData.cities.length > 0 ? `
                 <div style="margin-bottom: 2rem;">
                   <h2 style="font-size: 2rem; margin-bottom: 1rem;">Cities in ${stateData.name}</h2>
