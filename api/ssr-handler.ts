@@ -226,43 +226,25 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
               console.log('City template not found, using basic content');
             }
 
-            // Get state template content
-            let stateTemplateContent = '';
+            // Get all cities in the state for nearest cities functionality
+            let allStateCities = [];
             try {
-              const stateTemplateResponse = await fetch(`${baseUrl}/api/content-templates/state/${stateSlug}_state_content`);
-              const stateTemplate = await stateTemplateResponse.json();
-              if (stateTemplate && stateTemplate.contentBlocks) {
-                stateTemplateContent = stateTemplate.contentBlocks.join(' ');
+              const allCitiesResponse = await fetch(`${baseUrl}/api/states/${cityData.state.slug}`);
+              const stateWithCities = await allCitiesResponse.json();
+              if (stateWithCities && stateWithCities.cities) {
+                allStateCities = stateWithCities.cities;
               }
             } catch (error) {
-              console.log('State template not found');
+              console.log('All state cities not found');
             }
 
-            // Get state data
-            let stateData = null;
+            // Get nearest cities
+            let nearestCities = [];
             try {
-              const stateResponse = await fetch(`${baseUrl}/api/states/${stateSlug}`);
-              stateData = await stateResponse.json();
+              const nearestCitiesResponse = await fetch(`${baseUrl}/api/cities/${cityData.id}/nearest`);
+              nearestCities = await nearestCitiesResponse.json();
             } catch (error) {
-              console.log('State data not found');
-            }
-
-            // Get all state facilities
-            let stateFacilities = [];
-            try {
-              const stateFacilitiesResponse = await fetch(`${baseUrl}/api/facilities?stateId=${cityData.state.id}&limit=1000`);
-              stateFacilities = await stateFacilitiesResponse.json();
-            } catch (error) {
-              console.log('State facilities not found');
-            }
-
-            // Get categories
-            let categories = [];
-            try {
-              const categoriesResponse = await fetch(`${baseUrl}/api/categories`);
-              categories = await categoriesResponse.json();
-            } catch (error) {
-              console.log('Categories not found');
+              console.log('Nearest cities not found');
             }
 
             pageTitle = `Asbestos Exposure Sites in ${cityData.name}, ${cityData.state.name} - ${cityData.facilityCount || 0} Facilities`;
@@ -293,16 +275,12 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
                       Workers in ${cityData.name} facilities were exposed to asbestos through various applications including insulation, fireproofing materials, gaskets, and construction products. This directory provides detailed information about exposure sites to help individuals and legal professionals identify relevant exposure locations for mesothelioma and other asbestos-related disease cases.
                     </p>
                   `}
-                  ${stateTemplateContent ? `
-                    <div style="line-height: 1.6; margin-bottom: 1rem; background: #f8f9fa; padding: 1rem; border-radius: 8px;">
-                      <h3 style="font-size: 1.25rem; font-weight: bold; margin-bottom: 0.5rem;">About ${cityData.state.name}</h3>
-                      <div>${stateTemplateContent}</div>
-                    </div>
-                  ` : ''}
                 </div>
 
                 <div style="margin-bottom: 2rem;">
-                  <h2 style="font-size: 2rem; margin-bottom: 1rem;">Asbestos Exposure Facilities in ${cityData.name}</h2>
+                  <h2 style="font-size: 2rem; margin-bottom: 1rem;">
+                    All ${Array.isArray(facilities) ? facilities.length : cityData.facilityCount || 0} Documented Exposure Sites in ${cityData.name}
+                  </h2>
                   <div style="display: grid; gap: 1rem;">
                     ${Array.isArray(facilities) && facilities.length > 0 ? facilities.map(facility => `
                       <div style="background: white; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); padding: 1.5rem;">
@@ -322,15 +300,19 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
                   </div>
                 </div>
 
-                ${categories && categories.length > 0 ? `
+                ${nearestCities && nearestCities.length > 0 ? `
                 <div style="margin-bottom: 2rem;">
-                  <h2 style="font-size: 2rem; margin-bottom: 1rem;">Facility Categories</h2>
+                  <h2 style="font-size: 2rem; margin-bottom: 1rem;">Ten Nearest Cities to ${cityData.name}</h2>
+                  <p style="color: #666; margin-bottom: 1rem;">
+                    Explore asbestos exposure sites in nearby cities within ${cityData.state.name}, sorted by distance from ${cityData.name}.
+                  </p>
                   <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem;">
-                    ${categories.slice(0, 6).map(category => `
-                      <div style="padding: 1rem; background: white; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
-                        <div style="font-weight: bold; color: #0891b2; margin-bottom: 0.5rem;">${category.name}</div>
-                        <div style="color: #666; font-size: 0.9rem;">${category.description || 'Industrial facility type'}</div>
-                      </div>
+                    ${nearestCities.slice(0, 10).map(nearbyCity => `
+                      <a href="/${cityData.state.slug}/${nearbyCity.slug}" style="display: block; padding: 1rem; background: white; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); text-decoration: none; color: inherit; border: 1px solid #e5e7eb;">
+                        <div style="font-weight: bold; color: #0891b2; margin-bottom: 0.5rem;">${nearbyCity.name}</div>
+                        <div style="color: #666; font-size: 0.9rem;">${nearbyCity.facilityCount || 0} documented facilities</div>
+                        <div style="color: #888; font-size: 0.8rem; margin-top: 0.25rem;">${nearbyCity.distance || 0} miles from ${cityData.name}</div>
+                      </a>
                     `).join('')}
                   </div>
                 </div>
@@ -427,53 +409,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
               console.log('City template not found');
             }
 
-            // Get state template content
-            let stateTemplateContent = '';
-            try {
-              const stateTemplateResponse = await fetch(`${baseUrl}/api/content-templates/state/${stateSlug}_state_content`);
-              const stateTemplate = await stateTemplateResponse.json();
-              if (stateTemplate && stateTemplate.contentBlocks) {
-                stateTemplateContent = stateTemplate.contentBlocks.join(' ');
-              }
-            } catch (error) {
-              console.log('State template not found');
-            }
-
-            // Get state data
-            let stateData = null;
-            try {
-              const stateResponse = await fetch(`${baseUrl}/api/states/${stateSlug}`);
-              stateData = await stateResponse.json();
-            } catch (error) {
-              console.log('State data not found');
-            }
-
-            // Get all state facilities
-            let stateFacilities = [];
-            try {
-              const stateFacilitiesResponse = await fetch(`${baseUrl}/api/facilities?stateId=${facility.state.id}&limit=1000`);
-              stateFacilities = await stateFacilitiesResponse.json();
-            } catch (error) {
-              console.log('State facilities not found');
-            }
-
-            // Get all city facilities
-            let cityFacilities = [];
-            try {
-              const cityFacilitiesResponse = await fetch(`${baseUrl}/api/facilities?cityId=${facility.city.id}&limit=1000`);
-              cityFacilities = await cityFacilitiesResponse.json();
-            } catch (error) {
-              console.log('City facilities not found');
-            }
-
-            // Get categories
-            let categories = [];
-            try {
-              const categoriesResponse = await fetch(`${baseUrl}/api/categories`);
-              categories = await categoriesResponse.json();
-            } catch (error) {
-              console.log('Categories not found');
-            }
+            // State template content and categories removed from facility pages
 
             pageTitle = `${facility.name} - Asbestos Exposure Site in ${facility.city.name}, ${facility.state.name}`;
             pageDescription = `Information about asbestos exposure at ${facility.name} in ${facility.city.name}, ${facility.state.name}. Learn about potential health risks and legal options for workers.`;
@@ -558,19 +494,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
                 </div>
                 ` : ''}
 
-                ${categories && categories.length > 0 ? `
-                <div style="background: white; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); padding: 2rem; margin-bottom: 2rem;">
-                  <h2 style="font-size: 2rem; margin-bottom: 1rem;">Facility Categories</h2>
-                  <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem;">
-                    ${categories.slice(0, 8).map(category => `
-                      <div style="padding: 1rem; background: #f8f9fa; border-radius: 8px;">
-                        <div style="font-weight: bold; color: #0891b2; margin-bottom: 0.5rem;">${category.name}</div>
-                        <div style="color: #666; font-size: 0.9rem;">${category.description || 'Industrial facility type'}</div>
-                      </div>
-                    `).join('')}
-                  </div>
-                </div>
-                ` : ''}
+
 
                 <div style="background: #fef3c7; border: 1px solid #f59e0b; border-radius: 8px; padding: 1.5rem; margin-bottom: 2rem;">
                   <h3 style="font-size: 1.25rem; font-weight: bold; color: #92400e; margin-bottom: 0.5rem;">Important Information</h3>
