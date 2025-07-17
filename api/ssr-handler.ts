@@ -12,29 +12,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     console.log('User-Agent:', userAgent);
     console.log('Is Bot:', isBot);
 
-    // If not a bot, serve the React app normally
-    if (!isBot) {
-      console.log('👤 HUMAN USER: Serving React app normally');
-      
-      // Serve the basic React app HTML that will bootstrap the SPA
-      const reactAppHtml = `<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Asbestos Exposure Sites Directory</title>
-  <script type="module" crossorigin src="/assets/index.js"></script>
-  <link rel="stylesheet" crossorigin href="/assets/index.css">
-</head>
-<body>
-  <div id="root"></div>
-</body>
-</html>`;
-      
-      res.setHeader('Content-Type', 'text/html; charset=utf-8');
-      res.setHeader('Cache-Control', 'no-cache');
-      return res.status(200).send(reactAppHtml);
-    }
+    // Generate full content for both bots and humans (for SEO injection)
+    console.log('🤖 Generating full SSR content for SEO injection');
 
     // For bots, generate SSR content
     console.log('🤖 BOT DETECTED: Generating SSR content for:', userAgent);
@@ -241,7 +220,16 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
           const cityData = await cityResponse.json();
 
           if (cityData && !cityData.message) {
-            // Get facilities for this city
+            // Get facilities for this city (using cityId)
+            let cityFacilities = [];
+            try {
+              const cityFacilitiesResponse = await fetch(`${baseUrl}/api/facilities?cityId=${cityData.id}&limit=1000`);
+              cityFacilities = await cityFacilitiesResponse.json();
+            } catch (error) {
+              console.log('City facilities not found');
+            }
+
+            // Get facilities for this city (using city endpoint as backup)
             const facilitiesResponse = await fetch(`${baseUrl}/api/cities/${stateSlug}/${citySlug}/facilities`);
             const facilities = await facilitiesResponse.json();
 
@@ -643,28 +631,39 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         `;
       }
 
-      const botHtml = `<!DOCTYPE html>
+      // Create HTML with full SEO content injection + React app bootstrap
+      const fullHtml = `<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>${pageTitle}</title>
   <meta name="description" content="${pageDescription}">
-  <link rel="canonical" href="${baseUrl}${url}">
-  <style>
-    body { font-family: Arial, sans-serif; line-height: 1.6; margin: 0; padding: 0; color: #333; background: #f9f9f9; }
-    a { color: #0066cc; text-decoration: none; }
-    a:hover { text-decoration: underline; }
-  </style>
+  <meta name="keywords" content="asbestos exposure, mesothelioma, legal help, ${pageTitle}">
+  <meta property="og:title" content="${pageTitle}">
+  <meta property="og:description" content="${pageDescription}">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://asbestosexposuresites.com${url}">
+  <link rel="canonical" href="https://asbestosexposuresites.com${url}">
+  
+  <!-- React App Assets -->
+  <script type="module" crossorigin src="/assets/index.js"></script>
+  <link rel="stylesheet" crossorigin href="/assets/index.css">
 </head>
 <body>
-  ${ssrContent}
+  <!-- React App Mount Point -->
+  <div id="root"></div>
+  
+  <!-- SEO Content for Search Engines -->
+  <div id="seo-content" style="${isBot ? 'display: block; font-family: Arial, sans-serif; line-height: 1.6; margin: 0; padding: 0; color: #333; background: #f9f9f9;' : 'display: none; visibility: hidden;'}">
+    ${ssrContent}
+  </div>
 </body>
 </html>`;
 
       res.setHeader('Content-Type', 'text/html; charset=utf-8');
       res.setHeader('Cache-Control', 'no-cache');
-      res.status(200).send(botHtml);
+      res.status(200).send(fullHtml);
 
     } catch (error) {
       console.error('❌ Error generating SSR content:', error);
