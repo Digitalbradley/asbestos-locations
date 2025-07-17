@@ -16,11 +16,24 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     if (!isBot) {
       console.log('👤 HUMAN USER: Serving React app normally');
       
-      // Redirect to React app - this will be handled by your main server
-      return res.status(200).json({ 
-        message: 'Not a bot, serve React app',
-        redirect: true
-      });
+      // Serve the basic React app HTML that will bootstrap the SPA
+      const reactAppHtml = `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Asbestos Exposure Sites Directory</title>
+  <script type="module" crossorigin src="/assets/index.js"></script>
+  <link rel="stylesheet" crossorigin href="/assets/index.css">
+</head>
+<body>
+  <div id="root"></div>
+</body>
+</html>`;
+      
+      res.setHeader('Content-Type', 'text/html; charset=utf-8');
+      res.setHeader('Cache-Control', 'no-cache');
+      return res.status(200).send(reactAppHtml);
     }
 
     // For bots, generate SSR content
