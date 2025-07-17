@@ -122,6 +122,20 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
                   There are ${stateData.facilityCount || 0} facilities for you to review across ${stateData.cities?.length || 0} cities and towns
                 </p>
 
+                ${stateData.cities && stateData.cities.length > 0 ? `
+                <div style="margin-bottom: 2rem;">
+                  <h2 style="font-size: 2rem; margin-bottom: 1rem;">Cities in ${stateData.name}</h2>
+                  <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem;">
+                    ${stateData.cities.map((city: any) => `
+                      <a href="/${stateData.slug}/${city.slug}" style="display: block; padding: 1rem; background: white; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); text-decoration: none; color: inherit;">
+                        <div style="font-weight: bold;">${city.name}</div>
+                        <div style="color: #666; font-size: 0.9rem;">${city.facilityCount || 0} facilities</div>
+                      </a>
+                    `).join('')}
+                  </div>
+                </div>
+                ` : ''}
+
                 <div style="margin-bottom: 2rem;">
                   <h2 style="font-size: 2rem; margin-bottom: 1rem;">About Asbestos Exposure in ${stateData.name}</h2>
                   ${stateTemplateContent ? `
@@ -148,43 +162,6 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
                         <div style="font-weight: bold; color: #0891b2; margin-bottom: 0.5rem;">${category.name}</div>
                         <div style="color: #666; font-size: 0.9rem;">${category.description || 'Industrial facility type'}</div>
                       </div>
-                    `).join('')}
-                  </div>
-                </div>
-                ` : ''}
-
-                ${stateFacilities && stateFacilities.length > 0 ? `
-                <div style="margin-bottom: 2rem;">
-                  <h2 style="font-size: 2rem; margin-bottom: 1rem;">Featured Facilities in ${stateData.name}</h2>
-                  <div style="display: grid; gap: 1rem;">
-                    ${stateFacilities.slice(0, 6).map(facility => `
-                      <div style="background: white; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); padding: 1.5rem;">
-                        <h3 style="font-size: 1.25rem; font-weight: bold; margin-bottom: 0.5rem;">
-                          <a href="/${stateData.slug}/${facility.city?.slug || 'unknown'}/${facility.slug}-asbestos-exposure" style="color: #0891b2; text-decoration: none;">
-                            ${facility.name}
-                          </a>
-                        </h3>
-                        <p style="color: #666; margin-bottom: 0.5rem;">${facility.address || `${facility.city?.name || 'Unknown'}, ${stateData.name}`}</p>
-                        ${facility.category ? `<p style="color: #888; font-size: 0.9rem; margin-bottom: 0.5rem;">Category: ${facility.category.name}</p>` : ''}
-                        ${facility.description ? `<p style="color: #333; line-height: 1.6; margin-bottom: 1rem;">${facility.description}</p>` : ''}
-                        <a href="/${stateData.slug}/${facility.city?.slug || 'unknown'}/${facility.slug}-asbestos-exposure" style="color: #0891b2; font-weight: 500; text-decoration: none;">
-                          Learn More →
-                        </a>
-                      </div>
-                    `).join('')}
-                  </div>
-                </div>
-                ` : ''}
-
-                ${stateData.cities && stateData.cities.length > 0 ? `
-                <div style="margin-bottom: 2rem;">
-                  <h2 style="font-size: 2rem; margin-bottom: 1rem;">Cities in ${stateData.name}</h2>
-                  <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem;">
-                    ${stateData.cities.slice(0, 12).map((city: any) => `
-                      <a href="/${stateData.slug}/${city.slug}" style="display: block; padding: 1rem; background: white; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); text-decoration: none; color: inherit;">
-                        <div style="font-weight: bold;">${city.name}</div>
-                        <div style="color: #666; font-size: 0.9rem;">${city.facilityCount || 0} facilities</div>
-                      </a>
                     `).join('')}
                   </div>
                 </div>
