@@ -612,7 +612,36 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         `;
       }
 
-      // Create HTML with full SEO content injection + React app bootstrap
+      // Dynamic asset path detection
+      let jsAssetPath = '/src/main.tsx'; // fallback for development
+      let cssAssetPath = '';
+
+      try {
+        // Try to read the built index.html to get actual asset paths
+        const fs = require('fs');
+        const path = require('path');
+        const indexHtmlPath = path.join(process.cwd(), 'dist/public/index.html');
+        
+        if (fs.existsSync(indexHtmlPath)) {
+          const indexHtml = fs.readFileSync(indexHtmlPath, 'utf-8');
+          
+          // Extract JS asset path
+          const jsMatch = indexHtml.match(/<script[^>]*src="([^"]*assets\/index-[^"]*\.js)"[^>]*>/);
+          if (jsMatch) {
+            jsAssetPath = jsMatch[1];
+          }
+          
+          // Extract CSS asset path
+          const cssMatch = indexHtml.match(/<link[^>]*href="([^"]*assets\/index-[^"]*\.css)"[^>]*>/);
+          if (cssMatch) {
+            cssAssetPath = cssMatch[1];
+          }
+        }
+      } catch (error) {
+        console.log('Could not read built assets, using fallback paths');
+      }
+
+      // Create HTML with dynamic asset paths
       const fullHtml = `<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -628,8 +657,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   <link rel="canonical" href="https://asbestosexposuresites.com${url}">
   
   <!-- React App Assets -->
-  <script type="module" crossorigin src="/assets/index.js"></script>
-  <link rel="stylesheet" crossorigin href="/assets/index.css">
+  ${cssAssetPath ? `<link rel="stylesheet" crossorigin href="${cssAssetPath}">` : ''}
+  <script type="module" crossorigin src="${jsAssetPath}"></script>
 </head>
 <body>
   <!-- React App Mount Point -->
