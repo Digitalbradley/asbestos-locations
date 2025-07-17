@@ -143,20 +143,18 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
                 ` : ''}
 
                 <div style="margin-bottom: 2rem;">
-                  <h2 style="font-size: 2rem; margin-bottom: 1rem;">About Asbestos Exposure in ${stateData.name}</h2>
-                  ${stateTemplateContent ? `
-                    <div style="line-height: 1.6; margin-bottom: 1rem;">${stateTemplateContent}</div>
-                  ` : `
-                    <p style="line-height: 1.6; margin-bottom: 1rem;">
-                      ${stateData.name} has documented ${stateData.facilityCount || 0} asbestos exposure sites across ${stateData.cities?.length || 0} cities and towns throughout the state. These facilities span multiple industries including manufacturing, shipbuilding, power generation, and construction, representing decades of industrial activity where workers may have encountered asbestos-containing materials.
-                    </p>
-                    <p style="line-height: 1.6; margin-bottom: 1rem;">
-                      The comprehensive ${stateData.name} asbestos exposure database serves as a critical resource for individuals seeking to identify potential exposure locations. From major industrial facilities to smaller operations, ${stateData.name}'s industrial history reveals extensive use of asbestos across diverse sectors.
-                    </p>
-                    <p style="line-height: 1.6;">
-                      Workers in ${stateData.name} facilities were exposed to asbestos through various applications including insulation, fireproofing materials, gaskets, and construction products. This statewide directory provides detailed information about exposure sites, operational periods, and facility types to help individuals and legal professionals identify relevant exposure locations for mesothelioma and other asbestos-related disease cases.
-                    </p>
-                  `}
+                  <div style="background: #f8f9fa; border: 1px solid #e5e7eb; border-radius: 12px; padding: 2rem;">
+                    <h2 style="font-size: 1.875rem; font-weight: bold; margin-bottom: 1.5rem; text-align: center;">Browse Cities in ${stateData.name}</h2>
+                    <div style="max-width: 400px; margin: 0 auto;">
+                      <label style="display: block; font-size: 0.875rem; font-weight: 500; margin-bottom: 0.5rem;">Select City</label>
+                      <select style="width: 100%; padding: 0.75rem; border: 1px solid #d1d5db; border-radius: 8px; font-size: 1rem; background: white;">
+                        <option value="">All Cities</option>
+                        ${stateData.cities ? stateData.cities.map((city: any) => `
+                          <option value="${city.slug}">${city.name}</option>
+                        `).join('') : ''}
+                      </select>
+                    </div>
+                  </div>
                 </div>
 
                 ${categories && categories.length > 0 ? `
