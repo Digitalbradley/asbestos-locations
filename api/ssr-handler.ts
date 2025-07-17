@@ -201,16 +201,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
           const cityData = await cityResponse.json();
 
           if (cityData && !cityData.message) {
-            // Get facilities for this city (using cityId)
-            let cityFacilities = [];
-            try {
-              const cityFacilitiesResponse = await fetch(`${baseUrl}/api/facilities?cityId=${cityData.id}&limit=1000`);
-              cityFacilities = await cityFacilitiesResponse.json();
-            } catch (error) {
-              console.log('City facilities not found');
-            }
-
-            // Get facilities for this city (using city endpoint as backup)
+            // Get facilities for this city (using city endpoint - primary method)
             const facilitiesResponse = await fetch(`${baseUrl}/api/cities/${stateSlug}/${citySlug}/facilities`);
             const facilities = await facilitiesResponse.json();
 
