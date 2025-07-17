@@ -1,6 +1,3 @@
-import { storage } from "../server/storage";
-import type { Request, Response } from "express";
-
 interface SEOMetadata {
   title: string;
   description: string;
@@ -14,20 +11,18 @@ interface SEOMetadata {
   structuredData?: any;
 }
 
-export async function generateSEOMetadata(req: Request): Promise<SEOMetadata> {
-  const url = req.originalUrl || '/';
-  // Support both www and non-www domains
-  const host = req.get('host') || 'asbestosexposuresites.com';
+export async function generateSEOMetadata(pageType: string, data: any): Promise<SEOMetadata> {
+  const url = data.url || '/';
+  const host = data.host || 'asbestosexposuresites.com';
   const baseUrl = `https://${host}`;
   
   // Parse URL to determine page type
-  // Remove query parameters and hash
   const cleanUrl = url.split('?')[0].split('#')[0];
   const pathSegments = cleanUrl.split('/').filter(Boolean);
   
   try {
     // Homepage
-    if (pathSegments.length === 0) {
+    if (pageType === 'homepage') {
       return {
         title: "Asbestos Exposure Sites Directory - 87,000+ Documented Locations",
         description: "Comprehensive database of asbestos exposure sites across all 50 states. Find facilities where you may have been exposed to asbestos. Essential resource for mesothelioma patients and legal professionals.",
@@ -54,15 +49,14 @@ export async function generateSEOMetadata(req: Request): Promise<SEOMetadata> {
     }
     
     // State page: /florida
-    if (pathSegments.length === 1) {
-      const stateSlug = pathSegments[0];
-      const state = await storage.getStateBySlug(stateSlug);
+    if (pageType === 'state') {
+      const state = data.state;
       if (!state) {
         return generateHomepageMetadata();
       }
       
       // Get cities count for the state
-      const cities = await storage.getCitiesByState(state.id);
+      const cities = data.cities || [];
       const cityCount = cities.length;
       
       return {
@@ -95,9 +89,8 @@ export async function generateSEOMetadata(req: Request): Promise<SEOMetadata> {
     }
     
     // City page: /florida/miami
-    if (pathSegments.length === 2) {
-      const [stateSlug, citySlug] = pathSegments;
-      const city = await storage.getCityBySlug(stateSlug, citySlug);
+    if (pageType === 'city') {
+      const city = data.city;
       if (!city) {
         return generateHomepageMetadata();
       }
@@ -106,10 +99,10 @@ export async function generateSEOMetadata(req: Request): Promise<SEOMetadata> {
         title: `Asbestos Exposure Sites in ${city.name}, ${city.state.name} - ${city.facilityCount} Facilities`,
         description: `Complete list of asbestos exposure sites in ${city.name}, ${city.state.name}. Find facilities where workers may have been exposed to asbestos-containing materials.`,
         keywords: `asbestos exposure ${city.name}, mesothelioma ${city.name}, asbestos sites ${city.name} ${city.state.name}, industrial facilities ${city.name}`,
-        canonicalUrl: `https://asbestosexposuresites.com/${stateSlug}/${citySlug}`,
+        canonicalUrl: `https://asbestosexposuresites.com/${city.state.slug}/${city.slug}`,
         ogTitle: `Asbestos Exposure Sites in ${city.name}, ${city.state.name} - ${city.facilityCount} Facilities`,
         ogDescription: `Complete list of asbestos exposure sites in ${city.name}, ${city.state.name}. Find facilities where workers may have been exposed to asbestos-containing materials.`,
-        ogUrl: `${baseUrl}/${stateSlug}/${citySlug}`,
+        ogUrl: `${baseUrl}/${city.state.slug}/${city.slug}`,
         twitterTitle: `Asbestos Exposure Sites in ${city.name}, ${city.state.name} - ${city.facilityCount} Facilities`,
         twitterDescription: `Complete list of asbestos exposure sites in ${city.name}, ${city.state.name}. Find facilities where workers may have been exposed to asbestos-containing materials.`,
         structuredData: {
@@ -117,7 +110,7 @@ export async function generateSEOMetadata(req: Request): Promise<SEOMetadata> {
           "@type": "WebPage",
           "name": `Asbestos Exposure Sites in ${city.name}, ${city.state.name}`,
           "description": `Complete list of asbestos exposure sites in ${city.name}, ${city.state.name}`,
-          "url": `${baseUrl}/${stateSlug}/${citySlug}`,
+          "url": `${baseUrl}/${city.state.slug}/${city.slug}`,
           "mainEntity": {
             "@type": "Dataset",
             "name": `${city.name} Asbestos Exposure Sites`,
@@ -128,11 +121,8 @@ export async function generateSEOMetadata(req: Request): Promise<SEOMetadata> {
     }
     
     // Facility page: /florida/miami/facility-name-asbestos-exposure
-    if (pathSegments.length === 3) {
-      const [stateSlug, citySlug, facilitySlugWithSuffix] = pathSegments;
-      // Remove the -asbestos-exposure suffix if present
-      const facilitySlug = facilitySlugWithSuffix.replace('-asbestos-exposure', '');
-      const facility = await storage.getFacilityBySlug(stateSlug, citySlug, facilitySlug);
+    if (pageType === 'facility') {
+      const facility = data.facility;
       if (!facility) {
         return generateHomepageMetadata();
       }
@@ -141,10 +131,10 @@ export async function generateSEOMetadata(req: Request): Promise<SEOMetadata> {
         title: `${facility.name} - Asbestos Exposure Site in ${facility.city.name}, ${facility.state.name}`,
         description: `Information about asbestos exposure at ${facility.name} in ${facility.city.name}, ${facility.state.name}. Learn about potential health risks and legal options for workers.`,
         keywords: `${facility.name} asbestos, ${facility.name} mesothelioma, asbestos exposure ${facility.city.name}, ${facility.name} ${facility.state.name}`,
-        canonicalUrl: `https://asbestosexposuresites.com/${stateSlug}/${citySlug}/${facilitySlug}-asbestos-exposure`,
+        canonicalUrl: `https://asbestosexposuresites.com/${facility.state.slug}/${facility.city.slug}/${facility.slug}-asbestos-exposure`,
         ogTitle: `${facility.name} - Asbestos Exposure Site in ${facility.city.name}, ${facility.state.name}`,
         ogDescription: `Information about asbestos exposure at ${facility.name} in ${facility.city.name}, ${facility.state.name}. Learn about potential health risks and legal options for workers.`,
-        ogUrl: `${baseUrl}/${stateSlug}/${citySlug}/${facilitySlug}-asbestos-exposure`,
+        ogUrl: `${baseUrl}/${facility.state.slug}/${facility.city.slug}/${facility.slug}-asbestos-exposure`,
         twitterTitle: `${facility.name} - Asbestos Exposure Site in ${facility.city.name}, ${facility.state.name}`,
         twitterDescription: `Information about asbestos exposure at ${facility.name} in ${facility.city.name}, ${facility.state.name}. Learn about potential health risks and legal options for workers.`,
         structuredData: {
@@ -158,7 +148,7 @@ export async function generateSEOMetadata(req: Request): Promise<SEOMetadata> {
             "addressRegion": facility.state.name,
             "addressCountry": "US"
           },
-          "url": `${baseUrl}/${stateSlug}/${citySlug}/${facilitySlug}-asbestos-exposure`
+          "url": `${baseUrl}/${facility.state.slug}/${facility.city.slug}/${facility.slug}-asbestos-exposure`
         }
       };
     }
