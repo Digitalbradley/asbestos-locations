@@ -4,15 +4,15 @@ import { storage } from "./storage";
 import { insertContactSubmissionSchema } from "@shared/schema";
 import { qualifyLead } from "./utils/leadQualification";
 import { createGoogleSheetsService } from "./utils/googleSheets";
-import { generateSEOMetadata, generateMetaTagsHTML } from "./seo";
+import { generateSEOMetadata, generateMetaTagsHTML } from "../api/seo";
 import { z } from "zod";
 import fs from "fs";
 import path from "path";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Import SSR function
-  const { generateSSRContent } = await import("./ssr");
-  
+  const { generateSSRContent } = await import("../api/ssr");
+
   // Add a simple test route
   app.get('/test', (req, res) => {
     res.json({ message: 'Server is working!', timestamp: new Date().toISOString() });
@@ -44,7 +44,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       try {
         const { html, meta } = await generateSSRContent(req);
         const seoTags = generateMetaTagsHTML(await generateSEOMetadata(req));
-        
+
         const fullHtml = `
 <!DOCTYPE html>
 <html lang="en">
@@ -60,7 +60,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 </body>
 </html>
         `;
-        
+
         res.setHeader('Content-Type', 'text/html');
         res.send(fullHtml);
       } catch (error) {
@@ -94,7 +94,48 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Cities routes
+  // Cities routes - specific routes first (with numeric IDs)
+  
+  // Nearest cities
+  app.get("/api/cities/:cityId/nearest", async (req, res) => {
+    const cityId = parseInt(req.params.cityId);
+    const limit = req.query.limit ? parseInt(req.query.limit as string) : 10;
+
+    if (isNaN(cityId)) {
+      return res.status(400).json({ message: "Invalid city ID" });
+    }
+
+    try {
+      const nearestCities = await storage.getNearestCities(cityId, limit);
+      res.json(nearestCities);
+    } catch (error) {
+      console.error("Error fetching nearest cities:", error);
+      res.status(500).json({ message: "Failed to fetch nearest cities" });
+    }
+  });
+
+  // Related cities
+  app.get("/api/cities/:cityId/related", async (req, res) => {
+    const cityId = parseInt(req.params.cityId);
+    const limit = req.query.limit ? parseInt(req.query.limit as string) : 10;
+
+    console.log(`🚀 Related cities route called for cityId: ${cityId}, limit: ${limit}`);
+
+    if (isNaN(cityId)) {
+      return res.status(400).json({ message: "Invalid city ID" });
+    }
+
+    try {
+      const relatedCities = await storage.getRelatedCities(cityId, limit);
+      console.log(`✅ Successfully got ${relatedCities.length} related cities`);
+      res.json(relatedCities);
+    } catch (error) {
+      console.error("❌ Error fetching related cities:", error);
+      res.status(500).json({ message: "Failed to fetch related cities" });
+    }
+  });
+
+  // General city route (by slug) - must come after specific routes
   app.get("/api/cities/:stateSlug/:citySlug", async (req, res) => {
     try {
       const city = await storage.getCityBySlug(req.params.stateSlug, req.params.citySlug);
@@ -105,24 +146,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error fetching city:", error);
       res.status(500).json({ message: "Failed to fetch city" });
-    }
-  });
-
-  // Nearest cities
-  app.get("/api/cities/:cityId/nearest", async (req, res) => {
-    const cityId = parseInt(req.params.cityId);
-    const limit = req.query.limit ? parseInt(req.query.limit as string) : 10;
-    
-    if (isNaN(cityId)) {
-      return res.status(400).json({ message: "Invalid city ID" });
-    }
-    
-    try {
-      const nearestCities = await storage.getNearestCities(cityId, limit);
-      res.json(nearestCities);
-    } catch (error) {
-      console.error("Error fetching nearest cities:", error);
-      res.status(500).json({ message: "Failed to fetch nearest cities" });
     }
   });
 
@@ -267,7 +290,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (!query || query.trim().length < 2) {
         return res.json([]);
       }
-      
+
       const limit = req.query.limit ? parseInt(req.query.limit as string) : 10;
       const facilities = await storage.searchFacilities(query.trim(), limit);
       res.json(facilities);
@@ -282,7 +305,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       // Validate the request body
       const validationResult = insertContactSubmissionSchema.safeParse(req.body);
-      
+
       if (!validationResult.success) {
         return res.status(400).json({ 
           message: "Invalid form data", 
@@ -307,7 +330,7 @@ const qualification = qualifyLead(
 // Generate dynamic subject based on diagnosis type
 const generateSubject = (originalSubject: string | undefined, diagnosis: string | null | undefined) => {
   let diagnosisType = 'Asbestos Exposure';
-  
+
   if (diagnosis) {
     switch (diagnosis.toLowerCase()) {
       case 'mesothelioma':
@@ -323,7 +346,7 @@ const generateSubject = (originalSubject: string | undefined, diagnosis: string 
         diagnosisType = 'Asbestos Exposure';
     }
   }
-  
+
   return `${diagnosisType} Lead`;
 };
 
@@ -356,7 +379,7 @@ const submissionData = {
 
       // Save to database
       const submission = await storage.createContactSubmission(submissionData);
-      
+
       // Send to Google Sheets if configured
       const googleSheetsService = createGoogleSheetsService();
       if (googleSheetsService) {
@@ -366,7 +389,7 @@ const submissionData = {
             createdAt: submission.createdAt,
             createdAtType: typeof submission.createdAt
           });
-          
+
           const leadData = {
             id: submission.id,
             name: submission.name,
@@ -382,11 +405,11 @@ const submissionData = {
             pageUrl: submission.pageUrl || undefined,
             qualification
           };
-          
+
           // All leads go to "All Leads" tab
           await googleSheetsService.addAllLeadsToSheet(leadData);
           console.log(`Lead ${submission.id} added to All Leads tab`);
-          
+
           // Qualified leads also go to "Qualified Leads" tab
           if (qualification.qualificationLevel !== 'rejected') {
             await googleSheetsService.addLeadToSheet(leadData);
@@ -397,7 +420,7 @@ const submissionData = {
           // Continue processing even if Google Sheets fails
         }
       }
-      
+
       // TODO: Send email notifications here
       // await sendEmailNotification(submission);
 
@@ -429,7 +452,7 @@ const submissionData = {
         status,
         priority
       });
-      
+
       res.json(submissions);
     } catch (error) {
       console.error("Error fetching contact submissions:", error);
@@ -443,7 +466,7 @@ const submissionData = {
       const updates = req.body;
 
       const updatedSubmission = await storage.updateContactSubmission(id, updates);
-      
+
       if (!updatedSubmission) {
         return res.status(404).json({ message: "Contact submission not found" });
       }
