@@ -8,7 +8,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     // Bot detection
     const userAgent = req.headers['user-agent'] || '';
     const isBot = /bot|crawler|spider|crawling|facebook|twitter|google|bing|msn|duckduckbot|teoma|slurp|yandex/i.test(userAgent);
-    
+
     console.log('User-Agent:', userAgent);
     console.log('Is Bot:', isBot);
 
@@ -567,16 +567,16 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         const fs = require('fs');
         const path = require('path');
         const indexHtmlPath = path.join(process.cwd(), 'dist/public/index.html');
-        
+
         if (fs.existsSync(indexHtmlPath)) {
           const indexHtml = fs.readFileSync(indexHtmlPath, 'utf-8');
-          
+
           // Extract JS asset path
           const jsMatch = indexHtml.match(/<script[^>]*src="([^"]*assets\/index-[^"]*\.js)"[^>]*>/);
           if (jsMatch) {
             jsAssetPath = jsMatch[1];
           }
-          
+
           // Extract CSS asset path
           const cssMatch = indexHtml.match(/<link[^>]*href="([^"]*assets\/index-[^"]*\.css)"[^>]*>/);
           if (cssMatch) {
@@ -601,7 +601,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   <meta property="og:type" content="website">
   <meta property="og:url" content="https://asbestosexposuresites.com${url}">
   <link rel="canonical" href="https://asbestosexposuresites.com${url}">
-  
+
   <!-- React App Assets -->
   ${cssAssetPath ? `<link rel="stylesheet" crossorigin href="${cssAssetPath}">` : ''}
   <script type="module" crossorigin src="${jsAssetPath}"></script>
@@ -609,7 +609,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 <body>
   <!-- React App Mount Point -->
   <div id="root"></div>
-  
+
   <!-- SEO Content for Search Engines -->
   <div id="seo-content" style="${isBot ? 'display: block; font-family: Arial, sans-serif; line-height: 1.6; margin: 0; padding: 0; color: #333; background: #f9f9f9;' : 'display: none; visibility: hidden;'}">
     ${ssrContent}
