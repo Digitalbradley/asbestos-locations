@@ -66,6 +66,7 @@ async function buildFacilityQuery(whereClause?: any, limit?: number) {
 }
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
+  console.log('🔍 API INDEX CALLED:', req.url); // ADD THIS LINE
   // Set CORS headers
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
