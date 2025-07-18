@@ -80,9 +80,9 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     const path = req.url;
     console.log('API Request:', req.method, path);
 
-    // 🚨 NEW: Homepage Detection and Redirect
-// If this is a homepage request that somehow ended up in API index, redirect to SSR handler
-if (path === '/' || path === '') {
+// 🚨 NEW: Homepage Detection and Redirect (FIXED)
+// Only redirect if it's the homepage AND not an API call
+if ((path === '/' || path === '' || path === '/index.html') && !path.startsWith('/api/')) {
   console.log('🏠 HOMEPAGE REQUEST DETECTED in API index - redirecting to SSR handler');
   
   // Import and call the SSR handler directly
