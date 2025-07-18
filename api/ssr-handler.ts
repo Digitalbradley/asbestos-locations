@@ -8,7 +8,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     // Bot detection
     const userAgent = req.headers['user-agent'] || '';
     const isBot = /bot|crawler|spider|crawling|facebook|twitter|google|bing|msn|duckduckbot|teoma|slurp|yandex/i.test(userAgent);
-    
+
     console.log('User-Agent:', userAgent);
     console.log('Is Bot:', isBot);
 
@@ -349,13 +349,44 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
           const facility = await facilityResponse.json();
 
           if (facility && !facility.message) {
-            // Get facility template content
+            // Get facility template content using same logic as React
             let facilityTemplateContent = '';
             try {
-              const facilityTemplateResponse = await fetch(`${baseUrl}/api/content-templates/facility/${facilitySlug}_content_v1`);
-              const facilityTemplate = await facilityTemplateResponse.json();
-              if (facilityTemplate && facilityTemplate.contentBlocks) {
-                facilityTemplateContent = facilityTemplate.contentBlocks.join(' ');
+              // Determine template version based on facility ID (same logic as React)
+              const templateVersion = (facility.id % 3) + 1;
+              console.log('Fetching facility content template for:', facilitySlug, 'version:', templateVersion);
+              
+              // Try versioned template first
+              let facilityTemplateResponse = await fetch(`${baseUrl}/api/content-templates/facility/${facilitySlug}_content_v${templateVersion}`);
+              console.log('Primary template API response:', facilityTemplateResponse.status, facilityTemplateResponse.statusText);
+              
+              if (facilityTemplateResponse.ok) {
+                const facilityTemplate = await facilityTemplateResponse.json();
+                console.log('Template found:', facilityTemplate?.templateName);
+                if (facilityTemplate && facilityTemplate.contentBlocks) {
+                  facilityTemplateContent = facilityTemplate.contentBlocks.join(' ');
+                }
+              } else {
+                // Fall back to other versions if primary not found
+                for (let v = 1; v <= 3; v++) {
+                  if (v !== templateVersion) {
+                    console.log('Trying fallback template version:', v);
+                    facilityTemplateResponse = await fetch(`${baseUrl}/api/content-templates/facility/${facilitySlug}_content_v${v}`);
+                    console.log('Fallback template API response:', facilityTemplateResponse.status, facilityTemplateResponse.statusText);
+                    if (facilityTemplateResponse.ok) {
+                      const facilityTemplate = await facilityTemplateResponse.json();
+                      console.log('Fallback template found:', facilityTemplate?.templateName);
+                      if (facilityTemplate && facilityTemplate.contentBlocks) {
+                        facilityTemplateContent = facilityTemplate.contentBlocks.join(' ');
+                        break;
+                      }
+                    }
+                  }
+                }
+              }
+              
+              if (!facilityTemplateContent) {
+                console.log('No content template found for facility:', facilitySlug);
               }
             } catch (error) {
               console.log('Facility template not found, using basic content');
@@ -536,16 +567,16 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         const fs = require('fs');
         const path = require('path');
         const indexHtmlPath = path.join(process.cwd(), 'dist/public/index.html');
-        
+
         if (fs.existsSync(indexHtmlPath)) {
           const indexHtml = fs.readFileSync(indexHtmlPath, 'utf-8');
-          
+
           // Extract JS asset path
           const jsMatch = indexHtml.match(/<script[^>]*src="([^"]*assets\/index-[^"]*\.js)"[^>]*>/);
           if (jsMatch) {
             jsAssetPath = jsMatch[1];
           }
-          
+
           // Extract CSS asset path
           const cssMatch = indexHtml.match(/<link[^>]*href="([^"]*assets\/index-[^"]*\.css)"[^>]*>/);
           if (cssMatch) {
@@ -570,7 +601,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   <meta property="og:type" content="website">
   <meta property="og:url" content="https://asbestosexposuresites.com${url}">
   <link rel="canonical" href="https://asbestosexposuresites.com${url}">
-  
+
   <!-- React App Assets -->
   ${cssAssetPath ? `<link rel="stylesheet" crossorigin href="${cssAssetPath}">` : ''}
   <script type="module" crossorigin src="${jsAssetPath}"></script>
@@ -578,7 +609,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 <body>
   <!-- React App Mount Point -->
   <div id="root"></div>
-  
+
   <!-- SEO Content for Search Engines -->
   <div id="seo-content" style="${isBot ? 'display: block; font-family: Arial, sans-serif; line-height: 1.6; margin: 0; padding: 0; color: #333; background: #f9f9f9;' : 'display: none; visibility: hidden;'}">
     ${ssrContent}
