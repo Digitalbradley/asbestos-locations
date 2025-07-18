@@ -475,7 +475,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
                 <div style="background: white; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); padding: 2rem; margin-bottom: 2rem;">
                   <h2 style="font-size: 2rem; margin-bottom: 1rem;">Nearby Facilities</h2>
                   <div style="display: grid; gap: 1rem;">
-                    ${nearbyFacilities.slice(0, 5).map(nearbyFacility => `
+                    ${nearbyFacilities.map(nearbyFacility => `
                       <div style="padding: 1rem; background: #f8f9fa; border-radius: 8px;">
                         <h3 style="font-size: 1.125rem; font-weight: bold; margin-bottom: 0.5rem;">
                           <a href="/${facility.state.slug}/${facility.city.slug}/${nearbyFacility.slug}-asbestos-exposure" style="color: #0891b2; text-decoration: none;">
@@ -494,7 +494,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
                 <div style="background: white; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); padding: 2rem; margin-bottom: 2rem;">
                   <h2 style="font-size: 2rem; margin-bottom: 1rem;">Related Facilities</h2>
                   <div style="display: grid; gap: 1rem;">
-                    ${relatedFacilities.slice(0, 5).map(relatedFacility => `
+                    ${relatedFacilities.map(relatedFacility => `
                       <div style="padding: 1rem; background: #f8f9fa; border-radius: 8px;">
                         <h3 style="font-size: 1.125rem; font-weight: bold; margin-bottom: 0.5rem;">
                           <a href="/${relatedFacility.state?.slug || stateSlug}/${relatedFacility.city?.slug || 'unknown'}/${relatedFacility.slug}-asbestos-exposure" style="color: #0891b2; text-decoration: none;">
