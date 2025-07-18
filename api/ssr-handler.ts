@@ -8,7 +8,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     // Bot detection
     const userAgent = req.headers['user-agent'] || '';
     const isBot = /bot|crawler|spider|crawling|facebook|twitter|google|bing|msn|duckduckbot|teoma|slurp|yandex/i.test(userAgent);
-
+    
     console.log('User-Agent:', userAgent);
     console.log('Is Bot:', isBot);
 
@@ -471,11 +471,50 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
                   </div>
                 </div>
 
+                ${nearbyFacilities && nearbyFacilities.length > 0 ? `
+                <div style="background: white; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); padding: 2rem; margin-bottom: 2rem;">
+                  <h2 style="font-size: 2rem; margin-bottom: 1rem;">Nearby Facilities</h2>
+                  <div style="display: grid; gap: 1rem;">
+                    ${nearbyFacilities.slice(0, 5).map(nearbyFacility => `
+                      <div style="padding: 1rem; background: #f8f9fa; border-radius: 8px;">
+                        <h3 style="font-size: 1.125rem; font-weight: bold; margin-bottom: 0.5rem;">
+                          <a href="/${facility.state.slug}/${facility.city.slug}/${nearbyFacility.slug}-asbestos-exposure" style="color: #0891b2; text-decoration: none;">
+                            ${nearbyFacility.name}
+                          </a>
+                        </h3>
+                        <p style="color: #666; margin-bottom: 0.5rem;">${nearbyFacility.address || `${facility.city.name}, ${facility.state.name}`}</p>
+                        ${nearbyFacility.category ? `<p style="color: #888; font-size: 0.9rem;">Category: ${nearbyFacility.category.name}</p>` : ''}
+                      </div>
+                    `).join('')}
+                  </div>
+                </div>
+                ` : ''}
 
+                ${relatedFacilities && relatedFacilities.length > 0 ? `
+                <div style="background: white; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); padding: 2rem; margin-bottom: 2rem;">
+                  <h2 style="font-size: 2rem; margin-bottom: 1rem;">Related Facilities</h2>
+                  <div style="display: grid; gap: 1rem;">
+                    ${relatedFacilities.slice(0, 5).map(relatedFacility => `
+                      <div style="padding: 1rem; background: #f8f9fa; border-radius: 8px;">
+                        <h3 style="font-size: 1.125rem; font-weight: bold; margin-bottom: 0.5rem;">
+                          <a href="/${relatedFacility.state?.slug || stateSlug}/${relatedFacility.city?.slug || 'unknown'}/${relatedFacility.slug}-asbestos-exposure" style="color: #0891b2; text-decoration: none;">
+                            ${relatedFacility.name}
+                          </a>
+                        </h3>
+                        <p style="color: #666; margin-bottom: 0.5rem;">${relatedFacility.address || `${relatedFacility.city?.name || 'Unknown'}, ${relatedFacility.state?.name || facility.state.name}`}</p>
+                        ${relatedFacility.category ? `<p style="color: #888; font-size: 0.9rem;">Category: ${relatedFacility.category.name}</p>` : ''}
+                      </div>
+                    `).join('')}
+                  </div>
+                </div>
+                ` : ''}
 
-
-
-
+                ${cityTemplateContent ? `
+                <div style="background: white; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); padding: 2rem; margin-bottom: 2rem;">
+                  <h2 style="font-size: 2rem; margin-bottom: 1rem;">About ${facility.city.name}</h2>
+                  <div style="line-height: 1.6;">${cityTemplateContent}</div>
+                </div>
+                ` : ''}
 
 
 
@@ -528,16 +567,16 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         const fs = require('fs');
         const path = require('path');
         const indexHtmlPath = path.join(process.cwd(), 'dist/public/index.html');
-
+        
         if (fs.existsSync(indexHtmlPath)) {
           const indexHtml = fs.readFileSync(indexHtmlPath, 'utf-8');
-
+          
           // Extract JS asset path
           const jsMatch = indexHtml.match(/<script[^>]*src="([^"]*assets\/index-[^"]*\.js)"[^>]*>/);
           if (jsMatch) {
             jsAssetPath = jsMatch[1];
           }
-
+          
           // Extract CSS asset path
           const cssMatch = indexHtml.match(/<link[^>]*href="([^"]*assets\/index-[^"]*\.css)"[^>]*>/);
           if (cssMatch) {
@@ -562,7 +601,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   <meta property="og:type" content="website">
   <meta property="og:url" content="https://asbestosexposuresites.com${url}">
   <link rel="canonical" href="https://asbestosexposuresites.com${url}">
-
+  
   <!-- React App Assets -->
   ${cssAssetPath ? `<link rel="stylesheet" crossorigin href="${cssAssetPath}">` : ''}
   <script type="module" crossorigin src="${jsAssetPath}"></script>
@@ -570,7 +609,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 <body>
   <!-- React App Mount Point -->
   <div id="root"></div>
-
+  
   <!-- SEO Content for Search Engines -->
   <div id="seo-content" style="${isBot ? 'display: block; font-family: Arial, sans-serif; line-height: 1.6; margin: 0; padding: 0; color: #333; background: #f9f9f9;' : 'display: none; visibility: hidden;'}">
     ${ssrContent}
