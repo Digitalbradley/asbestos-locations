@@ -104,6 +104,8 @@ export default function FacilityPage() {
     enabled: !!facility?.slug && !!facility?.id,
   });
 
+
+
   // Set document title and meta tags
   useEffect(() => {
     if (facility) {
@@ -328,6 +330,23 @@ export default function FacilityPage() {
                   )}
                 </div>
               )}
+
+              {/* Important Information - Legal Disclaimer */}
+              <div className="bg-amber-50 border border-amber-300 rounded-lg p-6 mb-8">
+                <h3 className="text-lg font-semibold text-amber-800 mb-2">Important Legal Information</h3>
+                <p className="text-amber-700 leading-relaxed mb-4">
+                  If you worked at {facility.name} in {facility.city.name}, {facility.state.name} and have been diagnosed with mesothelioma, lung cancer, or other asbestos-related diseases, 
+                  you may be entitled to significant compensation. Former employees of {facility.category?.name || 'industrial facilities'} like this often qualify for legal claims.
+                </p>
+                <div className="text-center">
+                  <Link 
+                    href="/legal-help" 
+                    className="inline-flex items-center px-6 py-3 bg-amber-600 text-white font-semibold rounded-lg hover:bg-amber-700 transition-colors"
+                  >
+                    Get Free Legal Consultation
+                  </Link>
+                </div>
+              </div>
             </div>
           </div>
 
