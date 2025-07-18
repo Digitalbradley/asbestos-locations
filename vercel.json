@@ -1,26 +1,16 @@
 {
   "version": 2,
-  "buildCommand": "npm run vercel-build",
-  "outputDirectory": "dist/public",
   "rewrites": [
     {
       "source": "/api/(.*)",
-      "destination": "/api/index"
+      "destination": "/api/$1"
     },
     {
-      "source": "/assets/(.*)",
-      "destination": "/assets/$1"
+      "source": "/",
+      "destination": "/api/ssr-handler"
     },
     {
-      "source": "/_next/(.*)",
-      "destination": "/_next/$1"
-    },
-    {
-      "source": "/favicon.ico",
-      "destination": "/favicon.ico"
-    },
-    {
-      "source": "/(.*)",
+      "source": "/((?!api|_next|favicon.ico).*)",
       "destination": "/api/ssr-handler"
     }
   ],
@@ -33,15 +23,6 @@
     }
   },
   "headers": [
-    {
-      "source": "/assets/(.*)",
-      "headers": [
-        {
-          "key": "Cache-Control",
-          "value": "public, max-age=31536000, immutable"
-        }
-      ]
-    },
     {
       "source": "/(.*)",
       "headers": [
