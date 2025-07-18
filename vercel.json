@@ -6,10 +6,6 @@
       "destination": "/api/$1"
     },
     {
-      "source": "/",
-      "destination": "/api/ssr-handler"
-    },
-    {
       "source": "/((?!api|_next|favicon.ico).*)",
       "destination": "/api/ssr-handler"
     }
