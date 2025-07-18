@@ -32,8 +32,15 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
       if (pathSegments.length === 0) {
         // Homepage
+        console.log('🏠 HOMEPAGE DETECTED - Generating SSR content');
+        console.log('🏠 Base URL:', baseUrl);
+        
         const statesResponse = await fetch(`${baseUrl}/api/states`);
+        console.log('🏠 States API Response Status:', statesResponse.status);
+        
         const states = await statesResponse.json();
+        console.log('🏠 States Data:', Array.isArray(states) ? `${states.length} states` : 'Not an array');
+        console.log('🏠 First state:', states?.[0]?.name);
 
         ssrContent = `
           <div style="max-width: 1200px; margin: 0 auto; padding: 20px;">
