@@ -11,7 +11,7 @@ export default function CityPage() {
   const [, params] = useRoute("/:stateSlug/:citySlug");
   const stateSlug = params?.stateSlug || "";
   const citySlug = params?.citySlug || "";
-  
+
 
 
   const { data: city, isLoading: isLoadingCity } = useQuery({
@@ -54,13 +54,13 @@ export default function CityPage() {
   useEffect(() => {
     if (city) {
       document.title = `Asbestos Exposure Sites in ${city.name}, ${city.state.name}`;
-      
+
       // Update meta description
       const metaDescription = document.querySelector('meta[name="description"]');
       if (metaDescription) {
         metaDescription.setAttribute('content', `Comprehensive directory of ${city.facilityCount} asbestos exposure sites in ${city.name}, ${city.state.name}. Find information about industrial facilities where workers may have been exposed to asbestos.`);
       }
-      
+
       // Update meta keywords
       let metaKeywords = document.querySelector('meta[name="keywords"]');
       if (!metaKeywords) {
@@ -134,7 +134,7 @@ export default function CityPage() {
         {/* City Content Section */}
         <div className="bg-muted/30 rounded-lg p-8 mb-8">
           <h2 className="text-2xl font-semibold mb-6">About Asbestos Exposure in {city.name}</h2>
-          
+
           {cityContent && cityContent.contentBlocks && cityContent.contentBlocks.length > 0 ? (
             <div className="text-muted-foreground">
               {cityContent.contentBlocks.map((block, index) => {
@@ -153,7 +153,7 @@ export default function CityPage() {
               <p>Content is being generated for this city. Please check back soon.</p>
             </div>
           )}
-          
+
 
         </div>
 
@@ -192,7 +192,7 @@ export default function CityPage() {
         </div>
 
         {/* Nearest Cities - positioned dynamically after content */}
-        <NearestCitiesSection city={city} />
+        <RelatedCitiesSection city={city} />
 
         {/* Footer Ad */}
         <div className="mt-4 sm:mt-6 mb-0">
@@ -207,45 +207,77 @@ export default function CityPage() {
   );
 }
 
-// Component for displaying nearest cities - positioned dynamically after main content
-function NearestCitiesSection({ city }: { city: CityWithState }) {
-  // For now, let's hardcode some example nearest cities for Florida
-  const nearestCities = [
-    { id: 16, name: "Fort Lauderdale", slug: "fort-lauderdale", distance: 15.5, facilityCount: 21 },
-    { id: 18, name: "Saint Petersburg", slug: "saint-petersburg", distance: 31.0, facilityCount: 19 },
-    { id: 20, name: "Port Saint Lucie", slug: "port-saint-lucie", distance: 46.5, facilityCount: 6 },
-    { id: 21, name: "Cape Coral", slug: "cape-coral", distance: 62.0, facilityCount: 5 },
-    { id: 24, name: "Miramar", slug: "miramar", distance: 77.5, facilityCount: 7 },
-    { id: 25, name: "Coral Springs", slug: "coral-springs", distance: 93.0, facilityCount: 0 },
-    { id: 28, name: "Pompano Beach", slug: "pompano-beach", distance: 108.5, facilityCount: 8 },
-    { id: 31, name: "Davie", slug: "davie", distance: 124.0, facilityCount: 0 },
-    { id: 34, name: "Deltona", slug: "deltona", distance: 139.5, facilityCount: 0 },
-    { id: 35, name: "North Miami Beach", slug: "north-miami-beach", distance: 155.0, facilityCount: 2 }
-  ];
+// Component for displaying related cities - positioned dynamically after main content
+function RelatedCitiesSection({ city }: { city: CityWithState }) {
+  // Fetch related cities from API
+  const { data: relatedCities = [], isLoading: isLoadingRelated, error: relatedError } = useQuery({
+    queryKey: ["/api/cities", city.id, "related"],
+    queryFn: async () => {
+      console.log('Fetching related cities for city ID:', city.id);
+      const response = await fetch(`/api/cities/${city.id}/related`);
+      console.log('Related cities API response:', response.status, response.statusText);
+      if (!response.ok) throw new Error(`Failed to fetch related cities: ${response.status}`);
+      const data = await response.json();
+      console.log('Related cities data:', data);
+      return data as Array<{id: number, name: string, slug: string, facilityCount: number}>;
+    },
+    enabled: !!city.id,
+  });
 
-  if (city.state.name !== 'Florida') {
-    return null;
+  // Show loading state
+  if (isLoadingRelated) {
+    return (
+      <div className="mt-4 sm:mt-6 bg-muted/30 rounded-lg px-4 sm:px-6 pb-4 sm:pb-6 pt-4 sm:pt-6">
+        <h3 className="text-xl font-semibold mb-4">Related Cities in {city.state.name}</h3>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          <p className="text-muted-foreground">Loading related cities...</p>
+        </div>
+      </div>
+    );
   }
 
+  // Show error state
+  if (relatedError) {
+    console.error('Error loading related cities:', relatedError);
+    return (
+      <div className="mt-4 sm:mt-6 bg-muted/30 rounded-lg px-4 sm:px-6 pb-4 sm:pb-6 pt-4 sm:pt-6">
+        <h3 className="text-xl font-semibold mb-4">Related Cities in {city.state.name}</h3>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          <p className="text-red-800">Error loading related cities: {relatedError.message}</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Show empty state
+  if (!relatedCities || relatedCities.length === 0) {
+    return (
+      <div className="mt-4 sm:mt-6 bg-muted/30 rounded-lg px-4 sm:px-6 pb-4 sm:pb-6 pt-4 sm:pt-6">
+        <h3 className="text-xl font-semibold mb-4">Related Cities in {city.state.name}</h3>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          <p className="text-muted-foreground">No related cities found.</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Show related cities
   return (
     <div className="mt-4 sm:mt-6 bg-muted/30 rounded-lg px-4 sm:px-6 pb-4 sm:pb-6 pt-4 sm:pt-6">
-      <h3 className="text-xl font-semibold mb-4">Ten Nearest Cities to {city.name}</h3>
+      <h3 className="text-xl font-semibold mb-4">Related Cities in {city.state.name}</h3>
       <p className="text-muted-foreground mb-6">
-        Explore asbestos exposure sites in nearby cities within {city.state.name}, sorted by distance from {city.name}.
+        Explore asbestos exposure sites in other cities within {city.state.name}, sorted by number of documented facilities.
       </p>
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        {nearestCities.map((nearbyCity) => (
+        {relatedCities.map((relatedCity) => (
           <Link 
-            key={nearbyCity.id} 
-            href={`/${city.state.slug}/${nearbyCity.slug}`} 
+            key={relatedCity.id} 
+            href={`/${city.state.slug}/${relatedCity.slug}`} 
             className="block p-4 bg-card rounded-lg border hover:border-primary transition-colors"
           >
-            <h4 className="font-semibold text-primary">{nearbyCity.name}</h4>
+            <h4 className="font-semibold text-primary">{relatedCity.name}</h4>
             <p className="text-sm text-muted-foreground">
-              {nearbyCity.facilityCount} documented facilities
-            </p>
-            <p className="text-xs text-muted-foreground mt-1">
-              {nearbyCity.distance} miles from {city.name}
+              {relatedCity.facilityCount} documented facilities
             </p>
           </Link>
         ))}
