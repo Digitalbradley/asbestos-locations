@@ -419,17 +419,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
               console.log('City data not found');
             }
 
-            // Get city template content
-            let cityTemplateContent = '';
-            try {
-              const cityTemplateResponse = await fetch(`${baseUrl}/api/content-templates/city/${citySlug}_content_adaptive`);
-              const cityTemplate = await cityTemplateResponse.json();
-              if (cityTemplate && cityTemplate.contentBlocks) {
-                cityTemplateContent = cityTemplate.contentBlocks.join(' ');
-              }
-            } catch (error) {
-              console.log('City template not found');
-            }
+
 
             // State template content and categories removed from facility pages
 
@@ -509,21 +499,17 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
                 </div>
                 ` : ''}
 
-                ${cityTemplateContent ? `
-                <div style="background: white; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); padding: 2rem; margin-bottom: 2rem;">
-                  <h2 style="font-size: 2rem; margin-bottom: 1rem;">About ${facility.city.name}</h2>
-                  <div style="line-height: 1.6;">${cityTemplateContent}</div>
-                </div>
-                ` : ''}
-
-
-
                 <div style="background: #fef3c7; border: 1px solid #f59e0b; border-radius: 8px; padding: 1.5rem; margin-bottom: 2rem;">
-                  <h3 style="font-size: 1.25rem; font-weight: bold; color: #92400e; margin-bottom: 0.5rem;">Important Information</h3>
-                  <p style="color: #92400e; line-height: 1.6;">
-                    If you worked at ${facility.name} and have been diagnosed with mesothelioma, lung cancer, or other asbestos-related diseases, 
-                    you may be entitled to compensation. Contact a qualified attorney to discuss your legal options.
+                  <h3 style="font-size: 1.25rem; font-weight: bold; color: #92400e; margin-bottom: 0.5rem;">Important Legal Information</h3>
+                  <p style="color: #92400e; line-height: 1.6; margin-bottom: 1rem;">
+                    If you worked at ${facility.name} in ${facility.city.name}, ${facility.state.name} and have been diagnosed with mesothelioma, lung cancer, or other asbestos-related diseases, 
+                    you may be entitled to significant compensation. Former employees of ${facility.category?.name || 'industrial facilities'} like this often qualify for legal claims.
                   </p>
+                  <div style="text-align: center;">
+                    <a href="/legal-help" style="display: inline-flex; align-items: center; padding: 0.75rem 1.5rem; background: #d97706; color: white; font-weight: 600; border-radius: 8px; text-decoration: none; transition: background-color 0.2s;">
+                      Get Free Legal Consultation
+                    </a>
+                  </div>
                 </div>
               </div>
             `;
