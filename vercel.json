@@ -20,6 +20,10 @@
       "destination": "/favicon.ico"
     },
     {
+      "source": "/",
+      "destination": "/api/ssr-handler"
+    },
+    {
       "source": "/(.*)",
       "destination": "/api/ssr-handler"
     }
