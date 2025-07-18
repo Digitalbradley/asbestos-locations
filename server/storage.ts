@@ -68,7 +68,7 @@ export interface IStorage {
     assignedToFirm?: string;
   }): Promise<{ submissions: ContactSubmission[]; total: number; }>;
   updateContactSubmission(id: number, updates: Partial<ContactSubmission>): Promise<ContactSubmission | null>;
-  
+
   // Lead qualification methods
   qualifyLead(submissionId: number, qualificationData: {
     qualityScore: number;
@@ -95,6 +95,7 @@ export interface IStorage {
 
   // City Proximity
   getNearestCities(cityId: number, limit?: number): Promise<Array<{id: number, name: string, slug: string, distance: number, facilityCount: number}>>;
+  getRelatedCities(cityId: number, limit?: number): Promise<Array<{id: number, name: string, slug: string, facilityCount: number}>>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -108,7 +109,7 @@ export class DatabaseStorage implements IStorage {
     if (!state) return undefined;
 
     const stateCities = await db.select().from(cities).where(eq(cities.stateId, state.id)).orderBy(desc(cities.facilityCount));
-    
+
     return {
       ...state,
       cities: stateCities,
@@ -376,7 +377,7 @@ export class DatabaseStorage implements IStorage {
 
   async searchFacilities(query: string, limit: number = 10): Promise<FacilityWithRelations[]> {
     const searchPattern = `%${query.toLowerCase()}%`;
-    
+
     const results = await db
       .select({
         facility: facilities,
@@ -490,19 +491,19 @@ export class DatabaseStorage implements IStorage {
 
     let query = db.select().from(contactSubmissions);
     let conditions: any[] = [];
-    
+
     if (status) {
       conditions.push(eq(contactSubmissions.status, status));
     }
-    
+
     if (qualificationLevel) {
       conditions.push(eq(contactSubmissions.qualificationLevel, qualificationLevel));
     }
-    
+
     if (assignedToFirm) {
       conditions.push(eq(contactSubmissions.assignedToFirm, assignedToFirm));
     }
-    
+
     if (conditions.length > 0) {
       query = query.where(and(...conditions));
     }
@@ -525,7 +526,7 @@ export class DatabaseStorage implements IStorage {
       .set({ ...updates, updatedAt: new Date() })
       .where(eq(contactSubmissions.id, id))
       .returning();
-    
+
     return updatedSubmission || null;
   }
 
@@ -549,7 +550,7 @@ export class DatabaseStorage implements IStorage {
       })
       .where(eq(contactSubmissions.id, submissionId))
       .returning();
-    
+
     return updatedSubmission;
   }
 
@@ -563,7 +564,7 @@ export class DatabaseStorage implements IStorage {
       })
       .where(eq(contactSubmissions.id, submissionId))
       .returning();
-    
+
     return updatedSubmission;
   }
 
@@ -576,7 +577,7 @@ export class DatabaseStorage implements IStorage {
       })
       .where(eq(contactSubmissions.id, submissionId))
       .returning();
-    
+
     return updatedSubmission;
   }
 
@@ -589,7 +590,7 @@ export class DatabaseStorage implements IStorage {
         .where(and(eq(contentTemplates.isActive, true), eq(contentTemplates.templateType, templateType)))
         .orderBy(asc(contentTemplates.templateName));
     }
-    
+
     return await db
       .select()
       .from(contentTemplates)
@@ -684,7 +685,7 @@ export class DatabaseStorage implements IStorage {
       .select()
       .from(facilities)
       .where(eq(facilities.id, facilityId));
-    
+
     if (!facility || !facility.latitude || !facility.longitude) {
       return;
     }
@@ -702,10 +703,10 @@ export class DatabaseStorage implements IStorage {
 
     // Calculate distances and store proximity data
     const proximityData: InsertFacilityProximity[] = [];
-    
+
     for (const otherFacility of otherFacilities) {
       if (!otherFacility.latitude || !otherFacility.longitude) continue;
-      
+
       const distance = this.calculateHaversineDistance(
         parseFloat(facility.latitude!),
         parseFloat(facility.longitude!),
@@ -739,7 +740,7 @@ export class DatabaseStorage implements IStorage {
 
   async getNearestCities(cityId: number, limit: number = 10): Promise<Array<{id: number, name: string, slug: string, distance: number, facilityCount: number}>> {
     console.log(`Getting nearest cities for city ID: ${cityId}`);
-    
+
     // Get the target city
     const [targetCity] = await db
       .select()
@@ -781,16 +782,64 @@ export class DatabaseStorage implements IStorage {
     return citiesWithDistance;
   }
 
+  async getRelatedCities(cityId: number, limit: number = 10): Promise<Array<{id: number, name: string, slug: string, facilityCount: number}>> {
+    console.log(`🔍 Getting related cities for city ID: ${cityId}`);
+
+    try {
+      // Get the target city
+      const [targetCity] = await db
+        .select()
+        .from(cities)
+        .where(eq(cities.id, cityId))
+        .limit(1);
+
+      console.log(`✅ Target city found:`, targetCity);
+
+      if (!targetCity) {
+        console.log('❌ No target city found');
+        return [];
+      }
+
+      // Get other cities in the same state with facilities (no fake distance data)
+      const relatedCities = await db
+        .select({
+          id: cities.id,
+          name: cities.name,
+          slug: cities.slug,
+          facilityCount: cities.facilityCount,
+        })
+        .from(cities)
+        .where(and(
+          eq(cities.stateId, targetCity.stateId),
+          sql`${cities.facilityCount} > 0`,
+          sql`${cities.id} != ${cityId}`
+        ))
+        .orderBy(desc(cities.facilityCount))
+        .limit(limit);
+
+      console.log(`✅ Returning ${relatedCities.length} related cities`);
+      return relatedCities.map(city => ({
+        id: city.id,
+        name: city.name,
+        slug: city.slug,
+        facilityCount: city.facilityCount || 0,
+      }));
+    } catch (error) {
+      console.error('❌ Database error in getRelatedCities:', error);
+      throw error;
+    }
+  }
+
   // Helper function for distance calculation
   private calculateHaversineDistance(lat1: number, lon1: number, lat2: number, lon2: number): number {
     const R = 3959; // Earth's radius in miles
     const dLat = (lat2 - lat1) * Math.PI / 180;
     const dLon = (lon2 - lon1) * Math.PI / 180;
-    
+
     const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
       Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
       Math.sin(dLon/2) * Math.sin(dLon/2);
-    
+
     const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
     return R * c;
   }
