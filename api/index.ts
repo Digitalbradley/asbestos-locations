@@ -533,8 +533,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       }
     }
 
-    // Handle nearest cities route
-    if (path?.includes('/api/cities/') && path.endsWith('/nearest')) {
+    // Handle related cities route - MUST BE BEFORE general city route
+    if (path?.startsWith('/api/cities/') && path.endsWith('/related')) {
       const pathParts = path.split('/');
       const cityId = parseInt(pathParts[3]);
       
@@ -544,7 +544,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       }
       
       try {
-        console.log(`Getting nearest cities for city ID: ${cityId}`);
+        console.log('🚀 Related cities route called for cityId:', cityId);
+        console.log('🔍 Getting related cities for city ID:', cityId);
         
         // Get the target city
         const [targetCity] = await db
@@ -553,43 +554,37 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
           .where(eq(schema.cities.id, cityId))
           .limit(1);
 
-        console.log(`Target city found:`, targetCity);
+        console.log('✅ Target city found:', targetCity);
 
         if (!targetCity) {
-          console.log('No target city found');
+          console.log('❌ No target city found');
           res.status(404).json({ message: 'City not found' });
           return;
         }
 
-        // For now, just get other cities in the same state with facilities
-        const allCities = await db
-          .select()
-          .from(schema.cities)
-          .where(and(
-            eq(schema.cities.stateId, targetCity.stateId),
-            sql`${schema.cities.facilityCount} > 0`
-          ));
+        // Get related cities (same state, ordered by facility count, excluding current city)
+        const relatedCities = await db.select({
+          id: schema.cities.id,
+          name: schema.cities.name,
+          slug: schema.cities.slug,
+          facilityCount: schema.cities.facilityCount
+        })
+        .from(schema.cities)
+        .where(and(
+          eq(schema.cities.stateId, targetCity.stateId),
+          ne(schema.cities.id, cityId),
+          sql`${schema.cities.facilityCount} > 0`
+        ))
+        .orderBy(desc(schema.cities.facilityCount))
+        .limit(10);
 
-        console.log(`Found ${allCities.length} cities in same state`);
-
-        // Return cities with estimated distances (placeholder)
-        const citiesWithDistance = allCities
-          .filter(city => city.id !== cityId)
-          .slice(0, 10)
-          .map((city, index) => ({
-            id: city.id,
-            name: city.name,
-            slug: city.slug,
-            facilityCount: city.facilityCount || 0,
-            distance: Math.round((index + 1) * 15.5 * 10) / 10 // Estimated distances
-          }));
-
-        console.log(`Returning ${citiesWithDistance.length} cities`);
-        res.status(200).json(citiesWithDistance);
+        console.log('✅ Returning', relatedCities.length, 'related cities');
+        console.log('✅ Successfully got', relatedCities.length, 'related cities');
+        res.status(200).json(relatedCities);
         return;
       } catch (error) {
-        console.error('Error fetching nearest cities:', error);
-        res.status(500).json({ message: 'Failed to fetch nearest cities' });
+        console.error('❌ Error fetching related cities:', error);
+        res.status(500).json({ message: 'Failed to fetch related cities' });
         return;
       }
     }
