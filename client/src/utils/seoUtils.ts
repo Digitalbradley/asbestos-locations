@@ -1,3 +1,5 @@
+// Add this to the top of your production seoUtils.ts file
+console.log('seoUtils.ts file loaded successfully');
 /**
  * Client-side SEO utility functions for dynamic meta tag management
  */
