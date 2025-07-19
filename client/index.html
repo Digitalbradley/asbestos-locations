@@ -7,18 +7,6 @@
     <!-- Google AdSense -->
     <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-XXXXXXXXXXXXXXXXX"
          crossorigin="anonymous"></script>
-    
-    <!-- Redirect to SSR handler for search engines -->
-    <script>
-      // Check if this is a bot/crawler
-      const userAgent = navigator.userAgent.toLowerCase();
-      const isBotUA = /bot|crawler|spider|crawling|facebook|twitter|google|bing|msn|duckduckbot|teoma|slurp|yandex/i.test(userAgent);
-      
-      // For bots, redirect to SSR handler
-      if (isBotUA) {
-        window.location.href = '/api/ssr-handler';
-      }
-    </script>
   </head>
   <body>
     <div id="root"></div>
