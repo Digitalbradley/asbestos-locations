@@ -6,10 +6,9 @@ export default function Footer() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
           <div>
-            <h4 className="text-xl font-bold mb-4">AsbestosExposureSites.com</h4>
+            <h4 className="text-xl font-bold mb-4 text-white">AsbestosExposureSites.com</h4>
             <p className="text-muted text-sm">
-              Helping mesothelioma victims identify asbestos exposure sites across the United States. 
-              Get the legal help you deserve.
+              Comprehensive directory of asbestos exposure sites helping mesothelioma victims identify where they were exposed.
             </p>
           </div>
           
