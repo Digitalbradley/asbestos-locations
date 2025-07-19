@@ -45,7 +45,11 @@ export function generateFooterHTML(): string {
               <li style="margin-bottom: 0.5rem;"><a href="/category/commercial-buildings" style="color: #9ca3af; text-decoration: none;">Commercial Buildings</a></li>
               <li style="margin-bottom: 0.5rem;"><a href="/category/power-plants" style="color: #9ca3af; text-decoration: none;">Power Plants</a></li>
               <li style="margin-bottom: 0.5rem;"><a href="/category/shipyards" style="color: #9ca3af; text-decoration: none;">Shipyards</a></li>
-              <li style="margin-bottom: 0.5rem;"><a href="/#facility-types" style="color: #9ca3af; text-decoration: none;">View All Types →</a></li>
+              <li style="margin-bottom: 0.5rem;"><a href="/category/government" style="color: #9ca3af; text-decoration: none;">Government</a></li>
+              <li style="margin-bottom: 0.5rem;"><a href="/category/hospitals" style="color: #9ca3af; text-decoration: none;">Hospitals</a></li>
+              <li style="margin-bottom: 0.5rem;"><a href="/category/schools" style="color: #9ca3af; text-decoration: none;">Schools</a></li>
+              <li style="margin-bottom: 0.5rem;"><a href="/category/transportation" style="color: #9ca3af; text-decoration: none;">Transportation</a></li>
+              <li style="margin-bottom: 0.5rem;"><a href="/category/residential" style="color: #9ca3af; text-decoration: none;">Residential</a></li>
             </ul>
           </div>
           
