@@ -55,6 +55,15 @@ export default function Header() {
                   <Link href="/category/hospitals" className="block px-4 py-2 text-sm hover:bg-gray-100">
                     <span className="font-medium">Hospitals</span>
                   </Link>
+                  <Link href="/category/schools" className="block px-4 py-2 text-sm hover:bg-gray-100">
+                    <span className="font-medium">Schools</span>
+                  </Link>
+                  <Link href="/category/transportation" className="block px-4 py-2 text-sm hover:bg-gray-100">
+                    <span className="font-medium">Transportation</span>
+                  </Link>
+                  <Link href="/category/residential" className="block px-4 py-2 text-sm hover:bg-gray-100">
+                    <span className="font-medium">Residential</span>
+                  </Link>
                   <hr className="my-2" />
                   <Link href="/#facility-types" className="block px-4 py-2 text-sm text-primary hover:bg-gray-100">
                     View All Facility Types →
