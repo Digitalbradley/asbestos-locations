@@ -138,6 +138,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
                 ` : ''}
               </div>
             `;
+            ssrContent += generateFooterHTML();
           } else {
             ssrContent = `
               <div style="max-width: 1200px; margin: 0 auto; padding: 20px; text-align: center;">
