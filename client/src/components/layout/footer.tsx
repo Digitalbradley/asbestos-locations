@@ -14,7 +14,18 @@ export default function Footer() {
           </div>
           
           <div>
-            <h5 className="font-semibold mb-4">Florida Sites</h5>
+            <h5 className="font-semibold mb-4">All States</h5>
+            <ul className="space-y-2 text-sm text-muted">
+              <li><Link href="/florida" className="hover:text-background transition-colors">Florida</Link></li>
+              <li>Alabama (Coming Soon)</li>
+              <li>California (Coming Soon)</li>
+              <li>Texas (Coming Soon)</li>
+              <li>New York (Coming Soon)</li>
+            </ul>
+          </div>
+          
+          <div>
+            <h5 className="font-semibold mb-4">Florida Cities</h5>
             <ul className="space-y-2 text-sm text-muted">
               <li><Link href="/florida" className="hover:text-background transition-colors">Florida Overview</Link></li>
               <li><Link href="/florida/miami" className="hover:text-background transition-colors">Miami</Link></li>
