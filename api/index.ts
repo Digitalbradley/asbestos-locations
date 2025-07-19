@@ -81,7 +81,7 @@ if (isBot && (req.url === '/' || req.url === '' || !req.url || req.url === '/ind
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
-  
+
   if (req.method === 'OPTIONS') {
     res.status(200).end();
     return;
@@ -95,7 +95,7 @@ if (isBot && (req.url === '/' || req.url === '' || !req.url || req.url === '/ind
 // Only redirect if it's the homepage AND not an API call
 if ((path === '/' || path === '' || path === '/index.html') && !path.startsWith('/api/')) {
   console.log('🏠 HOMEPAGE REQUEST DETECTED in API index - redirecting to SSR handler');
-  
+
   // Import and call the SSR handler directly
   const { default: ssrHandler } = await import('./ssr-handler');
   return await ssrHandler(req, res);
@@ -114,6 +114,8 @@ if ((path === '/' || path === '' || path === '/index.html') && !path.startsWith(
       res.status(200).json({ status: 'ok', timestamp: new Date().toISOString() });
       return;
     }
+
+
 
     // Sitemap route
     if (path === '/sitemap-florida.xml') {
@@ -148,7 +150,7 @@ if ((path === '/' || path === '' || path === '/index.html') && !path.startsWith(
     <changefreq>weekly</changefreq>
     <priority>0.9</priority>
   </url>
-  
+
   <!-- Florida Cities (${floridaCities.length} cities) -->`;
 
       // Add city URLs
@@ -163,7 +165,7 @@ if ((path === '/' || path === '' || path === '/index.html') && !path.startsWith(
       }
 
       sitemapContent += `
-  
+
   <!-- Florida Facilities (${facilityUrls.length} facilities) -->`;
 
       // Add facility URLs
@@ -184,7 +186,7 @@ if ((path === '/' || path === '' || path === '/index.html') && !path.startsWith(
       res.status(200).send(sitemapContent);
       return;
     }
-    
+
     // Handle API routes with direct database queries
     if (path === '/api/states') {
       const states = await db.select().from(schema.states);
@@ -202,12 +204,12 @@ if ((path === '/' || path === '' || path === '/index.html') && !path.startsWith(
       })
       .from(schema.states)
       .where(eq(schema.states.slug, slug));
-      
+
       if (!state) {
         res.status(404).json({ message: 'State not found' });
         return;
       }
-      
+
       // Get cities for this state
       const cities = await db.select({
         id: schema.cities.id,
@@ -218,13 +220,13 @@ if ((path === '/' || path === '' || path === '/index.html') && !path.startsWith(
       .from(schema.cities)
       .where(eq(schema.cities.stateId, state.id))
       .orderBy(desc(schema.cities.facilityCount));
-      
-      
+
+
       const stateWithCities = {
         ...state,
         cities: cities
       };
-      
+
       res.status(200).json(stateWithCities);
       return;
     }
@@ -239,14 +241,14 @@ if ((path === '/' || path === '' || path === '/index.html') && !path.startsWith(
     if (path === '/api/facilities' || (path?.startsWith('/api/facilities?') && Object.keys(req.query).length > 0)) {
       const cityId = req.query.cityId ? parseInt(req.query.cityId as string) : null;
       const limit = req.query.limit ? parseInt(req.query.limit as string) : 100;
-      
+
       let whereClause;
       if (cityId) {
         whereClause = eq(schema.facilities.cityId, cityId);
       }
-      
+
       const facilities = await buildFacilityQuery(whereClause, limit);
-      
+
       res.status(200).json(facilities);
       return;
     }
@@ -257,25 +259,25 @@ if ((path === '/' || path === '' || path === '/index.html') && !path.startsWith(
       const stateSlug = pathParts[3];
       const citySlug = pathParts[4];
       const facilitySlug = pathParts[5].replace('-asbestos-exposure', ''); // Remove suffix if present
-      
+
       console.log('Individual facility route - State:', stateSlug, 'City:', citySlug, 'Facility:', facilitySlug);
-      
+
       if (stateSlug && citySlug && facilitySlug) {
         const whereClause = and(
           eq(schema.facilities.slug, facilitySlug),
           eq(schema.cities.slug, citySlug),
           eq(schema.states.slug, stateSlug)
         );
-        
+
         const facilities = await buildFacilityQuery(whereClause, 1);
         const facility = facilities[0];
-        
+
         if (!facility) {
           console.log('Facility not found for:', stateSlug, citySlug, facilitySlug);
           res.status(404).json({ message: 'Facility not found' });
           return;
         }
-        
+
         console.log('Found facility:', facility.name, facility.id);
         res.status(200).json(facility);
         return;
@@ -288,268 +290,16 @@ if ((path === '/' || path === '' || path === '/index.html') && !path.startsWith(
       const pathParts = path.split('/');
       const stateSlug = pathParts[3];
       const citySlug = pathParts[4];
-      
+
       if (stateSlug && citySlug) {
         const whereClause = and(
           eq(schema.cities.slug, citySlug),
           eq(schema.states.slug, stateSlug)
         );
-        
+
         const facilities = await buildFacilityQuery(whereClause);
-        
+
         res.status(200).json(facilities);
-        return;
-      }
-    }
-
-    // Handle city routes (general) - MOVED BELOW city facilities route
-    if (path?.includes('/api/cities/')) {
-      const pathParts = path.split('/');
-      const stateSlug = pathParts[3];
-      const citySlug = pathParts[4];
-      
-      if (stateSlug && citySlug) {
-        const [city] = await db.select({
-          id: schema.cities.id,
-          name: schema.cities.name,
-          slug: schema.cities.slug,
-          facilityCount: schema.cities.facilityCount,
-          state: {
-            id: schema.states.id,
-            name: schema.states.name,
-            slug: schema.states.slug
-          }
-        })
-        .from(schema.cities)
-        .leftJoin(schema.states, eq(schema.cities.stateId, schema.states.id))
-        .where(and(
-          eq(schema.cities.slug, citySlug),
-          eq(schema.states.slug, stateSlug)
-        ));
-        
-        if (!city) {
-          res.status(404).json({ message: 'City not found' });
-          return;
-        }
-        res.status(200).json(city);
-        return;
-      }
-    }
-
-    // Handle search
-    if (path?.startsWith('/api/search')) {
-      const query = req.query.q as string;
-      const limit = req.query.limit ? parseInt(req.query.limit as string) : 10;
-      
-      if (!query) {
-        res.status(400).json({ message: 'Search query is required' });
-        return;
-      }
-
-      const results = await db.select({
-        id: schema.facilities.id,
-        name: schema.facilities.name,
-        slug: schema.facilities.slug,
-        address: schema.facilities.address,
-        city: {
-          id: schema.cities.id,
-          name: schema.cities.name,
-          slug: schema.cities.slug
-        },
-        state: {
-          id: schema.states.id,
-          name: schema.states.name,
-          slug: schema.states.slug
-        }
-      })
-      .from(schema.facilities)
-      .leftJoin(schema.cities, eq(schema.facilities.cityId, schema.cities.id))
-      .leftJoin(schema.states, eq(schema.cities.stateId, schema.states.id))
-      .where(like(schema.facilities.name, `%${query}%`))
-      .limit(limit);
-      
-      res.status(200).json(results);
-      return;
-    }
-
-    // Handle content templates
-    if (path?.startsWith('/api/content-templates/')) {
-      const pathParts = path.split('/');
-      const templateType = pathParts[3]; // state, city, or facility
-      const templateName = pathParts[4];
-      
-      if (templateType && templateName) {
-        const [template] = await db.select({
-          id: schema.contentTemplates.id,
-          templateType: schema.contentTemplates.templateType,
-          templateName: schema.contentTemplates.templateName,
-          contentBlocks: schema.contentTemplates.contentBlocks,
-          placeholders: schema.contentTemplates.placeholders,
-          isActive: schema.contentTemplates.isActive
-        })
-          .from(schema.contentTemplates)
-          .where(and(
-            eq(schema.contentTemplates.templateType, templateType),
-            eq(schema.contentTemplates.templateName, templateName)
-          ));
-        
-        if (!template) {
-          res.status(404).json({ message: 'Content template not found' });
-          return;
-        }
-        res.status(200).json(template);
-        return;
-      }
-    }
-
-    // Handle nearby facilities route
-    if (path?.includes('/api/facilities/') && path.endsWith('/nearby')) {
-      const facilityId = parseInt(path.split('/')[3]);
-      
-      if (facilityId) {
-        const facility = await db.select()
-          .from(schema.facilities)
-          .where(eq(schema.facilities.id, facilityId))
-          .limit(1);
-        
-        if (!facility || facility.length === 0) {
-          res.status(404).json({ message: 'Facility not found' });
-          return;
-        }
-        
-        const targetFacility = facility[0];
-        
-        // Get nearby facilities in the same city
-        const nearbyFacilities = await buildFacilityQuery(
-          and(
-            eq(schema.facilities.cityId, targetFacility.cityId),
-            ne(schema.facilities.id, facilityId)
-          ),
-          10
-        );
-        
-        res.status(200).json(nearbyFacilities);
-        return;
-      }
-    }
-
-    // Handle related facilities route
-    if (path?.includes('/api/facilities/') && path.endsWith('/related')) {
-      const facilityId = parseInt(path.split('/')[3]);
-      
-      if (facilityId) {
-        const facility = await db.select()
-          .from(schema.facilities)
-          .where(eq(schema.facilities.id, facilityId))
-          .limit(1);
-        
-        if (!facility || facility.length === 0) {
-          res.status(404).json({ message: 'Facility not found' });
-          return;
-        }
-        
-        const targetFacility = facility[0];
-        
-        // Get related facilities (same category)
-        let relatedFacilities = [];
-        if (targetFacility.categoryId !== null) {
-          relatedFacilities = await buildFacilityQuery(
-            and(
-              eq(schema.facilities.categoryId, targetFacility.categoryId),
-              ne(schema.facilities.id, facilityId)
-            ),
-            10
-          );
-        }
-        
-        res.status(200).json(relatedFacilities);
-        return;
-      }
-    }
-
-    // Handle lead qualification and Google Sheets POST request
-    if (req.method === 'POST' && path === '/api/leads') {
-      const { 
-        name, 
-        email, 
-        phone, 
-        message, 
-        cityName, 
-        facilityName, 
-        companyName,
-        inquiryType = 'general',
-        subject = 'Contact Form Submission'
-      } = req.body;
-      
-      if (!name || !email || !phone || !message) {
-        res.status(400).json({ message: 'Missing required fields' });
-        return;
-      }
-      
-      try {
-        // Import lead qualification and Google Sheets utilities
-        const { qualifyLead } = await import('../server/utils/leadQualification.js');
-        const { addLeadToSheet } = await import('../server/utils/googleSheets.js');
-        
-        // Qualify the lead
-        const qualificationResult = qualifyLead(
-          name, 
-          email, 
-          phone, 
-          message, 
-          inquiryType, 
-          subject, 
-          cityName, 
-          facilityName, 
-          companyName
-        );
-        
-        const { 
-          qualityScore, 
-          qualificationLevel, 
-          highValueKeywords, 
-          contactQuality, 
-          wordCount 
-        } = qualificationResult;
-        
-        // Store in database
-        const [newSubmission] = await db.insert(schema.contactSubmissions).values({
-          name,
-          email,
-          phone,
-          message,
-          cityName,
-          facilityName,
-          companyName,
-          inquiryType,
-          subject,
-          qualityScore,
-          qualificationLevel,
-          highValueKeywords,
-          contactQuality,
-          wordCount,
-          submissionDate: new Date()
-        }).returning();
-        
-        // Add to Google Sheets
-        const leadData = {
-          name, email, phone, message, inquiryType, subject,
-          cityName, facilityName, companyName,
-          qualityScore, qualificationLevel, highValueKeywords,
-          contactQuality, wordCount, submissionDate: new Date()
-        };
-        
-        await addLeadToSheet(leadData);
-        
-        res.status(200).json({ 
-          message: 'Lead submitted successfully',
-          qualificationResult,
-          submissionId: newSubmission.id
-        });
-        return;
-      } catch (error) {
-        console.error('Lead submission error:', error);
-        res.status(500).json({ message: 'Internal server error' });
         return;
       }
     }
@@ -558,16 +308,16 @@ if ((path === '/' || path === '' || path === '/index.html') && !path.startsWith(
     if (path?.startsWith('/api/cities/') && path.endsWith('/related')) {
       const pathParts = path.split('/');
       const cityId = parseInt(pathParts[3]);
-      
+
       if (isNaN(cityId)) {
         res.status(400).json({ message: 'Invalid city ID' });
         return;
       }
-      
+
       try {
         console.log('🚀 Related cities route called for cityId:', cityId);
         console.log('🔍 Getting related cities for city ID:', cityId);
-        
+
         // Get the target city
         const [targetCity] = await db
           .select()
@@ -610,6 +360,258 @@ if ((path === '/' || path === '' || path === '/index.html') && !path.startsWith(
       }
     }
 
+    // Handle city routes (general) - MOVED BELOW city facilities and related cities routes
+    if (path?.includes('/api/cities/')) {
+      const pathParts = path.split('/');
+      const stateSlug = pathParts[3];
+      const citySlug = pathParts[4];
+
+      if (stateSlug && citySlug) {
+        const [city] = await db.select({
+          id: schema.cities.id,
+          name: schema.cities.name,
+          slug: schema.cities.slug,
+          facilityCount: schema.cities.facilityCount,
+          state: {
+            id: schema.states.id,
+            name: schema.states.name,
+            slug: schema.states.slug
+          }
+        })
+        .from(schema.cities)
+        .leftJoin(schema.states, eq(schema.cities.stateId, schema.states.id))
+        .where(and(
+          eq(schema.cities.slug, citySlug),
+          eq(schema.states.slug, stateSlug)
+        ));
+
+        if (!city) {
+          res.status(404).json({ message: 'City not found' });
+          return;
+        }
+        res.status(200).json(city);
+        return;
+      }
+    }
+
+    // Handle search
+    if (path?.startsWith('/api/search')) {
+      const query = req.query.q as string;
+      const limit = req.query.limit ? parseInt(req.query.limit as string) : 10;
+
+      if (!query) {
+        res.status(400).json({ message: 'Search query is required' });
+        return;
+      }
+
+      const results = await db.select({
+        id: schema.facilities.id,
+        name: schema.facilities.name,
+        slug: schema.facilities.slug,
+        address: schema.facilities.address,
+        city: {
+          id: schema.cities.id,
+          name: schema.cities.name,
+          slug: schema.cities.slug
+        },
+        state: {
+          id: schema.states.id,
+          name: schema.states.name,
+          slug: schema.states.slug
+        }
+      })
+      .from(schema.facilities)
+      .leftJoin(schema.cities, eq(schema.facilities.cityId, schema.cities.id))
+      .leftJoin(schema.states, eq(schema.cities.stateId, schema.states.id))
+      .where(like(schema.facilities.name, `%${query}%`))
+      .limit(limit);
+
+      res.status(200).json(results);
+      return;
+    }
+
+    // Handle content templates
+    if (path?.startsWith('/api/content-templates/')) {
+      const pathParts = path.split('/');
+      const templateType = pathParts[3]; // state, city, or facility
+      const templateName = pathParts[4];
+
+      if (templateType && templateName) {
+        const [template] = await db.select({
+          id: schema.contentTemplates.id,
+          templateType: schema.contentTemplates.templateType,
+          templateName: schema.contentTemplates.templateName,
+          contentBlocks: schema.contentTemplates.contentBlocks,
+          placeholders: schema.contentTemplates.placeholders,
+          isActive: schema.contentTemplates.isActive
+        })
+          .from(schema.contentTemplates)
+          .where(and(
+            eq(schema.contentTemplates.templateType, templateType),
+            eq(schema.contentTemplates.templateName, templateName)
+          ));
+
+        if (!template) {
+          res.status(404).json({ message: 'Content template not found' });
+          return;
+        }
+        res.status(200).json(template);
+        return;
+      }
+    }
+
+    // Handle nearby facilities route
+    if (path?.includes('/api/facilities/') && path.endsWith('/nearby')) {
+      const facilityId = parseInt(path.split('/')[3]);
+
+      if (facilityId) {
+        const facility = await db.select()
+          .from(schema.facilities)
+          .where(eq(schema.facilities.id, facilityId))
+          .limit(1);
+
+        if (!facility || facility.length === 0) {
+          res.status(404).json({ message: 'Facility not found' });
+          return;
+        }
+
+        const targetFacility = facility[0];
+
+        // Get nearby facilities in the same city
+        const nearbyFacilities = await buildFacilityQuery(
+          and(
+            eq(schema.facilities.cityId, targetFacility.cityId),
+            ne(schema.facilities.id, facilityId)
+          ),
+          10
+        );
+
+        res.status(200).json(nearbyFacilities);
+        return;
+      }
+    }
+
+    // Handle related facilities route
+    if (path?.includes('/api/facilities/') && path.endsWith('/related')) {
+      const facilityId = parseInt(path.split('/')[3]);
+
+      if (facilityId) {
+        const facility = await db.select()
+          .from(schema.facilities)
+          .where(eq(schema.facilities.id, facilityId))
+          .limit(1);
+
+        if (!facility || facility.length === 0) {
+          res.status(404).json({ message: 'Facility not found' });
+          return;
+        }
+
+        const targetFacility = facility[0];
+
+        // Get related facilities (same category)
+        let relatedFacilities = [];
+        if (targetFacility.categoryId !== null) {
+          relatedFacilities = await buildFacilityQuery(
+            and(
+              eq(schema.facilities.categoryId, targetFacility.categoryId),
+              ne(schema.facilities.id, facilityId)
+            ),
+            10
+          );
+        }
+
+        res.status(200).json(relatedFacilities);
+        return;
+      }
+    }
+
+    // Handle lead qualification and Google Sheets POST request
+    if (req.method === 'POST' && path === '/api/leads') {
+      const { 
+        name, 
+        email, 
+        phone, 
+        message, 
+        cityName, 
+        facilityName, 
+        companyName,
+        inquiryType = 'general',
+        subject = 'Contact Form Submission'
+      } = req.body;
+
+      if (!name || !email || !phone || !message) {
+        res.status(400).json({ message: 'Missing required fields' });
+        return;
+      }
+
+      try {
+        // Import lead qualification and Google Sheets utilities
+        const { qualifyLead } = await import('../server/utils/leadQualification.js');
+        const { addLeadToSheet } = await import('../server/utils/googleSheets.js');
+
+        // Qualify the lead
+        const qualificationResult = qualifyLead(
+          name, 
+          email, 
+          phone, 
+          message, 
+          inquiryType, 
+          subject, 
+          cityName, 
+          facilityName, 
+          companyName
+        );
+
+        const { 
+          qualityScore, 
+          qualificationLevel, 
+          highValueKeywords, 
+          contactQuality, 
+          wordCount 
+        } = qualificationResult;
+
+        // Store in database
+        const [newSubmission] = await db.insert(schema.contactSubmissions).values({
+          name,
+          email,
+          phone,
+          message,
+          cityName,
+          facilityName,
+          companyName,
+          inquiryType,
+          subject,
+          qualityScore,
+          qualificationLevel,
+          highValueKeywords,
+          contactQuality,
+          wordCount,
+          submissionDate: new Date()
+        }).returning();
+
+        // Add to Google Sheets
+        const leadData = {
+          name, email, phone, message, inquiryType, subject,
+          cityName, facilityName, companyName,
+          qualityScore, qualificationLevel, highValueKeywords,
+          contactQuality, wordCount, submissionDate: new Date()
+        };
+
+        await addLeadToSheet(leadData);
+
+        res.status(200).json({ 
+          message: 'Lead submitted successfully',
+          qualificationResult,
+          submissionId: newSubmission.id
+        });
+        return;
+      } catch (error) {
+        console.error('Lead submission error:', error);
+        res.status(500).json({ message: 'Internal server error' });
+        return;
+      }
+    }
+
     // Handle SEO metadata route
     if (path?.startsWith('/api/seo-metadata')) {
       const { generateSEOMetadata } = await import('./seo.js');
@@ -620,7 +622,7 @@ if ((path === '/' || path === '' || path === '/index.html') && !path.startsWith(
 
     // Default 404 for unhandled routes
     res.status(404).json({ message: 'Route not found' });
-    
+
   } catch (error) {
     console.error('API Error:', error);
     res.status(500).json({ message: 'Internal server error' });
