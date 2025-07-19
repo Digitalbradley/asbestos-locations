@@ -200,13 +200,18 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             pageTitle = `Asbestos Exposure Sites in ${cityData.name}, ${cityData.state.name} - ${cityData.facilityCount || 0} Facilities`;
             pageDescription = `Complete list of asbestos exposure sites in ${cityData.name}, ${cityData.state.name}. Find facilities where workers may have been exposed to asbestos-containing materials.`;
 
-            ssrContent = `
-              <div style="max-width: 1200px; margin: 0 auto; padding: 20px;">
-                <nav style="margin-bottom: 1rem;">
-                  <a href="/" style="color: #0066cc;">Home</a> > 
-                  <a href="/${cityData.state.slug}" style="color: #0066cc;">${cityData.state.name}</a> > 
-                  ${cityData.name}
-                </nav>
+            // Define breadcrumb items
+            const breadcrumbItems = [
+              { label: 'Home', href: '/' },
+              { label: cityData.state.name, href: `/${cityData.state.slug}` },
+              { label: cityData.name }
+            ];
+
+            // Start building SSR content with navigation
+            ssrContent = generateNavHTML();
+            ssrContent += `<div style="max-width: 1200px; margin: 0 auto; padding: 20px;">`;
+            ssrContent += generateBreadcrumbHTML(breadcrumbItems);
+            ssrContent += `
 
                 <h1 style="font-size: 2.5rem; margin-bottom: 1rem;">Asbestos Exposure Sites in ${cityData.name}, ${cityData.state.name}</h1>
                 <p style="font-size: 1.25rem; margin-bottom: 2rem;">
@@ -304,8 +309,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
                     </div>
                   `;
                 })()}
-              </div>
             `;
+            ssrContent += `</div>`; // Close the container div
             ssrContent += generateFooterHTML();
           } else {
             ssrContent = `
