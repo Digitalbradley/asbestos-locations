@@ -202,6 +202,9 @@ const categoryInfo: Record<string, {
   }
 };
 
+// Export categoryInfo for use in other components
+export { categoryInfo };
+
 export default function CategoryPage() {
   const [, params] = useRoute("/:stateSlug/category/:categorySlug");
   const [location] = useLocation();
@@ -307,12 +310,25 @@ export default function CategoryPage() {
           </p>
         </div>
 
-        {/* Google AdSense Block */}
-        <div className="bg-muted/20 border-2 border-dashed border-muted-foreground/30 rounded-lg p-6 mb-8">
-          <div className="text-center text-muted-foreground">
-            <div className="text-sm font-medium mb-1">Advertisement</div>
-            <div className="text-xs">Google AdSense code will be placed here</div>
-            <div className="text-xs mt-2">728x90 Leaderboard or 320x50 Mobile Banner</div>
+        {/* Desktop Ad - 728x90 Leaderboard */}
+        <div className="mb-8 hidden md:block">
+          <div className="bg-muted/20 border-2 border-dashed border-muted-foreground/30 rounded-lg p-6">
+            <div className="text-center text-muted-foreground">
+              <div className="text-sm font-medium mb-1">Advertisement - Desktop</div>
+              <div className="text-xs">Google AdSense Desktop code (728x90 Leaderboard)</div>
+              <div className="text-xs mt-2">data-ad-slot="DESKTOP_SLOT_ID"</div>
+            </div>
+          </div>
+        </div>
+
+        {/* Mobile Ad - 320x50 Banner */}
+        <div className="mb-8 block md:hidden">
+          <div className="bg-muted/20 border-2 border-dashed border-muted-foreground/30 rounded-lg p-6">
+            <div className="text-center text-muted-foreground">
+              <div className="text-sm font-medium mb-1">Advertisement - Mobile</div>
+              <div className="text-xs">Google AdSense Mobile code (320x50 Banner)</div>
+              <div className="text-xs mt-2">data-ad-slot="MOBILE_SLOT_ID"</div>
+            </div>
           </div>
         </div>
 
