@@ -266,13 +266,42 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
                 </div>
                 ` : ''}
 
-                <div style="background: #fef3c7; border: 1px solid #f59e0b; border-radius: 8px; padding: 1.5rem; margin-bottom: 2rem;">
-                  <h3 style="font-size: 1.25rem; font-weight: bold; color: #92400e; margin-bottom: 0.5rem;">Important Information</h3>
-                  <p style="color: #92400e; line-height: 1.6;">
-                    If you worked at any of these facilities in ${cityData.name} and have been diagnosed with mesothelioma, lung cancer, or other asbestos-related diseases, 
-                    you may be entitled to compensation. Contact a qualified attorney to discuss your legal options.
-                  </p>
-                </div>
+                ${(() => {
+                  // Determine variation based on city ID
+                  const variationIndex = cityData.id % 3;
+                  
+                  const importantInfoVariations = [
+                    {
+                      heading: "Important Legal Information",
+                      text: `If you worked at any of the ${cityData.facilityCount || 0} facilities in ${cityData.name} and have been diagnosed with mesothelioma, lung cancer, or other asbestos-related diseases, you may be entitled to significant compensation.`,
+                      linkText: "Get free legal consultation for mesothelioma claims"
+                    },
+                    {
+                      heading: "Workers' Rights & Compensation",
+                      text: `Workers exposed to asbestos at ${cityData.name}'s ${cityData.facilityCount || 0} documented facilities may qualify for substantial settlements if diagnosed with asbestos-related illnesses including mesothelioma, asbestosis, or lung cancer.`,
+                      linkText: "Get free legal consultation for mesothelioma claims"
+                    },
+                    {
+                      heading: "Legal Help Available",
+                      text: `Have you or a loved one worked at facilities in ${cityData.name}? Those diagnosed with mesothelioma or asbestos-related diseases from workplace exposure may have valuable legal claims.`,
+                      linkText: "Get free legal consultation for mesothelioma claims"
+                    }
+                  ];
+
+                  const selectedVariation = importantInfoVariations[variationIndex];
+
+                  return `
+                    <div style="background: #fef3c7; border: 1px solid #f59e0b; border-radius: 8px; padding: 1.5rem; margin-bottom: 2rem;">
+                      <h3 style="font-size: 1.25rem; font-weight: bold; color: #92400e; margin-bottom: 0.5rem;">${selectedVariation.heading}</h3>
+                      <p style="color: #92400e; line-height: 1.6;">
+                        ${selectedVariation.text} 
+                        <a href="/legal-help" style="color: #92400e; text-decoration: underline; font-weight: bold;">
+                          ${selectedVariation.linkText}
+                        </a>.
+                      </p>
+                    </div>
+                  `;
+                })()}
               </div>
             `;
             ssrContent += generateFooterHTML();
