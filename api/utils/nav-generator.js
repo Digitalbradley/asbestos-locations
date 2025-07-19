@@ -44,6 +44,15 @@ export function generateNavHTML() {
                   <a href="/category/hospitals" style="display: block; padding: 0.5rem 1rem; color: #374151; text-decoration: none; font-size: 0.875rem; transition: background 0.2s;">
                     <span style="font-weight: 500;">Hospitals</span>
                   </a>
+                  <a href="/category/schools" style="display: block; padding: 0.5rem 1rem; color: #374151; text-decoration: none; font-size: 0.875rem; transition: background 0.2s;">
+                    <span style="font-weight: 500;">Schools</span>
+                  </a>
+                  <a href="/category/transportation" style="display: block; padding: 0.5rem 1rem; color: #374151; text-decoration: none; font-size: 0.875rem; transition: background 0.2s;">
+                    <span style="font-weight: 500;">Transportation</span>
+                  </a>
+                  <a href="/category/residential" style="display: block; padding: 0.5rem 1rem; color: #374151; text-decoration: none; font-size: 0.875rem; transition: background 0.2s;">
+                    <span style="font-weight: 500;">Residential</span>
+                  </a>
                   <hr style="margin: 0.5rem 0; border: 0; border-top: 1px solid #e5e7eb;">
                   <a href="/#facility-types" style="display: block; padding: 0.5rem 1rem; color: #0891b2; text-decoration: none; font-size: 0.875rem; transition: background 0.2s;">
                     View All Facility Types →
