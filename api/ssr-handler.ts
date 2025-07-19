@@ -32,44 +32,9 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       let pageDescription = 'Comprehensive database of asbestos exposure sites across all states.';
 
       if (pathSegments.length === 0) {
-        // Homepage
-        const statesResponse = await fetch(`${baseUrl}/api/states`);
-        const states = await statesResponse.json();
-
-        ssrContent = `
-          <div style="max-width: 1200px; margin: 0 auto; padding: 20px;">
-            <h1 style="font-size: 2.5rem; margin-bottom: 1rem;">Asbestos Exposure Sites Directory</h1>
-            <p style="font-size: 1.25rem; margin-bottom: 2rem;">
-              Comprehensive database of 87,000+ documented asbestos exposure locations across all 50 states.
-            </p>
-
-            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-bottom: 2rem;">
-              <div style="text-align: center; padding: 1rem; background: #f0f9ff; border-radius: 8px;">
-                <div style="font-size: 2rem; font-weight: bold; color: #0891b2;">87K+</div>
-                <div>Documented Sites</div>
-              </div>
-              <div style="text-align: center; padding: 1rem; background: #f0f9ff; border-radius: 8px;">
-                <div style="font-size: 2rem; font-weight: bold; color: #0891b2;">50</div>
-                <div>States Covered</div>
-              </div>
-              <div style="text-align: center; padding: 1rem; background: #f0f9ff; border-radius: 8px;">
-                <div style="font-size: 2rem; font-weight: bold; color: #0891b2;">Legal</div>
-                <div>Professional Verified</div>
-              </div>
-            </div>
-
-            <h2 style="font-size: 2rem; margin-bottom: 1rem;">Browse by State</h2>
-            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 1rem;">
-              ${Array.isArray(states) ? states.map(state => `
-                <a href="/${state.slug}" style="display: block; padding: 1rem; background: white; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); text-decoration: none; color: inherit;">
-                  <div style="font-weight: bold;">${state.name}</div>
-                  <div style="color: #666; font-size: 0.9rem;">${state.facilityCount || 0} facilities</div>
-                </a>
-              `).join('') : '<p>No states available</p>'}
-            </div>
-          </div>
-        `;
-
+        // Homepage - Using client/index.html, no SSR needed
+        ssrContent = '';
+        
       } else if (pathSegments.length === 1) {
         // State page: /florida
         const stateSlug = pathSegments[0];
