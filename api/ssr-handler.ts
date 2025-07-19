@@ -1,5 +1,7 @@
 import { VercelRequest, VercelResponse } from '@vercel/node';
 import { generateFooterHTML } from './utils/footer-generator.js';
+import { generateNavHTML } from './utils/nav-generator.js';
+import { generateBreadcrumbHTML } from './utils/breadcrumb-generator.js';
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   console.log('🚀 SSR Handler started');
