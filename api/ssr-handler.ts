@@ -420,15 +420,16 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             pageTitle = `${facility.name} - Asbestos Exposure Site in ${facility.city.name}, ${facility.state.name}`;
             pageDescription = `Information about asbestos exposure at ${facility.name} in ${facility.city.name}, ${facility.state.name}. Learn about potential health risks and legal options for workers.`;
 
-            ssrContent = `
-              <div style="max-width: 1200px; margin: 0 auto; padding: 20px;">
-                <nav style="margin-bottom: 1rem;">
-                  <a href="/" style="color: #0066cc;">Home</a> > 
-                  <a href="/${facility.state.slug}" style="color: #0066cc;">${facility.state.name}</a> > 
-                  <a href="/${facility.state.slug}/${facility.city.slug}" style="color: #0066cc;">${facility.city.name}</a> > 
-                  ${facility.name}
-                </nav>
+            ssrContent = generateNavHTML();
+            ssrContent += `<div style="max-width: 1200px; margin: 0 auto; padding: 20px;">`;
+            ssrContent += generateBreadcrumbHTML([
+              { label: 'Home', url: '/' },
+              { label: facility.state.name, url: `/${facility.state.slug}` },
+              { label: facility.city.name, url: `/${facility.state.slug}/${facility.city.slug}` },
+              { label: facility.name, url: null }
+            ]);
 
+            ssrContent += `
                 <h1 style="font-size: 2.5rem; margin-bottom: 1rem;">${facility.name} - Asbestos Exposure Site</h1>
                 <p style="font-size: 1.25rem; margin-bottom: 2rem;">
                   ${facility.address || `${facility.city.name}, ${facility.state.name}`}
