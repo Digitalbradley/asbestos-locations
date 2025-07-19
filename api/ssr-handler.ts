@@ -184,22 +184,12 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
               console.log('City template not found, using basic content');
             }
 
-            // Get all cities in the state for nearest cities functionality
-            let allStateCities = [];
-            try {
-              const allCitiesResponse = await fetch(`${baseUrl}/api/states/${cityData.state.slug}`);
-              const stateWithCities = await allCitiesResponse.json();
-              if (stateWithCities && stateWithCities.cities) {
-                allStateCities = stateWithCities.cities;
-              }
-            } catch (error) {
-              console.log('All state cities not found');
-            }
+
 
             // Get nearest cities
             let nearestCities = [];
             try {
-              const nearestCitiesResponse = await fetch(`${baseUrl}/api/cities/${cityData.id}/nearest`);
+              const nearestCitiesResponse = await fetch(`${baseUrl}/api/cities/${cityData.id}/related`);
               nearestCities = await nearestCitiesResponse.json();
             } catch (error) {
               console.log('Nearest cities not found');
@@ -260,16 +250,16 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
                 ${nearestCities && nearestCities.length > 0 ? `
                 <div style="margin-bottom: 2rem;">
-                  <h2 style="font-size: 2rem; margin-bottom: 1rem;">Ten Nearest Cities to ${cityData.name}</h2>
+                  <h2 style="font-size: 2rem; margin-bottom: 1rem;">Related Cities in Florida</h2>
                   <p style="color: #666; margin-bottom: 1rem;">
-                    Explore asbestos exposure sites in nearby cities within ${cityData.state.name}, sorted by distance from ${cityData.name}.
+                    Explore asbestos exposure sites in other cities within Florida, sorted by number of documented facilities.
                   </p>
                   <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem;">
                     ${nearestCities.slice(0, 10).map(nearbyCity => `
                       <a href="/${cityData.state.slug}/${nearbyCity.slug}" style="display: block; padding: 1rem; background: white; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); text-decoration: none; color: inherit; border: 1px solid #e5e7eb;">
                         <div style="font-weight: bold; color: #0891b2; margin-bottom: 0.5rem;">${nearbyCity.name}</div>
                         <div style="color: #666; font-size: 0.9rem;">${nearbyCity.facilityCount || 0} documented facilities</div>
-                        <div style="color: #888; font-size: 0.8rem; margin-top: 0.25rem;">${nearbyCity.distance || 0} miles from ${cityData.name}</div>
+
                       </a>
                     `).join('')}
                   </div>
