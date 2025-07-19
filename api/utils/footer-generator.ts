@@ -30,22 +30,22 @@ export function generateFooterHTML(): string {
           <div>
             <h5 style="font-weight: 600; margin-bottom: 1rem; color: #ffffff;">Florida Cities</h5>
             <ul style="list-style: none; padding: 0; margin: 0; color: #9ca3af; font-size: 0.875rem;">
+              <li style="margin-bottom: 0.5rem;"><a href="/florida" style="color: #9ca3af; text-decoration: none;">Florida Overview</a></li>
               <li style="margin-bottom: 0.5rem;"><a href="/florida/miami" style="color: #9ca3af; text-decoration: none;">Miami</a></li>
               <li style="margin-bottom: 0.5rem;"><a href="/florida/tampa" style="color: #9ca3af; text-decoration: none;">Tampa</a></li>
               <li style="margin-bottom: 0.5rem;"><a href="/florida/jacksonville" style="color: #9ca3af; text-decoration: none;">Jacksonville</a></li>
               <li style="margin-bottom: 0.5rem;"><a href="/florida/orlando" style="color: #9ca3af; text-decoration: none;">Orlando</a></li>
-              <li style="margin-bottom: 0.5rem;"><a href="/florida/st-petersburg" style="color: #9ca3af; text-decoration: none;">St. Petersburg</a></li>
             </ul>
           </div>
           
           <div>
             <h5 style="font-weight: 600; margin-bottom: 1rem; color: #ffffff;">Facility Types</h5>
             <ul style="list-style: none; padding: 0; margin: 0; color: #9ca3af; font-size: 0.875rem;">
-              <li style="margin-bottom: 0.5rem;"><a href="/categories/shipyards" style="color: #9ca3af; text-decoration: none;">Shipyards</a></li>
-              <li style="margin-bottom: 0.5rem;"><a href="/categories/manufacturing" style="color: #9ca3af; text-decoration: none;">Manufacturing</a></li>
-              <li style="margin-bottom: 0.5rem;"><a href="/categories/power-plants" style="color: #9ca3af; text-decoration: none;">Power Plants</a></li>
-              <li style="margin-bottom: 0.5rem;"><a href="/categories/construction" style="color: #9ca3af; text-decoration: none;">Construction</a></li>
-              <li style="margin-bottom: 0.5rem;"><a href="/categories/schools" style="color: #9ca3af; text-decoration: none;">Schools</a></li>
+              <li style="margin-bottom: 0.5rem;"><a href="/category/manufacturing" style="color: #9ca3af; text-decoration: none;">Manufacturing</a></li>
+              <li style="margin-bottom: 0.5rem;"><a href="/category/commercial-buildings" style="color: #9ca3af; text-decoration: none;">Commercial Buildings</a></li>
+              <li style="margin-bottom: 0.5rem;"><a href="/category/power-plants" style="color: #9ca3af; text-decoration: none;">Power Plants</a></li>
+              <li style="margin-bottom: 0.5rem;"><a href="/category/shipyards" style="color: #9ca3af; text-decoration: none;">Shipyards</a></li>
+              <li style="margin-bottom: 0.5rem;"><a href="/#facility-types" style="color: #9ca3af; text-decoration: none;">View All Types →</a></li>
             </ul>
           </div>
           
@@ -53,22 +53,21 @@ export function generateFooterHTML(): string {
             <h5 style="font-weight: 600; margin-bottom: 1rem; color: #ffffff;">Resources</h5>
             <ul style="list-style: none; padding: 0; margin: 0; color: #9ca3af; font-size: 0.875rem;">
               <li style="margin-bottom: 0.5rem;"><a href="/legal-help" style="color: #9ca3af; text-decoration: none;">Legal Help</a></li>
-              <li style="margin-bottom: 0.5rem;"><a href="/about-us" style="color: #9ca3af; text-decoration: none;">About Us</a></li>
-              <li style="margin-bottom: 0.5rem;"><a href="/contact-us" style="color: #9ca3af; text-decoration: none;">Contact Us</a></li>
-              <li style="margin-bottom: 0.5rem;"><a href="/privacy-policy" style="color: #9ca3af; text-decoration: none;">Privacy Policy</a></li>
-              <li style="margin-bottom: 0.5rem;"><a href="/terms-of-service" style="color: #9ca3af; text-decoration: none;">Terms of Service</a></li>
+              <li style="margin-bottom: 0.5rem;"><a href="/about" style="color: #9ca3af; text-decoration: none;">About Us</a></li>
+              <li style="margin-bottom: 0.5rem;"><a href="/contact" style="color: #9ca3af; text-decoration: none;">Contact Us</a></li>
+              <li style="margin-bottom: 0.5rem;"><a href="/#facility-types" style="color: #9ca3af; text-decoration: none;">Facility Categories</a></li>
             </ul>
           </div>
           
         </div>
         
-        <div style="border-top: 1px solid #4a5568; padding-top: 1.5rem; text-align: center;">
-          <p style="color: #9ca3af; font-size: 0.875rem; margin-bottom: 0.5rem;">
-            © 2025 AsbestosExposureSites.com. All rights reserved.
+        <div style="border-top: 1px solid rgba(156, 163, 175, 0.2); margin-top: 2rem; padding-top: 2rem; text-align: center; font-size: 0.875rem; color: #9ca3af;">
+          <p>&copy; 2025 AsbestosExposureSites.com. All rights reserved. | 
+            <a href="/privacy-policy" style="color: #9ca3af; text-decoration: none; margin-left: 0.25rem;">Privacy Policy</a> | 
+            <a href="/terms-of-service" style="color: #9ca3af; text-decoration: none; margin-left: 0.25rem;">Terms of Service</a> |
+            <a href="/disclaimer" style="color: #9ca3af; text-decoration: none; margin-left: 0.25rem;">Disclaimer</a>
           </p>
-          <p style="color: #718096; font-size: 0.75rem;">
-            This site is for informational purposes only and does not provide legal advice.
-          </p>
+          <p style="margin-top: 0.5rem;">This website is for informational purposes only and does not constitute legal advice.</p>
         </div>
       </div>
     </footer>
