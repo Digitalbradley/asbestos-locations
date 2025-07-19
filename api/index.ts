@@ -67,6 +67,16 @@ async function buildFacilityQuery(whereClause?: any, limit?: number) {
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   console.log('🔍 API INDEX CALLED:', req.url); // ADD THIS LINE
+// 🚨 AGGRESSIVE HOMEPAGE DETECTION
+const userAgent = req.headers['user-agent'] || '';
+const isBot = /bot|crawler|spider|crawling|facebook|twitter|google|bing|msn|duckduckbot|teoma|slurp|yandex/i.test(userAgent);
+
+// If this looks like a homepage request from a bot, handle it with SSR
+if (isBot && (req.url === '/' || req.url === '' || !req.url || req.url === '/index.html')) {
+  console.log('🤖 BOT HOMEPAGE REQUEST - Generating SSR');
+  const { default: ssrHandler } = await import('./ssr-handler');
+  return await ssrHandler(req, res);
+}
   // Set CORS headers
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
