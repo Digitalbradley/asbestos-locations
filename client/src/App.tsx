@@ -5,12 +5,13 @@ import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import Header from "@/components/layout/header";
 import Footer from "@/components/layout/footer";
+import SEOHead from "@/components/SEOHead";
 import Home from "@/pages/home";
 import StatesPage from "@/pages/states";
 import StatePage from "@/pages/state";
 import CityPage from "@/pages/city";
 import CategoryPage from "@/pages/category";
-import CategoryGlobalPage from "@/pages/category-global";
+import GlobalCategoryPage from "@/pages/global-category";
 import FacilityPage from "@/pages/facility";
 import LegalHelpPage from "@/pages/legal-help";
 import PrivacyPolicyPage from "@/pages/privacy-policy";
@@ -25,6 +26,7 @@ import NotFound from "@/pages/not-found";
 function Router() {
   return (
     <div className="min-h-screen flex flex-col">
+      <SEOHead />
       <Header />
       <main className="flex-1">
         <Switch>
@@ -38,7 +40,7 @@ function Router() {
           <Route path="/contact" component={ContactPage} />
           <Route path="/thank-you" component={ThankYouPage} />
           <Route path="/admin/leads" component={AdminLeadsPage} />
-          <Route path="/category/:categorySlug" component={CategoryGlobalPage} />
+          <Route path="/category/:categorySlug" component={GlobalCategoryPage} />
           <Route path="/:stateSlug" component={StatePage} />
           <Route path="/:stateSlug/category/:categorySlug" component={CategoryPage} />
           <Route path="/:stateSlug/:citySlug/:facilitySlug-asbestos-exposure" component={FacilityPage} />
