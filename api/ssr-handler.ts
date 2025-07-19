@@ -79,12 +79,14 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             pageTitle = `Asbestos Exposure Sites in ${stateData.name} - ${stateData.facilityCount || 0} Documented Facilities`;
             pageDescription = `Comprehensive list of asbestos exposure sites in ${stateData.name}. Find facilities across ${stateData.cities?.length || 0} cities where workers may have been exposed to asbestos.`;
 
-            ssrContent = `
-              <div style="max-width: 1200px; margin: 0 auto; padding: 20px;">
-                <nav style="margin-bottom: 1rem;">
-                  <a href="/" style="color: #0066cc;">Home</a> > ${stateData.name}
-                </nav>
+            ssrContent = generateNavHTML();
+            ssrContent += `<div style="max-width: 1200px; margin: 0 auto; padding: 20px;">`;
+            ssrContent += generateBreadcrumbHTML([
+              { label: 'Home', href: '/' },
+              { label: stateData.name, href: null }
+            ]);
 
+            ssrContent += `
                 <h1 style="font-size: 2.5rem; margin-bottom: 1rem;">Asbestos Exposure Sites in ${stateData.name}</h1>
                 <p style="font-size: 1.25rem; margin-bottom: 2rem;">
                   There are ${stateData.facilityCount || 0} facilities for you to review across ${stateData.cities?.length || 0} cities and towns
