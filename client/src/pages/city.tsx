@@ -191,8 +191,14 @@ export default function CityPage() {
           )}
         </div>
 
+        {/* SEO Enhancement Section */}
+        <SEOEnhancementSection city={city} />
+
         {/* Nearest Cities - positioned dynamically after content */}
         <RelatedCitiesSection city={city} />
+
+        {/* Important Information Box */}
+        <ImportantInfoBox city={city} />
 
         {/* Footer Ad */}
         <div className="mt-4 sm:mt-6 mb-0">
@@ -202,6 +208,53 @@ export default function CityPage() {
             style={{ display: "block", minHeight: "60px" }}
           />
         </div>
+      </div>
+    </div>
+  );
+}
+
+// Component for displaying SEO enhancement content
+function SEOEnhancementSection({ city }: { city: CityWithState }) {
+  // Fetch SEO enhancement content from API
+  const { data: seoContent, isLoading: isLoadingSEO, error: seoError } = useQuery({
+    queryKey: ["/api/content-templates", "city_seo_enhancement", `${city.slug}_seo_enhancement`],
+    queryFn: async () => {
+      console.log('Fetching SEO enhancement content for city:', city.slug);
+      const response = await fetch(`/api/content-templates/city_seo_enhancement/${city.slug}_seo_enhancement`);
+      console.log('SEO enhancement API response:', response.status, response.statusText);
+      if (!response.ok) throw new Error(`Failed to fetch SEO content: ${response.status}`);
+      const data = await response.json();
+      console.log('SEO enhancement data:', data);
+      return data as {contentBlocks: string[]};
+    },
+    enabled: !!city.slug,
+  });
+
+  // Show loading state
+  if (isLoadingSEO) {
+    return (
+      <div className="mt-4 sm:mt-6 bg-muted/30 rounded-lg px-4 sm:px-6 pb-4 sm:pb-6 pt-4 sm:pt-6">
+        <div className="animate-pulse">
+          <div className="h-4 bg-muted rounded w-1/4 mb-4"></div>
+          <div className="space-y-2">
+            <div className="h-3 bg-muted rounded w-full"></div>
+            <div className="h-3 bg-muted rounded w-3/4"></div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Show error state or no content
+  if (seoError || !seoContent?.contentBlocks?.[0]) {
+    return null; // Hide section if content not available
+  }
+
+  return (
+    <div className="mt-4 sm:mt-6 bg-muted/30 rounded-lg px-4 sm:px-6 pb-4 sm:pb-6 pt-4 sm:pt-6">
+      <h3 className="text-xl font-semibold mb-4">Industrial History & Exposure Context</h3>
+      <div className="prose prose-sm max-w-none text-muted-foreground">
+        <p>{seoContent.contentBlocks[0]}</p>
       </div>
     </div>
   );
@@ -282,6 +335,69 @@ function RelatedCitiesSection({ city }: { city: CityWithState }) {
           </Link>
         ))}
       </div>
+    </div>
+  );
+}
+
+// Component for Important Information Box with rotation
+function ImportantInfoBox({ city }: { city: CityWithState }) {
+  // Determine variation based on city ID
+  const variationIndex = city.id % 3;
+  
+  const importantInfoVariations = [
+    {
+      heading: "Important Legal Information",
+      text: `If you worked at any of the ${city.facilityCount || 0} facilities in ${city.name} and have been diagnosed with mesothelioma, lung cancer, or other asbestos-related diseases, you may be entitled to significant compensation.`,
+      linkText: "Get free legal consultation for mesothelioma claims"
+    },
+    {
+      heading: "Workers' Rights & Compensation",
+      text: `Workers exposed to asbestos at ${city.name}'s ${city.facilityCount || 0} documented facilities may qualify for substantial settlements if diagnosed with asbestos-related illnesses including mesothelioma, asbestosis, or lung cancer.`,
+      linkText: "Get free legal consultation for mesothelioma claims"
+    },
+    {
+      heading: "Legal Help Available",
+      text: `Have you or a loved one worked at facilities in ${city.name}? Those diagnosed with mesothelioma or asbestos-related diseases from workplace exposure may have valuable legal claims.`,
+      linkText: "Get free legal consultation for mesothelioma claims"
+    }
+  ];
+
+  const selectedVariation = importantInfoVariations[variationIndex];
+
+  return (
+    <div style={{ 
+      background: '#fef3c7', 
+      border: '1px solid #f59e0b', 
+      borderRadius: '8px', 
+      padding: '1.5rem', 
+      marginBottom: '2rem',
+      marginTop: '1rem'
+    }}>
+      <h3 style={{ 
+        fontSize: '1.25rem', 
+        fontWeight: 'bold', 
+        color: '#92400e', 
+        marginBottom: '0.5rem' 
+      }}>
+        {selectedVariation.heading}
+      </h3>
+      <p style={{ 
+        color: '#92400e', 
+        lineHeight: '1.6' 
+      }}>
+        {selectedVariation.text}{' '}
+        <Link 
+          href="/legal-help" 
+          style={{ 
+            color: '#92400e', 
+            textDecoration: 'underline',
+            fontWeight: 'bold'
+          }}
+        >
+          {selectedVariation.linkText}
+        </Link>
+        .
+      </p>
     </div>
   );
 }
