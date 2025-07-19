@@ -14,7 +14,7 @@ export function generateNavHTML() {
             </a>
           </div>
           
-          <nav style="display: none;">
+          <nav style="display: flex; gap: 0.5rem; align-items: center;">
             <a href="/" style="font-weight: 500; color: #2b3441; text-decoration: none; padding: 0.5rem 1rem;">Home</a>
             <a href="/florida" style="font-weight: 500; color: #2b3441; text-decoration: none; padding: 0.5rem 1rem;">Florida Sites</a>
             <div style="position: relative; display: inline-block;">
@@ -40,11 +40,11 @@ export function generateNavHTML() {
       <!-- CSS for responsive navigation -->
       <style>
         @media (min-width: 768px) {
-          header nav { display: flex !important; gap: 0.5rem; align-items: center; }
           header button { display: none !important; }
           header h1 { display: block !important; }
         }
         @media (max-width: 767px) {
+          header nav { display: none !important; }
           header h1 { display: none !important; }
         }
         header a:hover { opacity: 0.8; }
