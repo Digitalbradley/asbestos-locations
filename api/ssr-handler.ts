@@ -423,10 +423,10 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             ssrContent = generateNavHTML();
             ssrContent += `<div style="max-width: 1200px; margin: 0 auto; padding: 20px;">`;
             ssrContent += generateBreadcrumbHTML([
-              { label: 'Home', url: '/' },
-              { label: facility.state.name, url: `/${facility.state.slug}` },
-              { label: facility.city.name, url: `/${facility.state.slug}/${facility.city.slug}` },
-              { label: facility.name, url: null }
+              { label: 'Home', href: '/' },
+              { label: facility.state.name, href: `/${facility.state.slug}` },
+              { label: facility.city.name, href: `/${facility.state.slug}/${facility.city.slug}` },
+              { label: facility.name, href: null }
             ]);
 
             ssrContent += `
