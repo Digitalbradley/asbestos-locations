@@ -5,7 +5,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import Header from "@/components/layout/header";
 import Footer from "@/components/layout/footer";
-import SEOHead from "@/components/SEOHead";
+
 import Home from "@/pages/home";
 import StatesPage from "@/pages/states";
 import StatePage from "@/pages/state";
@@ -26,7 +26,6 @@ import NotFound from "@/pages/not-found";
 function Router() {
   return (
     <div className="min-h-screen flex flex-col">
-      <SEOHead />
       <Header />
       <main className="flex-1">
         <Switch>
