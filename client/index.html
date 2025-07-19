@@ -41,6 +41,18 @@
     
     <!-- Navigation styles -->
     <style>
+      /* Hide SEO content initially to prevent double navigation */
+      #root > header:first-child,
+      #root > .seo-content {
+        display: none !important;
+      }
+      
+      /* Show content only when JavaScript is disabled (for bots) */
+      noscript #root > header:first-child,
+      noscript #root > .seo-content {
+        display: block !important;
+      }
+      
       @media (min-width: 768px) {
         header button { display: none !important; }
         header h1 { display: block !important; }
@@ -137,7 +149,7 @@
         </div>
       </header>
       
-      <div style="max-width: 1200px; margin: 0 auto; padding: 20px; font-family: Arial, sans-serif; line-height: 1.6; color: #333;">
+      <div class="seo-content" style="max-width: 1200px; margin: 0 auto; padding: 20px; font-family: Arial, sans-serif; line-height: 1.6; color: #333;">
         <h1 style="font-size: 2.5rem; margin-bottom: 1rem; color: #374151;">Asbestos Exposure Sites Directory</h1>
         <p style="font-size: 1.25rem; margin-bottom: 2rem; color: #6b7280;">
           Comprehensive database of 87,000+ documented asbestos exposure locations across all 50 states.
@@ -302,7 +314,11 @@
                   <li style="margin-bottom: 0.5rem;"><a href="/category/commercial-buildings" style="color: #9ca3af; text-decoration: none;">Commercial Buildings</a></li>
                   <li style="margin-bottom: 0.5rem;"><a href="/category/power-plants" style="color: #9ca3af; text-decoration: none;">Power Plants</a></li>
                   <li style="margin-bottom: 0.5rem;"><a href="/category/shipyards" style="color: #9ca3af; text-decoration: none;">Shipyards</a></li>
-                  <li style="margin-bottom: 0.5rem;"><a href="/#facility-types" style="color: #9ca3af; text-decoration: none;">View All Types →</a></li>
+                  <li style="margin-bottom: 0.5rem;"><a href="/category/government" style="color: #9ca3af; text-decoration: none;">Government</a></li>
+                  <li style="margin-bottom: 0.5rem;"><a href="/category/hospitals" style="color: #9ca3af; text-decoration: none;">Hospitals</a></li>
+                  <li style="margin-bottom: 0.5rem;"><a href="/category/schools" style="color: #9ca3af; text-decoration: none;">Schools</a></li>
+                  <li style="margin-bottom: 0.5rem;"><a href="/category/transportation" style="color: #9ca3af; text-decoration: none;">Transportation</a></li>
+                  <li style="margin-bottom: 0.5rem;"><a href="/category/residential" style="color: #9ca3af; text-decoration: none;">Residential</a></li>
                 </ul>
               </div>
               
