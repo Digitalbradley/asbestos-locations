@@ -8,23 +8,7 @@
       "destination": "/api/index"
     },
     {
-      "source": "/assets/(.*)",
-      "destination": "/assets/$1"
-    },
-    {
-      "source": "/favicon.ico",
-      "destination": "/favicon.ico"
-    },
-    {
-      "source": "/(.*)\\.js",
-      "destination": "/$1.js"
-    },
-    {
-      "source": "/(.*)\\.css",
-      "destination": "/$1.css"
-    },
-    {
-      "source": "/(.*)",
+      "source": "/((?!api|_next|assets|.*\\.).*)$",
       "destination": "/api/ssr-handler"
     }
   ],
