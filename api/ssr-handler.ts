@@ -729,6 +729,11 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         const path = require('path');
         const indexHtmlPath = path.join(process.cwd(), 'dist/public/index.html');
 
+        // Debug logging for Vercel
+        console.log('🔍 Working directory:', process.cwd());
+        console.log('🔍 Looking for index.html at:', indexHtmlPath);
+        console.log('🔍 File exists:', fs.existsSync(indexHtmlPath));
+
         if (fs.existsSync(indexHtmlPath)) {
           const indexHtml = fs.readFileSync(indexHtmlPath, 'utf-8');
 
@@ -744,8 +749,14 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             cssAssetPath = cssMatch[1];
           }
         }
+
+        // Debug logging for asset paths
+        console.log('🔍 JS asset path found:', jsAssetPath);
+        console.log('🔍 CSS asset path found:', cssAssetPath);
+
       } catch (error) {
         console.log('Could not read built assets, using fallback paths');
+        console.log('🔍 Error details:', error);
       }
 
       // Create HTML with dynamic asset paths
