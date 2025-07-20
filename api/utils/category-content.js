@@ -1,45 +1,237 @@
 // Comprehensive category information for SEO-enhanced category pages
-export const categoryInfo = {
+const categoryInfo = {
   "manufacturing": {
     name: "Manufacturing",
     slug: "manufacturing",
-    description: "Industrial manufacturing plants across the United States extensively used asbestos-containing materials from the 1940s through the 1980s. These facilities represent some of the highest concentrations of occupational asbestos exposure in American industrial history. Manufacturing workers routinely handled raw asbestos fibers and worked in environments saturated with asbestos dust from insulation, machinery components, and protective equipment. The combination of high-temperature industrial processes and the widespread use of asbestos for heat resistance created particularly hazardous conditions that have resulted in thousands of mesothelioma and asbestos-related disease cases among manufacturing workers and their families.",
-    historicalContext: "The American manufacturing boom following World War II coincided with the peak use of asbestos in industrial applications. Manufacturing facilities relied heavily on asbestos for its fire-resistant and insulating properties, particularly in high-temperature processes involving furnaces, boilers, and industrial ovens. Major manufacturing corporations knowingly exposed workers to dangerous levels of asbestos fibers despite mounting evidence of health risks beginning in the 1930s. Internal company documents revealed during litigation show that many manufacturers actively concealed the dangers of asbestos exposure from their workforce while continuing to use asbestos-containing materials well into the 1980s. This widespread use has left a lasting legacy of asbestos contamination in manufacturing facilities across the nation.",
-    exposureSources: [
-      "Boiler and furnace insulation containing up to 80% asbestos",
-      "Pipe insulation and lagging materials",
-      "Gaskets, packing materials, and valve seals",
-      "Protective clothing, gloves, and aprons",
-      "Ceiling tiles and spray-on fireproofing",
-      "Electrical insulation and wiring",
-      "Brake linings and clutch facings",
-      "Roofing materials and floor tiles",
-      "Cement products and construction materials",
-      "Machine components and friction materials"
-    ],
-    healthRisks: "Manufacturing workers faced extreme asbestos exposure levels, often working in poorly ventilated areas where asbestos fibers accumulated to dangerous concentrations. Studies have shown that manufacturing workers have some of the highest rates of mesothelioma, lung cancer, and asbestosis among all occupational groups. The latency period for asbestos-related diseases means that workers exposed decades ago are still being diagnosed today. Family members of manufacturing workers also faced secondary exposure from asbestos fibers brought home on work clothes, leading to mesothelioma cases among spouses and children who never worked directly with asbestos.",
-    legalContext: "Manufacturing companies have faced extensive litigation for knowingly exposing workers to asbestos without adequate warnings or protection. Major manufacturers have paid billions in settlements and jury awards to victims and their families. Many companies filed for bankruptcy protection and established asbestos trust funds to compensate current and future victims. Workers and their families may be entitled to compensation through multiple sources including workers' compensation, personal injury lawsuits, and asbestos trust fund claims. The statute of limitations for filing claims typically begins at diagnosis, not exposure, recognizing the long latency period of asbestos-related diseases."
+    facilityCount: 234,
+    pageTitle: "Manufacturing Asbestos Exposure Sites - 234 Facilities Nationwide | AsbestosExposureSites.com",
+    metaDescription: "Comprehensive directory of 234 manufacturing facilities with documented asbestos exposure. Interactive state filtering to find exposure sites, learn about health risks, and get legal help.",
+    metaKeywords: "manufacturing asbestos exposure, factory asbestos, industrial plant mesothelioma, manufacturing worker asbestos, asbestos manufacturing facilities",
+    h1Title: "Manufacturing Asbestos Exposure Sites | Mesothelioma Risk Locations",
+    sections: {
+      overview: {
+        heading: "Manufacturing Workers at High Risk for Asbestos-Related Diseases",
+        content: "Industrial manufacturing plants across the United States extensively used asbestos-containing materials from the 1940s through the 1980s. These facilities represent some of the highest concentrations of occupational asbestos exposure in American industrial history. Manufacturing workers routinely handled raw asbestos fibers and worked in environments saturated with asbestos dust from insulation, machinery components, and protective equipment. The combination of high-temperature industrial processes and the widespread use of asbestos for heat resistance created particularly hazardous conditions that have resulted in thousands of mesothelioma and asbestos-related disease cases among manufacturing workers and their families."
+      },
+      history: {
+        heading: "History of Asbestos Use in Manufacturing (1940s-1980s)",
+        content: "The American manufacturing boom following World War II coincided with the peak use of asbestos in industrial applications. Manufacturing facilities relied heavily on asbestos for its fire-resistant and insulating properties, particularly in high-temperature processes involving furnaces, boilers, and industrial ovens. Major manufacturing corporations knowingly exposed workers to dangerous levels of asbestos fibers despite mounting evidence of health risks beginning in the 1930s. Internal company documents revealed during litigation show that many manufacturers actively concealed the dangers of asbestos exposure from their workforce while continuing to use asbestos-containing materials well into the 1980s. This widespread use has left a lasting legacy of asbestos contamination in manufacturing facilities across the nation."
+      },
+      exposureSources: {
+        heading: "Asbestos Exposure Sources in Manufacturing Facilities",
+        subheading: "Common Exposure Sources",
+        items: [
+          "Boiler and furnace insulation containing up to 80% asbestos",
+          "Pipe insulation and lagging materials",
+          "Gaskets, packing materials, and valve seals",
+          "Protective clothing, gloves, and aprons",
+          "Ceiling tiles and spray-on fireproofing",
+          "Electrical insulation and wiring",
+          "Brake linings and clutch facings",
+          "Roofing materials and floor tiles",
+          "Cement products and construction materials",
+          "Machine components and friction materials"
+        ]
+      },
+      healthAndLegal: {
+        heading: "Health Risks and Legal Rights for Manufacturing Workers",
+        healthRisks: {
+          subheading: "Health Risks",
+          content: "Manufacturing workers faced extreme asbestos exposure levels, often working in poorly ventilated areas where asbestos fibers accumulated to dangerous concentrations. Studies have shown that manufacturing workers have some of the highest rates of mesothelioma, lung cancer, and asbestosis among all occupational groups. The latency period for asbestos-related diseases means that workers exposed decades ago are still being diagnosed today. Family members of manufacturing workers also faced secondary exposure from asbestos fibers brought home on work clothes, leading to mesothelioma cases among spouses and children who never worked directly with asbestos."
+        },
+        legalContext: {
+          subheading: "Legal Context",
+          content: "Manufacturing companies have faced extensive litigation for knowingly exposing workers to asbestos without adequate warnings or protection. Major manufacturers have paid billions in settlements and jury awards to victims and their families. Many companies filed for bankruptcy protection and established asbestos trust funds to compensate current and future victims. Workers and their families may be entitled to compensation through multiple sources including workers' compensation, personal injury lawsuits, and asbestos trust fund claims. The statute of limitations for filing claims typically begins at diagnosis, not exposure, recognizing the long latency period of asbestos-related diseases."
+        }
+      },
+      stateFilter: {
+        heading: "Find Manufacturing Asbestos Exposure Sites by State",
+        description: "Interactive State Filter:",
+        content: "This directory contains 234 manufacturing facilities with documented asbestos exposure. Use the dropdown menu to filter facilities by state and view detailed information about specific exposure sites in your area.",
+        instruction: "Select a state to view manufacturing facilities with documented asbestos exposure."
+      }
+    },
+    structuredData: {
+      collectionPage: {
+        "@context": "https://schema.org",
+        "@type": "CollectionPage",
+        "name": "Manufacturing Asbestos Exposure Sites Directory",
+        "description": "Interactive directory of 234 manufacturing facilities with documented asbestos exposure across the United States",
+        "url": "https://asbestosexposuresites.com/category/manufacturing",
+        "numberOfItems": 234,
+        "hasPart": {
+          "@type": "WebPageElement",
+          "name": "State Filter Interface",
+          "description": "Interactive dropdown to filter manufacturing facilities by state"
+        },
+        "potentialAction": {
+          "@type": "SearchAction",
+          "name": "Filter by State",
+          "target": {
+            "@type": "EntryPoint",
+            "urlTemplate": "https://asbestosexposuresites.com/category/manufacturing?state={state}",
+            "actionPlatform": [
+              "http://schema.org/DesktopWebPlatform",
+              "http://schema.org/MobileWebPlatform"
+            ]
+          },
+          "query-input": "required name=state"
+        },
+        "breadcrumb": {
+          "@type": "BreadcrumbList",
+          "itemListElement": [
+            {
+              "@type": "ListItem",
+              "position": 1,
+              "name": "Home",
+              "item": "https://asbestosexposuresites.com/"
+            },
+            {
+              "@type": "ListItem",
+              "position": 2,
+              "name": "Manufacturing",
+              "item": "https://asbestosexposuresites.com/category/manufacturing"
+            }
+          ]
+        }
+      },
+      itemList: {
+        "@context": "https://schema.org",
+        "@type": "ItemList",
+        "name": "Manufacturing Facilities with Asbestos Exposure",
+        "description": "Complete list of manufacturing facilities with documented asbestos exposure, filterable by state",
+        "numberOfItems": 234,
+        "itemListElement": [
+          {
+            "@type": "ListItem",
+            "position": 1,
+            "name": "Florida Manufacturing Facilities",
+            "item": {
+              "@type": "Thing",
+              "name": "234 facilities available through state selection",
+              "description": "Use the interactive state filter to view manufacturing facilities in your state"
+            }
+          }
+        ]
+      }
+    }
   },
   
   "power-plants": {
     name: "Power Plants",
     slug: "power-plants",
-    description: "Electric power generation facilities constructed between 1940 and 1980 used massive quantities of asbestos-containing materials throughout their operations. Both coal-fired and nuclear power plants relied heavily on asbestos insulation to protect equipment and workers from extreme temperatures reaching over 1,000 degrees Fahrenheit. Power plant workers, including boilermakers, pipefitters, electricians, and maintenance personnel, faced daily exposure to asbestos fibers during routine operations, repairs, and renovations. The confined spaces, high-temperature environments, and constant vibration in power plants created ideal conditions for asbestos fibers to become airborne, resulting in widespread contamination that affected thousands of workers across the United States.",
-    historicalContext: "The rapid expansion of America's electrical infrastructure in the post-World War II era coincided with the peak use of asbestos in industrial applications. Power plants built during this period used asbestos extensively in turbines, boilers, generators, and throughout the facility's pipe systems. The extreme temperatures involved in power generation made asbestos seem like an ideal solution for protecting equipment and preventing fires. Major utility companies continued using asbestos-containing materials despite growing awareness of health risks, prioritizing operational efficiency over worker safety. Many power plants operated for decades with original asbestos insulation intact, exposing multiple generations of workers to hazardous fibers.",
-    exposureSources: [
-      "Turbine insulation and heat shields",
-      "Boiler insulation and refractory materials",
-      "Pipe insulation throughout the facility",
-      "Valve packing and gasket materials",
-      "Electrical insulation and panel boards",
-      "Fireproofing spray on structural steel",
-      "Cement pipes and conduits",
-      "Cooling tower fill materials",
-      "Control room ceiling tiles",
-      "Protective clothing and fire blankets"
-    ],
-    healthRisks: "Power plant workers experienced some of the highest occupational asbestos exposure levels due to the extensive use of asbestos throughout these facilities. The combination of confined spaces, high temperatures, and routine maintenance activities created perfect conditions for asbestos fiber release. Studies show power plant workers have significantly elevated rates of mesothelioma, lung cancer, and asbestosis compared to the general population. The risk extends beyond direct employees to contractors, inspection personnel, and even administrative staff who worked in contaminated areas. Family members also faced secondary exposure from asbestos dust brought home on work clothes.",
-    legalContext: "Power generation companies face ongoing litigation from workers and their families affected by asbestos exposure. Many utility companies have been held liable for failing to protect workers and for continuing to use asbestos despite known health risks. Successful lawsuits have resulted in substantial verdicts and settlements for victims. Workers may pursue compensation through multiple channels including workers' compensation, personal injury lawsuits, and claims against asbestos bankruptcy trusts established by equipment manufacturers. The unique exposure patterns in power plants often allow victims to pursue claims against multiple defendants."
+    facilityCount: 142,
+    pageTitle: "Power Plants Asbestos Exposure Sites - 142 Facilities Nationwide | AsbestosExposureSites.com",
+    metaDescription: "Comprehensive directory of 142 power plants with documented asbestos exposure. Interactive state filtering to find exposure sites, learn about health risks, and get legal help.",
+    metaKeywords: "power plant asbestos exposure, electric plant asbestos, power generation mesothelioma, utility worker asbestos, asbestos power facilities",
+    h1Title: "Power Plants Asbestos Exposure Sites | Mesothelioma Risk Locations",
+    sections: {
+      overview: {
+        heading: "Power Plant Workers at High Risk for Asbestos-Related Diseases",
+        content: "Electric power generation facilities constructed between 1940 and 1980 used massive quantities of asbestos-containing materials throughout their operations. Both coal-fired and nuclear power plants relied heavily on asbestos insulation to protect equipment and workers from extreme temperatures reaching over 1,000 degrees Fahrenheit. Power plant workers, including boilermakers, pipefitters, electricians, and maintenance personnel, faced daily exposure to asbestos fibers during routine operations, repairs, and renovations. The confined spaces, high-temperature environments, and constant vibration in power plants created ideal conditions for asbestos fibers to become airborne, resulting in widespread contamination that affected thousands of workers across the United States."
+      },
+      history: {
+        heading: "History of Asbestos Use in Power Plants (1940s-1980s)",
+        content: "The rapid expansion of America's electrical infrastructure in the post-World War II era coincided with the peak use of asbestos in industrial applications. Power plants built during this period used asbestos extensively in turbines, boilers, generators, and throughout the facility's pipe systems. The extreme temperatures involved in power generation made asbestos seem like an ideal solution for protecting equipment and preventing fires. Major utility companies continued using asbestos-containing materials despite growing awareness of health risks, prioritizing operational efficiency over worker safety. Many power plants operated for decades with original asbestos insulation intact, exposing multiple generations of workers to hazardous fibers."
+      },
+      exposureSources: {
+        heading: "Asbestos Exposure Sources in Power Generation Facilities",
+        subheading: "Common Exposure Sources",
+        items: [
+          "Turbine insulation and heat shields",
+          "Boiler insulation and refractory materials",
+          "Pipe insulation throughout the facility",
+          "Valve packing and gasket materials",
+          "Electrical insulation and panel boards",
+          "Fireproofing spray on structural steel",
+          "Cement pipes and conduits",
+          "Cooling tower fill materials",
+          "Control room ceiling tiles",
+          "Protective clothing and fire blankets"
+        ]
+      },
+      healthAndLegal: {
+        heading: "Health Risks and Legal Rights for Power Plant Workers",
+        healthRisks: {
+          subheading: "Health Risks",
+          content: "Power plant workers experienced some of the highest occupational asbestos exposure levels due to the extensive use of asbestos throughout these facilities. The combination of confined spaces, high temperatures, and routine maintenance activities created perfect conditions for asbestos fiber release. Studies show power plant workers have significantly elevated rates of mesothelioma, lung cancer, and asbestosis compared to the general population. The risk extends beyond direct employees to contractors, inspection personnel, and even administrative staff who worked in contaminated areas. Family members also faced secondary exposure from asbestos dust brought home on work clothes."
+        },
+        legalContext: {
+          subheading: "Legal Context",
+          content: "Power generation companies face ongoing litigation from workers and their families affected by asbestos exposure. Many utility companies have been held liable for failing to protect workers and for continuing to use asbestos despite known health risks. Successful lawsuits have resulted in substantial verdicts and settlements for victims. Workers may pursue compensation through multiple channels including workers' compensation, personal injury lawsuits, and claims against asbestos bankruptcy trusts established by equipment manufacturers. The unique exposure patterns in power plants often allow victims to pursue claims against multiple defendants."
+        }
+      },
+      stateFilter: {
+        heading: "Find Power Plant Asbestos Exposure Sites by State",
+        description: "Interactive State Filter:",
+        content: "This directory contains 142 power plants with documented asbestos exposure. Use the dropdown menu to filter facilities by state and view detailed information about specific exposure sites in your area.",
+        instruction: "Select a state to view power plants with documented asbestos exposure."
+      }
+    },
+    structuredData: {
+      collectionPage: {
+        "@context": "https://schema.org",
+        "@type": "CollectionPage",
+        "name": "Power Plants Asbestos Exposure Sites Directory",
+        "description": "Interactive directory of 142 power plants with documented asbestos exposure across the United States",
+        "url": "https://asbestosexposuresites.com/category/power-plants",
+        "numberOfItems": 142,
+        "hasPart": {
+          "@type": "WebPageElement",
+          "name": "State Filter Interface",
+          "description": "Interactive dropdown to filter power plants by state"
+        },
+        "potentialAction": {
+          "@type": "SearchAction",
+          "name": "Filter by State",
+          "target": {
+            "@type": "EntryPoint",
+            "urlTemplate": "https://asbestosexposuresites.com/category/power-plants?state={state}",
+            "actionPlatform": [
+              "http://schema.org/DesktopWebPlatform",
+              "http://schema.org/MobileWebPlatform"
+            ]
+          },
+          "query-input": "required name=state"
+        },
+        "breadcrumb": {
+          "@type": "BreadcrumbList",
+          "itemListElement": [
+            {
+              "@type": "ListItem",
+              "position": 1,
+              "name": "Home",
+              "item": "https://asbestosexposuresites.com/"
+            },
+            {
+              "@type": "ListItem",
+              "position": 2,
+              "name": "Power Plants",
+              "item": "https://asbestosexposuresites.com/category/power-plants"
+            }
+          ]
+        }
+      },
+      itemList: {
+        "@context": "https://schema.org",
+        "@type": "ItemList",
+        "name": "Power Plants with Asbestos Exposure",
+        "description": "Complete list of power plants with documented asbestos exposure, filterable by state",
+        "numberOfItems": 142,
+        "itemListElement": [
+          {
+            "@type": "ListItem",
+            "position": 1,
+            "name": "Florida Power Plants",
+            "item": {
+              "@type": "Thing",
+              "name": "142 facilities available through state selection",
+              "description": "Use the interactive state filter to view power plants in your state"
+            }
+          }
+        ]
+      }
+    }
   },
   
   "shipyards": {
@@ -204,3 +396,6 @@ export function getAllCategorySlugs() {
 export function getAllCategories() {
   return Object.values(categoryInfo);
 }
+
+// Export categoryInfo as named export
+export { categoryInfo };
