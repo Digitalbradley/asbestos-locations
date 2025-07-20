@@ -49,8 +49,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         
         if (categorySlug === 'manufacturing') {
           // Read and serve the manufacturing template
-          const fs = require('fs');
-          const path = require('path');
+          const fs = await import('fs');
+          const path = await import('path');
           const templatePath = path.join(process.cwd(), 'api/templates/category-manufacturing.html');
           
           try {
