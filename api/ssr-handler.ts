@@ -32,7 +32,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       const baseUrl = `https://${host}`;
 
       // Parse URL to determine page type
-      const pathSegments = url.split('/').filter(Boolean);
+      const urlWithoutQuery = url.split('?')[0];
+      const pathSegments = urlWithoutQuery.split('/').filter(Boolean);
 
       let ssrContent = '';
       let pageTitle = 'Asbestos Exposure Sites Directory';
