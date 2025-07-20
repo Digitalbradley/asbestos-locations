@@ -67,16 +67,7 @@ async function buildFacilityQuery(whereClause?: any, limit?: number) {
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   console.log('🔍 API INDEX CALLED:', req.url); // ADD THIS LINE
-// 🚨 AGGRESSIVE HOMEPAGE DETECTION
-const userAgent = req.headers['user-agent'] || '';
-const isBot = /bot|crawler|spider|crawling|facebook|twitter|google|bing|msn|duckduckbot|teoma|slurp|yandex/i.test(userAgent);
 
-// If this looks like a homepage request from a bot, handle it with SSR
-if (isBot && (req.url === '/' || req.url === '' || !req.url || req.url === '/index.html')) {
-  console.log('🤖 BOT HOMEPAGE REQUEST - Generating SSR');
-  const { default: ssrHandler } = await import('./ssr-handler');
-  return await ssrHandler(req, res);
-}
   // Set CORS headers
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
@@ -91,15 +82,14 @@ if (isBot && (req.url === '/' || req.url === '' || !req.url || req.url === '/ind
     const path = req.url;
     console.log('API Request:', req.method, path);
 
-// 🚨 NEW: Homepage Detection and Redirect (FIXED)
-// Only redirect if it's the homepage AND not an API call
-if ((path === '/' || path === '' || path === '/index.html') && !path.startsWith('/api/')) {
-  console.log('🏠 HOMEPAGE REQUEST DETECTED in API index - redirecting to SSR handler');
 
-  // Import and call the SSR handler directly
-  const { default: ssrHandler } = await import('./ssr-handler');
-  return await ssrHandler(req, res);
-}
+
+    // Handle all non-API page requests with SSR
+    if (!path?.startsWith('/api/') && !path?.includes('.')) {
+      console.log('📄 PAGE REQUEST DETECTED - Handling with SSR:', path);
+      const { default: ssrHandler } = await import('./ssr-handler');
+      return await ssrHandler(req, res);
+    }
 
     // Add this debug block
     if (path?.includes('facilities')) {
