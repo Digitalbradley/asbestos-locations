@@ -2,6 +2,7 @@ import { VercelRequest, VercelResponse } from '@vercel/node';
 import { generateFooterHTML } from './utils/footer-generator.js';
 import { generateNavHTML } from './utils/nav-generator.js';
 import { generateBreadcrumbHTML } from './utils/breadcrumb-generator.js';
+import { categoryInfo } from './utils/category-content.js';
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   console.log('🚀 SSR Handler started');
@@ -47,21 +48,101 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         
         console.log('📁 Category page detected:', categorySlug);
         
-        if (categorySlug === 'manufacturing') {
-          // Read and serve the manufacturing template
-          const fs = await import('fs');
-          const path = await import('path');
-          const templatePath = path.join(process.cwd(), 'api/templates/category-manufacturing.html');
+        const category = categoryInfo[categorySlug];
+        
+        if (category) {
+          // Use the imported category data
+          pageTitle = category.pageTitle;
+          pageDescription = category.metaDescription;
           
-          try {
-            ssrContent = fs.readFileSync(templatePath, 'utf8');
-            pageTitle = 'Manufacturing Asbestos Exposure Sites - Comprehensive Directory';
-            pageDescription = 'Comprehensive directory of manufacturing facilities with documented asbestos exposure. Find exposure sites, learn about health risks, and get legal help.';
-            console.log('✅ Manufacturing template loaded successfully');
-          } catch (error) {
-            console.error('❌ Error reading manufacturing template:', error);
-            ssrContent = '<h1>Manufacturing Category</h1><p>Template not found</p>';
-          }
+          // Define breadcrumb items
+          const breadcrumbItems = [
+            { label: 'Home', href: '/' },
+            { label: category.name }
+          ];
+          
+          // Build the SSR content
+          ssrContent = generateNavHTML();
+          ssrContent += generateBreadcrumbHTML(breadcrumbItems);
+          ssrContent += `
+            <div style="max-width: 1152px; margin: 0 auto; padding: 0 1rem;">
+              <h1 style="font-size: 2.5rem; margin-bottom: 1rem; font-family: 'Merriweather', serif;">${category.h1Title}</h1>
+              
+              <!-- Overview Section -->
+              <section style="margin: 2rem 0;">
+                <h2 style="font-size: 2rem; margin-bottom: 1rem; font-family: 'Merriweather', serif;">${category.sections.overview.heading}</h2>
+                <div style="background: #f8f9fa; border: 1px solid #e5e7eb; border-left: 4px solid #52d2e3; border-radius: 8px; padding: 1.5rem; margin-bottom: 1rem;">
+                  <p style="line-height: 1.6; margin-bottom: 1rem;">${category.sections.overview.content}</p>
+                </div>
+              </section>
+              
+              <!-- History Section -->
+              <section style="margin: 2rem 0;">
+                <h2 style="font-size: 2rem; margin-bottom: 1rem; font-family: 'Merriweather', serif;">${category.sections.history.heading}</h2>
+                <div style="background: #f8f9fa; border: 1px solid #e5e7eb; border-radius: 8px; padding: 1.5rem; margin-bottom: 1rem;">
+                  <p style="line-height: 1.6; margin-bottom: 1rem;">${category.sections.history.content}</p>
+                </div>
+              </section>
+              
+              <!-- Exposure Sources Section -->
+              <section style="margin: 2rem 0;">
+                <h2 style="font-size: 2rem; margin-bottom: 1rem; font-family: 'Merriweather', serif;">${category.sections.exposureSources.heading}</h2>
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1.5rem;">
+                  <div style="background: #f8f9fa; border: 1px solid #e5e7eb; border-radius: 8px; padding: 1.5rem;">
+                    <h3 style="font-size: 1.25rem; margin-bottom: 0.75rem; font-family: 'Merriweather', serif;">${category.sections.exposureSources.subheading}</h3>
+                    <ul style="list-style: none; padding: 0;">
+                      ${category.sections.exposureSources.items.map(item => `
+                        <li style="display: flex; align-items: flex-start; margin-bottom: 0.5rem;">
+                          <span style="color: #52d2e3; font-weight: bold; margin-right: 0.5rem;">•</span>
+                          ${item}
+                        </li>
+                      `).join('')}
+                    </ul>
+                  </div>
+                </div>
+              </section>
+              
+              <!-- Health Risks and Legal Rights Section -->
+              <section style="margin: 2rem 0;">
+                <h2 style="font-size: 2rem; margin-bottom: 1rem; font-family: 'Merriweather', serif;">${category.sections.healthAndLegal.heading}</h2>
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1.5rem;">
+                  <div style="background: #f8f9fa; border: 1px solid #e5e7eb; border-top: 4px solid #dc3545; border-radius: 8px; padding: 1.5rem;">
+                    <h3 style="font-size: 1.25rem; margin-bottom: 0.75rem; font-family: 'Merriweather', serif;">${category.sections.healthAndLegal.healthRisks.subheading}</h3>
+                    <p style="line-height: 1.6;">${category.sections.healthAndLegal.healthRisks.content}</p>
+                  </div>
+                  <div style="background: #f8f9fa; border: 1px solid #e5e7eb; border-left: 4px solid #52d2e3; border-radius: 8px; padding: 1.5rem;">
+                    <h3 style="font-size: 1.25rem; margin-bottom: 0.75rem; font-family: 'Merriweather', serif;">${category.sections.healthAndLegal.legalContext.subheading}</h3>
+                    <p style="line-height: 1.6;">${category.sections.healthAndLegal.legalContext.content}</p>
+                  </div>
+                </div>
+              </section>
+              
+              <!-- State Filter Section -->
+              <section style="background: #e3f2fd; padding: 1.5rem; border-radius: 8px; margin: 2rem 0;">
+                <h2 style="font-size: 2rem; margin-bottom: 1rem; font-family: 'Merriweather', serif;">${category.sections.stateFilter.heading}</h2>
+                <p style="margin-bottom: 1rem;"><strong>${category.sections.stateFilter.description}</strong> ${category.sections.stateFilter.content}</p>
+                <p>${category.sections.stateFilter.instruction}</p>
+              </section>
+              
+              <!-- CTA Section -->
+              <section style="margin: 2rem 0;">
+                <a href="/legal-help" style="background: #52d2e3; color: white; padding: 1rem 2rem; text-decoration: none; border-radius: 4px; display: inline-block; margin-top: 1rem;">Get Free Legal Consultation</a>
+              </section>
+            </div>
+          `;
+          
+          ssrContent += generateFooterHTML();
+          
+          console.log('✅ Category content generated successfully');
+        } else {
+          // Category not found
+          ssrContent = `
+            <div style="max-width: 1200px; margin: 0 auto; padding: 20px; text-align: center;">
+              <h1>Category Not Found</h1>
+              <p>The requested category could not be found.</p>
+              <a href="/" style="color: #0066cc;">Return to Homepage</a>
+            </div>
+          `;
         }
         
       } else if (pathSegments.length === 1) {
