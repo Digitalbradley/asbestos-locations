@@ -11,9 +11,13 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     // Bot detection
     const userAgent = req.headers['user-agent'] || '';
     const isBot = /bot|crawler|spider|crawling|facebook|twitter|google|bing|msn|duckduckbot|teoma|slurp|yandex/i.test(userAgent);
+    const forceSSR = req.query.forceSSR === 'true';
+    const shouldServeSSR = isBot || forceSSR;
 
     console.log('User-Agent:', userAgent);
     console.log('Is Bot:', isBot);
+    console.log('Force SSR:', forceSSR);
+    console.log('Should Serve SSR:', shouldServeSSR);
 
     // Generate full content for both bots and humans (for SEO injection)
     console.log('🤖 Generating full SSR content for SEO injection');
@@ -36,6 +40,29 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       if (pathSegments.length === 0) {
         // Homepage - Using client/index.html, no SSR needed
         ssrContent = '';
+        
+      } else if (pathSegments[0] === 'category' && pathSegments.length === 2) {
+        // Category page: /category/manufacturing
+        const categorySlug = pathSegments[1];
+        
+        console.log('📁 Category page detected:', categorySlug);
+        
+        if (categorySlug === 'manufacturing') {
+          // Read and serve the manufacturing template
+          const fs = require('fs');
+          const path = require('path');
+          const templatePath = path.join(process.cwd(), 'api/templates/category-manufacturing.html');
+          
+          try {
+            ssrContent = fs.readFileSync(templatePath, 'utf8');
+            pageTitle = 'Manufacturing Asbestos Exposure Sites - Comprehensive Directory';
+            pageDescription = 'Comprehensive directory of manufacturing facilities with documented asbestos exposure. Find exposure sites, learn about health risks, and get legal help.';
+            console.log('✅ Manufacturing template loaded successfully');
+          } catch (error) {
+            console.error('❌ Error reading manufacturing template:', error);
+            ssrContent = '<h1>Manufacturing Category</h1><p>Template not found</p>';
+          }
+        }
         
       } else if (pathSegments.length === 1) {
         // State page: /florida
@@ -595,7 +622,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   <div id="root"></div>
 
   <!-- SEO Content for Search Engines -->
-  <div id="seo-content" style="${isBot ? 'display: block; font-family: Arial, sans-serif; line-height: 1.6; margin: 0; padding: 0; color: #333; background: #f9f9f9;' : 'display: none; visibility: hidden;'}">
+  <div id="seo-content" style="${shouldServeSSR ? 'display: block; font-family: Arial, sans-serif; line-height: 1.6; margin: 0; padding: 0; color: #333; background: #f9f9f9;' : 'display: none; visibility: hidden;'}">
     ${ssrContent}
   </div>
 </body>
