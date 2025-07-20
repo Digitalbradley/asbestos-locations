@@ -128,10 +128,44 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
                 <p>${category.sections.stateFilter.instruction}</p>
               </section>
               
-              <!-- CTA Section -->
+              <!-- Industries Affected Section (NEW) -->
+              ${category.sections.industriesAffected && category.sections.industriesAffected.industries ? `
               <section style="margin: 2rem 0;">
-                <a href="/legal-help" style="background: #52d2e3; color: white; padding: 1rem 2rem; text-decoration: none; border-radius: 4px; display: inline-block; margin-top: 1rem;">Get Free Legal Consultation</a>
+                <h2 style="font-size: 2rem; margin-bottom: 1rem; font-family: 'Merriweather', serif;">${category.sections.industriesAffected.heading}</h2>
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1.5rem;">
+                  ${category.sections.industriesAffected.industries.map(industry => `
+                    <div style="background: #f8f9fa; border: 1px solid #e5e7eb; border-radius: 8px; padding: 1.5rem;">
+                      <h3 style="font-size: 1.25rem; margin-bottom: 0.75rem; font-family: 'Merriweather', serif; color: #0891b2;">${industry.name}</h3>
+                      <p style="line-height: 1.6; margin: 0;">${industry.description}</p>
+                    </div>
+                  `).join('')}
+                </div>
               </section>
+              ` : ''}
+              
+              <!-- Call to Action Section (NEW ENHANCED) -->
+              ${category.sections.callToAction ? `
+              <section style="margin: 2rem 0;">
+                <h2 style="font-size: 2rem; margin-bottom: 1rem; font-family: 'Merriweather', serif;">${category.sections.callToAction.heading}</h2>
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1.5rem;">
+                  <div style="background: #f0f9ff; border: 1px solid #0891b2; border-radius: 8px; padding: 1.5rem;">
+                    <h3 style="font-size: 1.25rem; margin-bottom: 0.75rem; font-family: 'Merriweather', serif; color: #0891b2;">${category.sections.callToAction.workers.subheading}</h3>
+                    <p style="line-height: 1.6; margin: 0;">${category.sections.callToAction.workers.content}</p>
+                  </div>
+                  <div style="background: #fef3c7; border: 1px solid #f59e0b; border-radius: 8px; padding: 1.5rem;">
+                    <h3 style="font-size: 1.25rem; margin-bottom: 0.75rem; font-family: 'Merriweather', serif; color: #92400e;">${category.sections.callToAction.families.subheading}</h3>
+                    <p style="line-height: 1.6; margin: 0;">${category.sections.callToAction.families.content}</p>
+                  </div>
+                  <div style="background: #f0fdf4; border: 1px solid #22c55e; border-radius: 8px; padding: 1.5rem;">
+                    <h3 style="font-size: 1.25rem; margin-bottom: 0.75rem; font-family: 'Merriweather', serif; color: #15803d;">${category.sections.callToAction.legal.subheading}</h3>
+                    <p style="line-height: 1.6; margin: 0;">${category.sections.callToAction.legal.content}</p>
+                  </div>
+                </div>
+                <div style="text-align: center; margin-top: 2rem;">
+                  <a href="/legal-help" style="background: #52d2e3; color: white; padding: 1rem 2rem; text-decoration: none; border-radius: 4px; display: inline-block;">Get Free Legal Consultation</a>
+                </div>
+              </section>
+              ` : ''}
               
               <!-- Citations Section (NEW) -->
               ${category.sections.citations && category.sections.citations.references ? `
