@@ -8,6 +8,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   console.log('🚨 SSR HANDLER ENTRY - URL:', req.url);
   console.log('🚀 SSR Handler started');
   console.log('Request URL:', req.url);
+  console.log('🔧 ASSET DETECTION TEST - About to check for assets')
 
   try {
     // Bot detection
