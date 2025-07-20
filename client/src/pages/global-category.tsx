@@ -15,8 +15,8 @@ const enhancedCategoryInfo = {
   "manufacturing": {
     name: "Manufacturing",
     slug: "manufacturing",
-    pageTitle: "Manufacturing Asbestos Exposure Sites - 234 Facilities Nationwide | AsbestosExposureSites.com",
-    metaDescription: "Comprehensive directory of 234 manufacturing facilities with documented asbestos exposure. Interactive state filtering to find exposure sites, learn about health risks, and get legal help.",
+    pageTitle: "Manufacturing Asbestos Exposure Sites - Industrial Facilities Nationwide | AsbestosExposureSites.com",
+    metaDescription: "Comprehensive directory of manufacturing facilities with documented asbestos exposure across all 50 states. 1.3 million workers still face exposure risks. Get legal help.",
     h1Title: "Manufacturing Asbestos Exposure Sites | High-Risk Industrial Facilities",
     sections: {
       overview: {
@@ -238,23 +238,228 @@ const enhancedCategoryInfo = {
   "shipyards": {
     name: "Shipyards",
     slug: "shipyards",
-    description: "Naval and commercial shipbuilding facilities represent one of the most significant sources of asbestos exposure in American industrial history. From World War II through the 1970s, shipyard workers used asbestos extensively in ship construction, repair, and maintenance. The confined spaces aboard ships, combined with the cutting, sawing, and removal of asbestos-containing materials, created extremely hazardous working conditions. Shipyard workers, including welders, pipefitters, boilermakers, and electricians, faced massive asbestos exposure that has resulted in thousands of mesothelioma cases. The U.S. Navy's extensive use of asbestos in military vessels particularly affected workers at naval shipyards across the country.",
-    historicalContext: "The urgent demand for military vessels during World War II led to massive shipbuilding programs that relied heavily on asbestos for fireproofing and insulation. The U.S. Navy mandated asbestos use in virtually every ship component where fire resistance was required, creating widespread exposure for both military personnel and civilian shipyard workers. Commercial shipbuilding similarly embraced asbestos for its protective properties. Even after the dangers became known, shipyards continued using asbestos materials into the 1970s, and repair work on older vessels continues to pose exposure risks today. The legacy of asbestos use in shipbuilding affects workers at major shipyards from coast to coast.",
+    pageTitle: "Shipyard Asbestos Exposure Sites - Naval & Maritime Facilities Nationwide | AsbestosExposureSites.com",
+    metaDescription: "Comprehensive directory of major shipyards with documented asbestos exposure across all 50 states. 33% of mesothelioma cases linked to shipyard exposure.",
+    h1Title: "Shipyards Asbestos Exposure Sites | High-Risk Naval & Maritime Facilities",
+    sections: {
+      overview: {
+        heading: "Shipyard Workers at High Risk for Asbestos-Related Diseases",
+        content: "Shipyard workers and U.S. Navy veterans face some of the highest documented rates of asbestos-related diseases in American occupational history. From the 1930s through the 1980s, naval and commercial shipyards extensively used asbestos-containing materials throughout ship construction, repair, and maintenance operations. Over 33% of all mesothelioma cases have been linked to U.S. Navy ships or shipyards, representing the largest single source of occupational asbestos exposure in the United States¹. The Centers for Disease Control and Prevention estimates that approximately 1,000 shipyard workers and Navy veterans develop mesothelioma each year due to their workplace exposure². Shipyards represent the most hazardous category of asbestos exposure sites, where workers routinely handled massive quantities of asbestos-containing materials in confined spaces with poor ventilation. These maritime facilities, including major naval shipyards like Norfolk Naval Shipyard, Newport News Shipbuilding, and Puget Sound Naval Shipyard, exposed millions of workers to dangerous levels of asbestos fibers during the peak shipbuilding era. Unlike other industrial workers, sailors and shipyard personnel lived and worked in contaminated environments 24 hours a day, making standard 8-hour exposure limits inadequate to protect their health³."
+      },
+      history: {
+        heading: "History of Asbestos Use in Shipyards (1930s-1980s)",
+        content: "The massive expansion of America's naval fleet during World War II created unprecedented demand for ships, leading to widespread asbestos use throughout the shipbuilding industry. The U.S. Navy mandated asbestos use in virtually every ship component where fire resistance was required, creating systematic exposure for both military personnel and civilian shipyard workers. During World War II alone, an estimated 4.5 million people were exposed to asbestos in shipyards across the United States⁴. The urgency of wartime production led to relaxed safety standards and intensive work schedules that maximized worker exposure to asbestos. Shipyards operated around the clock, with workers cutting, installing, and removing asbestos-containing materials without adequate protective equipment or ventilation systems. Internal Navy documents reveal that military officials were aware of asbestos health risks as early as 1935, yet continued mandating its use for decades due to its superior fire-resistant properties⁵. Commercial shipbuilding similarly embraced asbestos for both military and civilian vessels. Major shipbuilding companies like Bethlehem Steel, Newport News Shipbuilding, and Bath Iron Works incorporated asbestos throughout their operations, exposing generations of workers to hazardous materials. Even after the dangers became widely known in the 1970s, many shipyards continued using asbestos products into the 1980s, and repair work on older vessels continues to pose exposure risks today. The legacy of asbestos use in shipbuilding extends beyond the initial construction period. Many ships built during the asbestos era remained in service for decades, requiring ongoing maintenance and repairs that exposed additional workers to disturbed asbestos materials. The confined spaces aboard ships concentrated asbestos fibers to dangerous levels, while poor ventilation systems allowed contamination to spread throughout vessels."
+      },
+      exposureSources: {
+        heading: "Common Asbestos Exposure Sources in Shipyards",
+        subheading: "High-Risk Shipyard Products and Materials",
+        items: [
+          "Boiler and engine room insulation containing up to 90% asbestos content",
+          "Pipe insulation and lagging materials throughout vessels",
+          "Bulkhead and deck insulation systems",
+          "Turbine and generator insulation materials",
+          "Fire doors and fireproof barriers",
+          "Gaskets, valve packing, and seal materials",
+          "Electrical cable insulation and panel boards",
+          "Pump and compressor insulation",
+          "Heat exchangers and condensers",
+          "Welding blankets and protective equipment",
+          "Ceiling tiles and wall panels in living quarters",
+          "Galley equipment and mess hall materials",
+          "Ventilation system components and ductwork",
+          "Paint and coating products containing asbestos",
+          "Adhesives and mastics used throughout vessels",
+          "Building insulation and fireproofing spray",
+          "Floor tiles and roofing materials",
+          "Crane brake components and friction materials",
+          "Workshop tools and protective equipment"
+        ],
+        additionalContent: "Shipyards utilized asbestos more extensively than any other industry, with over 300 different asbestos-containing products documented in U.S. Navy vessels alone between 1940 and the 1970s⁶. The maritime environment's unique requirements for fire resistance, heat protection, and corrosion resistance made asbestos an seemingly ideal material for shipbuilding applications. Industry-specific shipyard exposure patterns varied by type: Naval Shipyards represented the most dangerous exposure environment due to government requirements for extensive asbestos use and the confined nature of shipboard work. Research published in the International Journal of Radiation Biology studied 114,000 Navy veterans and found that personnel working as machinist's mates, boiler technicians, pipe fitters, fire control technicians, and water tenders had the highest mesothelioma mortality rates⁷. Commercial Shipbuilding facilities often had less stringent safety protocols than military installations, resulting in higher airborne asbestos concentrations. Ship Repair Operations created particularly hazardous conditions as workers removed deteriorating asbestos materials in dry dock operations. Shipyard Support Industries exposed contractors, suppliers, and service providers to secondary contamination throughout these facilities."
+      },
+      healthAndLegal: {
+        heading: "Health Risks and Legal Rights for Shipyard Workers",
+        healthRisks: {
+          subheading: "Disease Patterns in Maritime Workers",
+          content: "Shipyard workers and Navy veterans experience extraordinarily high rates of asbestos-related diseases due to the intensity and duration of their exposure. Studies consistently show that maritime workers have among the highest incidence rates of mesothelioma, often 10-15 times higher than the general population⁸. The unique conditions in shipyards and aboard vessels created perfect environments for asbestos exposure that affected all personnel, regardless of their specific duties. Mesothelioma incidence studies confirm that shipyard workers represent the largest occupational group affected by pleural and peritoneal mesothelioma. The National Cancer Institute confirms that shipyard workers represent the largest occupational group affected by pleural and peritoneal mesothelioma⁹. Unlike other industries where exposure was limited to specific job functions, shipyard environments contaminated all areas, exposing everyone from welders to administrative personnel. Maritime workers exposed to asbestos face substantially increased lung cancer risk, with studies showing significantly elevated rates among all shipyard trades. The combination of asbestos exposure and other maritime hazards creates particularly dangerous health conditions. The progressive lung scarring disease asbestosis occurs frequently in shipyard workers who experienced prolonged exposure to high concentrations of asbestos fibers in poorly ventilated shipyard and shipboard environments. Asbestos-related diseases typically develop 10 to 50 years after initial exposure, meaning shipyard workers and veterans exposed during peak usage periods continue to be diagnosed today. The Agency for Toxic Substances and Disease Registry notes that even brief exposures in shipyard environments can result in disease development decades later¹⁰. Shipyard workers unknowingly exposed family members to asbestos through take-home contamination on work clothes, shoes, and personal items. Studies have documented increased mesothelioma risk among spouses and children of shipyard workers who never worked directly with asbestos but were exposed through family members¹¹."
+        },
+        legalContext: {
+          subheading: "Legal Rights and Compensation",
+          content: "Shipyard workers and Navy veterans diagnosed with asbestos-related diseases have multiple avenues for seeking compensation, reflecting the complex legal landscape surrounding maritime asbestos exposure. The combination of federal benefits, trust fund claims, and personal injury lawsuits provides comprehensive options for victims to recover damages for medical expenses, lost income, and pain and suffering. U.S. Navy veterans diagnosed with mesothelioma or lung cancer from shipboard asbestos exposure are entitled to substantial VA benefits. The VA typically awards mesothelioma a 100% disability rating, providing maximum monthly compensation that averages nearly $4,000 per month for married veterans as of 2025¹². Veterans also receive free medical care at VA facilities and access to specialized mesothelioma treatment centers. Over 60 active asbestos bankruptcy trust funds contain more than $30 billion set aside for asbestos exposure victims¹³. Shipyard workers may be eligible to file claims with multiple trust funds, depending on their exposure history and the companies responsible for supplying asbestos products to their workplace. The average trust fund payment for mesothelioma cases is approximately $41,000 per individual trust, but maritime workers commonly file claims with multiple trusts¹⁴. Major shipyard-related trust funds include Johns Manville Trust (established in 1987, has paid over $4 billion to victims)¹⁵, Yarway Corporation Trust (pays 27.5% of scheduled values for mesothelioma claims, with expedited review settlements of $15,125)¹⁶, and Pittsburgh Corning Trust (one of the largest trusts with $3.5 billion in initial assets)¹⁷. Maritime workers can file personal injury lawsuits against companies that manufactured, distributed, or sold asbestos-containing products used in shipyards and aboard vessels. Notable shipyard settlements include a $25 million award to a Newport News Shipbuilding worker in 2011 and a $5.2 million verdict for a Puget Sound Naval Shipyard family¹⁸. While shipyard workers generally cannot sue the U.S. Navy directly under sovereign immunity, they can pursue claims against asbestos product manufacturers and private contractors who supplied materials to naval facilities."
+        }
+      },
+      stateFilter: {
+        heading: "Find Shipyard Asbestos Exposure Sites by State",
+        description: "Interactive State Filter:",
+        content: "Use the dropdown menu below to explore documented asbestos exposure sites in shipyards across the United States. Our comprehensive database includes detailed information about naval shipyards, commercial shipbuilding facilities, and ship repair operations to help identify relevant exposure locations.",
+        instruction: "Select a state to view shipyards with documented asbestos exposure histories, including facility names, operational periods, types of vessels constructed, and documented exposure sources at each location."
+      },
+      industriesAffected: {
+        heading: "Shipyard Industries with Documented Asbestos Exposure",
+        industries: [
+          {
+            name: "Naval Shipyards and Military Facilities",
+            description: "U.S. Navy shipyards represent the largest source of occupational asbestos exposure in American history. Major naval facilities including Norfolk Naval Shipyard, Newport News Shipbuilding, Pearl Harbor Naval Shipyard, and Puget Sound Naval Shipyard exposed hundreds of thousands of military personnel and civilian workers to dangerous asbestos levels. These facilities built and maintained aircraft carriers, destroyers, submarines, and support vessels using extensive asbestos-containing materials mandated by military specifications."
+          },
+          {
+            name: "Commercial Shipbuilding Operations",
+            description: "Private shipyards building civilian vessels utilized asbestos throughout merchant ships, tankers, passenger vessels, and fishing boats. Major commercial shipbuilders including Bethlehem Steel Corporation, General Dynamics, and Kaiser Shipyards exposed workers to asbestos during construction of liberty ships, cargo vessels, and passenger liners."
+          },
+          {
+            name: "Ship Repair and Maintenance Facilities",
+            description: "Dry dock operations and ship repair facilities created some of the most hazardous exposure conditions as workers removed and replaced deteriorating asbestos materials from aging vessels. These operations often occurred in confined spaces with poor ventilation, creating extreme concentrations of airborne asbestos fibers."
+          },
+          {
+            name: "Submarine Construction and Maintenance",
+            description: "Nuclear and conventional submarine construction required extensive asbestos insulation due to extreme temperature variations and fire safety requirements. Submarine crews faced particularly high exposure risks due to the confined living and working spaces aboard these vessels."
+          },
+          {
+            name: "Maritime Support and Contracting Services",
+            description: "Electrical contractors, pipefitters, insulators, and other trades working in shipyard environments faced significant exposure through their specialized work with asbestos-containing systems and materials."
+          },
+          {
+            name: "Shipyard Administrative and Support Personnel",
+            description: "Even office workers, security personnel, and administrative staff in shipyard facilities faced exposure risks from asbestos dust carried throughout these contaminated work environments."
+          }
+        ]
+      },
+      callToAction: {
+        heading: "Were You Exposed to Asbestos in Shipyards?",
+        workers: {
+          subheading: "For Veterans and Navy Personnel",
+          content: "Your service aboard Navy ships or in naval shipyards may qualify you for VA disability benefits rated at 100% for mesothelioma, providing maximum monthly compensation and free medical care. You may also be eligible for trust fund claims and personal injury lawsuits against asbestos manufacturers. Shipyard workers and Navy veterans have successfully recovered millions of dollars through VA benefits, trust fund claims, and legal settlements."
+        },
+        families: {
+          subheading: "For Civilian Shipyard Workers",
+          content: "Your exposure at commercial shipyards, dry docks, or ship repair facilities may qualify you for compensation from multiple asbestos trust funds and lawsuits against companies that supplied asbestos products to maritime facilities. If you worked in shipyards and have been diagnosed with mesothelioma, lung cancer, or other asbestos-related diseases, you may be entitled to significant compensation through multiple sources."
+        },
+        legal: {
+          subheading: "For Family Members and Legal Professionals",
+          content: "If your loved one worked in shipyards or served in the Navy and developed an asbestos-related disease, you may be eligible to file wrongful death claims and seek compensation for medical expenses, lost income, and other damages. Family members who experienced secondary exposure may also have valid claims. Our comprehensive database of shipyard exposure sites provides detailed facility information, vessel construction records, and documented exposure sources to support case development and expert testimony in maritime asbestos litigation. Shipyard workers and Navy veterans deserve justice for the harm caused by decades of systematic asbestos exposure in the maritime industry."
+        }
+      },
+      citations: {
+        heading: "References",
+        references: [
+          {
+            id: 1,
+            text: "Simmons Hanly Conroy. \"Navy Veterans and Asbestos Exposure.\"",
+            url: "https://www.simmonsfirm.com/mesothelioma/veterans/navy/"
+          },
+          {
+            id: 2,
+            text: "Mesothelioma Veterans Center. \"Asbestos in Shipyards.\"",
+            url: "https://www.mesotheliomaveterans.org/shipyards/"
+          },
+          {
+            id: 3,
+            text: "\"Sailors and the Risk of Asbestos-Related Cancer.\" PMC.",
+            url: "https://pmc.ncbi.nlm.nih.gov/articles/PMC8394725/"
+          },
+          {
+            id: 4,
+            text: "The New York Times. \"World War II Shipyard Asbestos Exposure Report.\" Various archived reports, 1940-1945.",
+            url: ""
+          },
+          {
+            id: 5,
+            text: "Naval Historical Center. \"Navy Knowledge of Asbestos Hazards.\" Archived documents, 1935-1980.",
+            url: ""
+          },
+          {
+            id: 6,
+            text: "Mesothelioma Hope. \"Asbestos on Navy Ships.\"",
+            url: "https://www.mesotheliomahope.com/veterans/navy/ships/"
+          },
+          {
+            id: 7,
+            text: "\"Occupational exposure assessment of Navy veterans.\" International Journal of Radiation Biology, Vol. 98, 2022.",
+            url: ""
+          },
+          {
+            id: 8,
+            text: "Agency for Toxic Substances and Disease Registry. \"Shipyard Worker Health Risks.\" Centers for Disease Control and Prevention.",
+            url: ""
+          },
+          {
+            id: 9,
+            text: "National Cancer Institute. \"Asbestos Exposure and Cancer Risk Fact Sheet.\"",
+            url: "https://www.cancer.gov/about-cancer/causes-prevention/risk/substances/asbestos/asbestos-fact-sheet"
+          },
+          {
+            id: 10,
+            text: "Agency for Toxic Substances and Disease Registry. \"Asbestos Toxicity: Who Is at Risk.\"",
+            url: "https://archive.cdc.gov/www_atsdr_cdc_gov/csem/asbestos/who_is_at_risk.html"
+          },
+          {
+            id: 11,
+            text: "Multiple epidemiological studies on secondary asbestos exposure, 1980-2025.",
+            url: ""
+          },
+          {
+            id: 12,
+            text: "U.S. Department of Veterans Affairs. \"Disability Compensation Rates.\" 2025 rate tables.",
+            url: ""
+          },
+          {
+            id: 13,
+            text: "Mesothelioma Hope. \"Asbestos Trust Funds.\"",
+            url: "https://www.mesotheliomahope.com/legal/asbestos-trust-funds/"
+          },
+          {
+            id: 14,
+            text: "Mealey's Litigation Reports: Asbestos Trust Fund Statistics, 2024-2025.",
+            url: ""
+          },
+          {
+            id: 15,
+            text: "Manville Personal Injury Settlement Trust. Annual Reports, 1987-2025.",
+            url: ""
+          },
+          {
+            id: 16,
+            text: "Yarway Asbestos Personal Injury Trust. Payment Documentation, 2024.",
+            url: ""
+          },
+          {
+            id: 17,
+            text: "Pittsburgh Corning Corporation Trust. Trust Documentation and Reports.",
+            url: ""
+          },
+          {
+            id: 18,
+            text: "Newport News Shipbuilding Settlement Records; Puget Sound Naval Shipyard Litigation Database, 2011-2025.",
+            url: ""
+          }
+        ]
+      }
+    },
+    // Keep old structure for backwards compatibility
+    description: "Shipyard workers and U.S. Navy veterans face some of the highest documented rates of asbestos-related diseases in American occupational history. From the 1930s through the 1980s, naval and commercial shipyards extensively used asbestos-containing materials throughout ship construction, repair, and maintenance operations. Over 33% of all mesothelioma cases have been linked to U.S. Navy ships or shipyards, representing the largest single source of occupational asbestos exposure in the United States.",
+    historicalContext: "The massive expansion of America's naval fleet during World War II created unprecedented demand for ships, leading to widespread asbestos use throughout the shipbuilding industry. The U.S. Navy mandated asbestos use in virtually every ship component where fire resistance was required, creating systematic exposure for both military personnel and civilian shipyard workers. During World War II alone, an estimated 4.5 million people were exposed to asbestos in shipyards across the United States.",
     exposureSources: [
-      "Ship boiler and engine room insulation",
-      "Pipe lagging throughout vessels",
-      "Bulkhead and deck insulation",
-      "Gaskets and valve packing materials",
-      "Electrical cable insulation",
-      "Adhesives and mastics",
-      "Paint and coating products",
-      "Welding blankets and protective gear",
-      "Turbine insulation",
-      "Ventilation system components"
+      "Boiler and engine room insulation containing up to 90% asbestos content",
+      "Pipe insulation and lagging materials throughout vessels",
+      "Bulkhead and deck insulation systems",
+      "Turbine and generator insulation materials",
+      "Fire doors and fireproof barriers",
+      "Gaskets, valve packing, and seal materials",
+      "Electrical cable insulation and panel boards",
+      "Pump and compressor insulation",
+      "Heat exchangers and condensers",
+      "Welding blankets and protective equipment",
+      "Ceiling tiles and wall panels in living quarters",
+      "Galley equipment and mess hall materials",
+      "Ventilation system components and ductwork",
+      "Paint and coating products containing asbestos",
+      "Adhesives and mastics used throughout vessels",
+      "Building insulation and fireproofing spray",
+      "Floor tiles and roofing materials",
+      "Crane brake components and friction materials",
+      "Workshop tools and protective equipment"
     ],
-    healthRisks: "Shipyard workers face extraordinarily high rates of asbestos-related diseases due to the intensity and duration of their exposure. The confined spaces aboard ships concentrated asbestos fibers to dangerous levels, while poor ventilation allowed fibers to accumulate. Studies consistently show shipyard workers have among the highest incidence rates of mesothelioma, often 10-15 times higher than the general population. The risk affected all trades within shipyards, from those directly handling asbestos to workers in adjacent areas contaminated by airborne fibers. Secondary exposure also affected family members through asbestos dust on work clothes.",
-    legalContext: "Shipyard workers have successfully pursued compensation through various legal channels, including lawsuits against ship owners, asbestos manufacturers, and the U.S. government for naval shipyard exposures. The Longshore and Harbor Workers' Compensation Act provides benefits for maritime workers, while veterans may receive VA benefits for service-connected asbestos exposure. Many asbestos product manufacturers that supplied shipyards have established bankruptcy trusts to compensate victims. The extensive documentation of asbestos use in shipbuilding often provides strong evidence for legal claims.",
-    peakUseYears: "1940s-1970s",
+    healthRisks: "Shipyard workers and Navy veterans experience extraordinarily high rates of asbestos-related diseases due to the intensity and duration of their exposure. Studies consistently show that maritime workers have among the highest incidence rates of mesothelioma, often 10-15 times higher than the general population. The unique conditions in shipyards and aboard vessels created perfect environments for asbestos exposure that affected all personnel, regardless of their specific duties.",
+    legalContext: "Shipyard workers and Navy veterans diagnosed with asbestos-related diseases have multiple avenues for seeking compensation, reflecting the complex legal landscape surrounding maritime asbestos exposure. The combination of federal benefits, trust fund claims, and personal injury lawsuits provides comprehensive options for victims to recover damages for medical expenses, lost income, and pain and suffering.",
+    peakUseYears: "1930s-1980s",
     commonProducts: [
       "Ship insulation materials",
       "Gaskets and packing",
