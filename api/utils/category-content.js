@@ -39,6 +39,27 @@ const categoryInfo = {
         ],
         additionalContent: "Manufacturing facilities utilized asbestos in numerous applications, creating multiple pathways for worker exposure. The Occupational Safety and Health Administration has documented extensive use of asbestos-containing materials throughout industrial manufacturing environments. Industry-specific manufacturing exposure patterns varied by sector: Steel Manufacturing facilities recorded exposure levels exceeding contemporary OSHA permissible exposure limits, Automotive Manufacturing involved direct handling of asbestos-containing friction materials, Textile Manufacturing facilities handled raw asbestos fibers during processing, and Chemical Processing plants utilized asbestos in high-temperature process equipment."
       },
+      exposureSources: {
+        heading: "Common Asbestos Exposure Sources in Manufacturing",
+        subheading: "High-Risk Manufacturing Products and Materials",
+        items: [
+          "Boiler and furnace insulation containing up to 80% asbestos content",
+          "Pipe insulation and lagging materials used throughout facilities",
+          "High-temperature industrial oven insulation",
+          "Steam line and process pipe coverings",
+          "Gaskets, packing materials, and valve seals",
+          "Brake linings and clutch facings in industrial vehicles",
+          "Electrical insulation and wiring components",
+          "Machine components requiring heat resistance",
+          "Ceiling tiles and spray-on fireproofing applications",
+          "Roofing materials and floor tiles",
+          "Asbestos cement products used in facility construction",
+          "Protective coatings and weatherproofing materials",
+          "Protective clothing, gloves, and aprons",
+          "Heat-resistant suits for high-temperature work",
+          "Respiratory protection equipment containing asbestos filters"
+        ]
+      },
       healthAndLegal: {
         heading: "Health Risks and Legal Rights for Manufacturing Workers",
         healthRisks: {
@@ -483,6 +504,31 @@ const categoryInfo = {
           "Workshop tools and protective equipment"
         ],
         additionalContent: "Shipyards utilized asbestos more extensively than any other industry, with over 300 different asbestos-containing products documented in U.S. Navy vessels alone between 1940 and the 1970s⁶. The maritime environment's unique requirements for fire resistance, heat protection, and corrosion resistance made asbestos an seemingly ideal material for shipbuilding applications. Industry-specific shipyard exposure patterns varied by type: Naval Shipyards represented the most dangerous exposure environment due to government requirements for extensive asbestos use and the confined nature of shipboard work. Research published in the International Journal of Radiation Biology studied 114,000 Navy veterans and found that personnel working as machinist's mates, boiler technicians, pipe fitters, fire control technicians, and water tenders had the highest mesothelioma mortality rates⁷. Commercial Shipbuilding facilities often had less stringent safety protocols than military installations, resulting in higher airborne asbestos concentrations. Ship Repair Operations created particularly hazardous conditions as workers removed deteriorating asbestos materials in dry dock operations. Shipyard Support Industries exposed contractors, suppliers, and service providers to secondary contamination throughout these facilities."
+      },
+      exposureSources: {
+        heading: "Common Asbestos Exposure Sources in Shipyards",
+        subheading: "High-Risk Shipyard Products and Materials",
+        items: [
+          "Boiler and engine room insulation containing up to 90% asbestos content",
+          "Pipe insulation and lagging materials throughout vessels",
+          "Bulkhead and deck insulation systems",
+          "Turbine and generator insulation materials",
+          "Fire doors and fireproof barriers",
+          "Gaskets, valve packing, and seal materials",
+          "Electrical cable insulation and panel boards",
+          "Pump and compressor insulation",
+          "Heat exchangers and condensers",
+          "Welding blankets and protective equipment",
+          "Ceiling tiles and wall panels in living quarters",
+          "Galley equipment and mess hall materials",
+          "Ventilation system components and ductwork",
+          "Paint and coating products containing asbestos",
+          "Adhesives and mastics used throughout vessels",
+          "Building insulation and fireproofing spray",
+          "Floor tiles and roofing materials",
+          "Crane brake components and friction materials",
+          "Workshop tools and protective equipment"
+        ]
       },
       healthAndLegal: {
         heading: "Health Risks and Legal Rights for Shipyard Workers",
