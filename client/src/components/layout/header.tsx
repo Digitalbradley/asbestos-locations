@@ -154,11 +154,25 @@ export default function Header() {
                   Hospitals
                 </Link>
                 <Link
-                  href="/#facility-types"
-                  className="block py-1 text-sm text-primary hover:text-primary/80"
+                  href="/category/schools"
+                  className="block py-1 text-sm text-muted-foreground hover:text-primary"
                   onClick={() => setIsMobileMenuOpen(false)}
                 >
-                  View All Facility Types →
+                  Schools
+                </Link>
+                <Link
+                  href="/category/transportation"
+                  className="block py-1 text-sm text-muted-foreground hover:text-primary"
+                  onClick={() => setIsMobileMenuOpen(false)}
+                >
+                  Transportation
+                </Link>
+                <Link
+                  href="/category/residential"
+                  className="block py-1 text-sm text-muted-foreground hover:text-primary"
+                  onClick={() => setIsMobileMenuOpen(false)}
+                >
+                  Residential
                 </Link>
               </div>
             </div>
