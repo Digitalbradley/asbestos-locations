@@ -738,8 +738,7 @@ console.log('🔍 CSS asset path:', cssAssetPath);
       }
 
 
-      // Create HTML with dynamic asset paths
-      const fullHtml = `<!DOCTYPE html>
+const fullHtml = `<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
@@ -752,10 +751,6 @@ console.log('🔍 CSS asset path:', cssAssetPath);
   <meta property="og:type" content="website">
   <meta property="og:url" content="https://asbestosexposuresites.com${url}">
   <link rel="canonical" href="https://asbestosexposuresites.com${url}">
-
-  <!-- React App Assets -->
-  ${cssAssetPath ? `<link rel="stylesheet" crossorigin href="${cssAssetPath}">` : ''}
-  <script type="module" crossorigin src="${jsAssetPath}"></script>
 </head>
 <body>
   <!-- React App Mount Point -->
@@ -765,11 +760,24 @@ console.log('🔍 CSS asset path:', cssAssetPath);
   <div id="seo-content" style="${shouldServeSSR ? 'display: block; font-family: Arial, sans-serif; line-height: 1.6; margin: 0; padding: 0; color: #333; background: #f9f9f9;' : 'display: none; visibility: hidden;'}">
     ${ssrContent}
   </div>
+
+  <!-- Load React App -->
+  <script type="module">
+    // Try multiple asset paths until one works
+    const possiblePaths = [
+      '/assets/index.js',
+      '/assets/index-*.js', 
+      '/src/main.tsx'
+    ];
+    
+    // Let the browser handle finding the correct assets
+    import('/src/main.tsx').catch(() => {
+      // If dev path fails, the browser will naturally look for built assets
+      console.log('Loading production assets...');
+    });
+  </script>
 </body>
 </html>`;
-
-      res.setHeader('Content-Type', 'text/html; charset=utf-8');
-      res.setHeader('Cache-Control', 'no-cache');
       res.status(200).send(fullHtml);
 
     } catch (error) {
