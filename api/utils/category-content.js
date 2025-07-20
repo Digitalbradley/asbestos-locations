@@ -7,98 +7,181 @@ const categoryInfo = {
     pageTitle: "Manufacturing Asbestos Exposure Sites - 234 Facilities Nationwide | AsbestosExposureSites.com",
     metaDescription: "Comprehensive directory of 234 manufacturing facilities with documented asbestos exposure. Interactive state filtering to find exposure sites, learn about health risks, and get legal help.",
     metaKeywords: "manufacturing asbestos exposure, factory asbestos, industrial plant mesothelioma, manufacturing worker asbestos, asbestos manufacturing facilities",
-    h1Title: "Manufacturing Asbestos Exposure Sites | Mesothelioma Risk Locations",
+    h1Title: "Manufacturing Asbestos Exposure Sites | High-Risk Industrial Facilities",
     sections: {
       overview: {
         heading: "Manufacturing Workers at High Risk for Asbestos-Related Diseases",
-        content: "Industrial manufacturing plants across the United States extensively used asbestos-containing materials from the 1940s through the 1980s. These facilities represent some of the highest concentrations of occupational asbestos exposure in American industrial history. Manufacturing workers routinely handled raw asbestos fibers and worked in environments saturated with asbestos dust from insulation, machinery components, and protective equipment. The combination of high-temperature industrial processes and the widespread use of asbestos for heat resistance created particularly hazardous conditions that have resulted in thousands of mesothelioma and asbestos-related disease cases among manufacturing workers and their families."
+        content: "Manufacturing workers face some of the highest documented levels of occupational asbestos exposure in American industrial history. From the 1940s through the 1980s, industrial manufacturing plants extensively used asbestos-containing materials, creating hazardous working conditions that have resulted in thousands of mesothelioma cases among manufacturing workers and their families. The Occupational Safety and Health Administration estimates that 1.3 million employees in manufacturing and construction still face significant asbestos exposure risks. Manufacturing facilities represent a critical category of asbestos exposure sites where workers routinely handled raw asbestos fibers and worked in environments with poor ventilation and high concentrations of airborne asbestos dust. These industrial settings, which include steel manufacturing, automotive parts production, textile facilities, and chemical processing plants, have been linked to elevated rates of mesothelioma, lung cancer, and asbestosis among former employees."
       },
       history: {
         heading: "History of Asbestos Use in Manufacturing (1940s-1980s)",
-        content: "The American manufacturing boom following World War II coincided with the peak use of asbestos in industrial applications. Manufacturing facilities relied heavily on asbestos for its fire-resistant and insulating properties, particularly in high-temperature processes involving furnaces, boilers, and industrial ovens. Major manufacturing corporations knowingly exposed workers to dangerous levels of asbestos fibers despite mounting evidence of health risks beginning in the 1930s. Internal company documents revealed during litigation show that many manufacturers actively concealed the dangers of asbestos exposure from their workforce while continuing to use asbestos-containing materials well into the 1980s. This widespread use has left a lasting legacy of asbestos contamination in manufacturing facilities across the nation."
+        content: "The American manufacturing boom following World War II coincided with the peak period of industrial asbestos use. Manufacturing corporations relied heavily on asbestos for its fire-resistant and insulating properties, particularly in high-temperature industrial processes involving furnaces, boilers, and industrial ovens. The mineral's heat resistance, durability, and low cost made it an ideal material for industrial applications across multiple manufacturing sectors. During this period, major manufacturing corporations knowingly exposed workers to dangerous levels of asbestos fibers despite mounting evidence of health risks. Internal company documents revealed during litigation demonstrate that many manufacturers actively concealed the dangers of asbestos exposure from their workforce while continuing to use asbestos-containing materials well into the 1980s. A comprehensive review published in Epidemiology and Medical Statistics found that manufacturing workers experienced asbestos exposure levels often exceeding 5 fibers per cubic centimeter, significantly above current OSHA permissible exposure limits. The widespread industrial use of asbestos during the mid-20th century has created a lasting legacy of occupational disease. Manufacturing workers from this era continue to be diagnosed with asbestos-related diseases decades after their initial exposure, reflecting the long latency period typical of asbestos-induced illnesses."
       },
       exposureSources: {
-        heading: "Asbestos Exposure Sources in Manufacturing Facilities",
-        subheading: "Common Exposure Sources",
+        heading: "Common Asbestos Exposure Sources in Manufacturing",
+        subheading: "High-Risk Manufacturing Products and Materials",
         items: [
-          "Boiler and furnace insulation containing up to 80% asbestos",
-          "Pipe insulation and lagging materials",
+          "Boiler and furnace insulation containing up to 80% asbestos content",
+          "Pipe insulation and lagging materials used throughout facilities",
+          "High-temperature industrial oven insulation",
+          "Steam line and process pipe coverings",
           "Gaskets, packing materials, and valve seals",
-          "Protective clothing, gloves, and aprons",
-          "Ceiling tiles and spray-on fireproofing",
-          "Electrical insulation and wiring",
-          "Brake linings and clutch facings",
+          "Brake linings and clutch facings in industrial vehicles",
+          "Electrical insulation and wiring components",
+          "Machine components requiring heat resistance",
+          "Ceiling tiles and spray-on fireproofing applications",
           "Roofing materials and floor tiles",
-          "Cement products and construction materials",
-          "Machine components and friction materials"
-        ]
+          "Asbestos cement products used in facility construction",
+          "Protective coatings and weatherproofing materials",
+          "Protective clothing, gloves, and aprons",
+          "Heat-resistant suits for high-temperature work",
+          "Respiratory protection equipment containing asbestos fibers"
+        ],
+        additionalContent: "Manufacturing facilities utilized asbestos in numerous applications, creating multiple pathways for worker exposure. The Occupational Safety and Health Administration has documented extensive use of asbestos-containing materials throughout industrial manufacturing environments. Industry-specific manufacturing exposure patterns varied by sector: Steel Manufacturing facilities recorded exposure levels exceeding contemporary OSHA permissible exposure limits, Automotive Manufacturing involved direct handling of asbestos-containing friction materials, Textile Manufacturing facilities handled raw asbestos fibers during processing, and Chemical Processing plants utilized asbestos in high-temperature process equipment."
       },
       healthAndLegal: {
         heading: "Health Risks and Legal Rights for Manufacturing Workers",
         healthRisks: {
-          subheading: "Health Risks",
-          content: "Manufacturing workers faced extreme asbestos exposure levels, often working in poorly ventilated areas where asbestos fibers accumulated to dangerous concentrations. Studies have shown that manufacturing workers have some of the highest rates of mesothelioma, lung cancer, and asbestosis among all occupational groups. The latency period for asbestos-related diseases means that workers exposed decades ago are still being diagnosed today. Family members of manufacturing workers also faced secondary exposure from asbestos fibers brought home on work clothes, leading to mesothelioma cases among spouses and children who never worked directly with asbestos."
+          subheading: "Disease Patterns in Manufacturing Workers",
+          content: "Manufacturing workers experienced some of the highest documented rates of asbestos-related diseases among all occupational groups. The combination of high exposure levels, poor ventilation, and extended exposure periods created particularly hazardous conditions in industrial manufacturing environments. Mesothelioma incidence studies have consistently shown elevated rates of pleural and peritoneal mesothelioma among manufacturing workers. The National Cancer Institute confirms that most mesothelioma cases result from occupational asbestos exposure, with manufacturing workers representing a significant proportion of diagnosed patients. Manufacturing workers exposed to asbestos face substantially increased lung cancer risk, with research demonstrating that the combination of asbestos exposure and smoking creates synergistic effects. The pneumoconiosis asbestosis occurs frequently in manufacturing workers who experienced prolonged exposure to high concentrations of asbestos fibers. Asbestos-related diseases typically develop 10 to 50 years after initial exposure, meaning manufacturing workers exposed during the peak usage period continue to be diagnosed today. Manufacturing workers unknowingly exposed family members to asbestos through take-home contamination, with studies documenting increased mesothelioma risk among family members of heavily exposed industrial workers."
         },
         legalContext: {
-          subheading: "Legal Context",
-          content: "Manufacturing companies have faced extensive litigation for knowingly exposing workers to asbestos without adequate warnings or protection. Major manufacturers have paid billions in settlements and jury awards to victims and their families. Many companies filed for bankruptcy protection and established asbestos trust funds to compensate current and future victims. Workers and their families may be entitled to compensation through multiple sources including workers' compensation, personal injury lawsuits, and asbestos trust fund claims. The statute of limitations for filing claims typically begins at diagnosis, not exposure, recognizing the long latency period of asbestos-related diseases."
+          subheading: "Legal Rights and Compensation",
+          content: "Manufacturing workers diagnosed with asbestos-related diseases have multiple avenues for seeking compensation, including asbestos trust funds, personal injury lawsuits, and workers' compensation claims. More than 100 companies have established asbestos bankruptcy trust funds since the early 1980s, with over 60 trusts remaining active as of 2025. These funds contain over $30 billion set aside specifically for asbestos exposure victims. Manufacturing workers with mesothelioma typically receive between $300,000 and $400,000 from trust fund claims, with some claimants receiving up to $750,000 depending on their exposure history. Major manufacturing-related trust funds include USG Corporation Trust (initially funded with $4 billion), Pittsburgh Corning Corporation Trust ($3.5 billion in initial assets), and Johns Manville Trust (established in 1987). Manufacturing workers can file personal injury lawsuits against non-bankrupt companies, with average mesothelioma settlements ranging from $1 million to $2 million and jury verdicts averaging between $5 million and $11.4 million. The statute of limitations for asbestos-related claims typically begins at diagnosis rather than exposure, recognizing the long latency period of asbestos diseases."
         }
       },
       stateFilter: {
         heading: "Find Manufacturing Asbestos Exposure Sites by State",
         description: "Interactive State Filter:",
-        content: "This directory contains 234 manufacturing facilities with documented asbestos exposure. Use the dropdown menu to filter facilities by state and view detailed information about specific exposure sites in your area.",
-        instruction: "Select a state to view manufacturing facilities with documented asbestos exposure."
+        content: "Use the dropdown menu below to explore documented asbestos exposure sites in manufacturing facilities across the United States. Our comprehensive database includes detailed information about specific facilities, exposure periods, and facility types to help identify relevant exposure locations.",
+        instruction: "Select a state to view manufacturing facilities with documented asbestos exposure histories, including facility names, locations, operational periods, and types of manufacturing conducted at each site."
       },
       industriesAffected: {
-        heading: "Industries and Occupations Affected",
+        heading: "Manufacturing Industries with Documented Asbestos Exposure",
         industries: [
           {
-            name: "Primary Industry Sector",
-            description: "Workers in this primary industry sector faced significant asbestos exposure through direct contact with asbestos-containing materials used throughout facilities and equipment."
+            name: "Steel and Metal Manufacturing",
+            description: "Steel production facilities extensively used asbestos in refractory materials, protective equipment, and insulation systems. The high-temperature nature of steel manufacturing made asbestos an attractive material for heat protection and fire prevention. Workers in steel mills faced exposure during maintenance of furnaces, handling of protective equipment, and work around insulated systems."
           },
           {
-            name: "Secondary Industry Sector", 
-            description: "Personnel in this secondary industry sector encountered asbestos exposure during maintenance, repair, and renovation activities involving asbestos-containing components."
+            name: "Automotive Parts Manufacturing",
+            description: "The automotive manufacturing industry's extensive use of asbestos in brake pads, clutch facings, and gaskets created significant occupational exposure risks. Workers involved in manufacturing, testing, and quality control of these components faced direct contact with asbestos-containing materials on a daily basis."
           },
           {
-            name: "Support Services Sector",
-            description: "Support services workers experienced asbestos exposure while providing essential services in facilities where asbestos materials were prevalent."
+            name: "Textile and Fabric Manufacturing",
+            description: "Textile manufacturing facilities produced asbestos-containing fabrics, protective clothing, and industrial textiles. Workers in these facilities handled raw asbestos fibers during processing, weaving, and finishing operations, creating high levels of airborne asbestos dust."
+          },
+          {
+            name: "Chemical and Petrochemical Manufacturing",
+            description: "Chemical processing plants used asbestos in equipment requiring chemical and heat resistance. Workers maintained and operated systems containing asbestos gaskets, seals, and insulation materials, particularly in high-temperature chemical processes."
+          },
+          {
+            name: "Construction Materials Manufacturing",
+            description: "Facilities manufacturing building materials, including asbestos cement products, roofing materials, and insulation products, exposed workers to high concentrations of asbestos fibers during production and quality control processes."
+          },
+          {
+            name: "Electronics and Electrical Manufacturing",
+            description: "Electronics manufacturing facilities used asbestos in electrical insulation, circuit boards, and heat-resistant components. Workers assembled and tested products containing asbestos materials in often poorly ventilated environments."
           }
         ]
       },
       callToAction: {
-        heading: "Take Action: Know Your Rights",
+        heading: "Were You Exposed to Asbestos in Manufacturing?",
         workers: {
-          subheading: "For Workers",
-          content: "If you worked in facilities with asbestos exposure between 1940-1980 and have been diagnosed with an asbestos-related disease, you may be entitled to compensation. Time limits apply, so it's important to understand your legal rights."
+          subheading: "For Workers and Former Employees",
+          content: "If you worked at manufacturing facilities and have been diagnosed with mesothelioma, lung cancer, or other asbestos-related diseases, you may be entitled to significant compensation. Manufacturing workers have successfully recovered millions of dollars through trust fund claims and legal settlements. Your exposure at manufacturing facilities may qualify you for compensation from multiple sources, including asbestos trust funds established by bankrupt manufacturers and lawsuits against companies that supplied asbestos products to your workplace."
         },
         families: {
           subheading: "For Family Members",
-          content: "Family members who developed asbestos-related diseases from secondary exposure (such as from washing work clothes or living near facilities) may also have legal claims. Many families have successfully obtained compensation."
+          content: "If your loved one worked in manufacturing and developed an asbestos-related disease, you may be eligible to file wrongful death claims and seek compensation for medical expenses, lost income, and other damages. Family members who experienced secondary exposure may also have valid claims."
         },
         legal: {
-          subheading: "Free Legal Consultation",
-          content: "Connect with experienced attorneys who specialize in asbestos-related cases. Most law firms offer free consultations and work on a contingency basis, meaning you pay nothing unless you receive compensation."
+          subheading: "For Legal Professionals",
+          content: "Our comprehensive database of manufacturing exposure sites provides detailed facility information, operational periods, and documented exposure sources to support case development and expert testimony in asbestos litigation. Manufacturing workers and their families deserve justice for the harm caused by decades of corporate negligence in concealing asbestos dangers. Contact qualified legal counsel to evaluate your potential claims and protect your rights to compensation."
         }
       },
       citations: {
-        heading: "References and Sources",
+        heading: "References",
         references: [
           {
             id: 1,
-            text: "National Institute for Occupational Safety and Health (NIOSH) - Asbestos Fibers and Other Elongate Mineral Particles",
-            url: "https://www.cdc.gov/niosh/topics/asbestos/"
+            text: "Occupational Safety and Health Administration. \"Asbestos - Overview.\" U.S. Department of Labor.",
+            url: "https://www.osha.gov/asbestos"
           },
           {
             id: 2,
-            text: "Environmental Protection Agency (EPA) - Asbestos Laws and Regulations",
-            url: "https://www.epa.gov/asbestos/asbestos-laws-and-regulations"
+            text: "Federal Register. \"Asbestos Exposure Limit.\" Vol. 70, No. 145, July 29, 2005.",
+            url: "https://www.federalregister.gov/documents/2005/07/29/05-14510/asbestos-exposure-limit"
           },
           {
             id: 3,
-            text: "Occupational Safety and Health Administration (OSHA) - Asbestos Standards",
-            url: "https://www.osha.gov/asbestos"
+            text: "Hodgson JT, Darton A. \"The quantitative risks of mesothelioma and lung cancer in relation to asbestos exposure.\" Health and Safety Executive, 2000.",
+            url: ""
+          },
+          {
+            id: 4,
+            text: "Occupational Safety and Health Administration. \"29 CFR 1910.1001 - Asbestos.\" U.S. Department of Labor.",
+            url: "https://www.osha.gov/laws-regs/regulations/standardnumber/1910/1910.1001"
+          },
+          {
+            id: 5,
+            text: "\"Occupational exposure to asbestos in the steel industry (1972–2006).\" Journal of Exposure Science & Environmental Epidemiology, Vol. 34, 2024.",
+            url: "https://www.nature.com/articles/s41370-023-00576-4"
+          },
+          {
+            id: 6,
+            text: "National Cancer Institute. \"Asbestos Exposure and Cancer Risk Fact Sheet.\" National Institutes of Health.",
+            url: "https://www.cancer.gov/about-cancer/causes-prevention/risk/substances/asbestos/asbestos-fact-sheet"
+          },
+          {
+            id: 7,
+            text: "Agency for Toxic Substances and Disease Registry. \"Asbestos Toxicity: Who Is at Risk of Exposure to Asbestos?\" Centers for Disease Control and Prevention.",
+            url: "https://archive.cdc.gov/www_atsdr_cdc_gov/csem/asbestos/who_is_at_risk.html"
+          },
+          {
+            id: 8,
+            text: "Ibid.",
+            url: ""
+          },
+          {
+            id: 9,
+            text: "Occupational Safety and Health Administration. \"Asbestos - Evaluating and Controlling Exposure.\" U.S. Department of Labor.",
+            url: "https://www.osha.gov/asbestos/evaluating-controlling-exposure"
+          },
+          {
+            id: 10,
+            text: "Multiple trust fund annual reports and legal filings, 2024-2025.",
+            url: ""
+          },
+          {
+            id: 11,
+            text: "Various trust fund payment percentage data and settlement reports, 2024.",
+            url: ""
+          },
+          {
+            id: 12,
+            text: "Mealey's Litigation Reports: Asbestos, various issues 2024-2025.",
+            url: ""
+          },
+          {
+            id: 13,
+            text: "USG Corporation Asbestos Trust annual reports.",
+            url: ""
+          },
+          {
+            id: 14,
+            text: "Pittsburgh Corning Corporation Trust documentation.",
+            url: ""
+          },
+          {
+            id: 15,
+            text: "Manville Personal Injury Settlement Trust annual reports.",
+            url: ""
+          },
+          {
+            id: 16,
+            text: "Mealey's Litigation Reports: Asbestos, Settlement and Verdict Database, 2024-2025.",
+            url: ""
           }
         ]
       }
