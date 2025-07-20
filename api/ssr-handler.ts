@@ -18,8 +18,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     console.log('🔧 STARTING ASSET DETECTION');
     
     // Try to read the built index.html to get actual asset paths
-    const fs = require('fs');
-    const path = require('path');
+   import * as fs from 'fs';
+    import * as path from 'path';
     const indexHtmlPath = path.join(process.cwd(), 'dist/public/index.html');
     
     // Debug logging for Vercel
