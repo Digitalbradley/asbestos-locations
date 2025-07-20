@@ -102,6 +102,11 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
                         </li>
                       `).join('')}
                     </ul>
+                    ${category.sections.exposureSources.additionalContent ? `
+                    <div style="margin-top: 1.5rem; padding-top: 1rem; border-top: 1px solid #e5e7eb;">
+                      <p style="line-height: 1.6;">${category.sections.exposureSources.additionalContent}</p>
+                    </div>
+                    ` : ''}
                   </div>
                 </div>
               </section>
