@@ -41,7 +41,11 @@ export default function Footer() {
               <li><Link href="/category/commercial-buildings" className="hover:text-background transition-colors">Commercial Buildings</Link></li>
               <li><Link href="/category/power-plants" className="hover:text-background transition-colors">Power Plants</Link></li>
               <li><Link href="/category/shipyards" className="hover:text-background transition-colors">Shipyards</Link></li>
-              <li><Link href="/#facility-types" className="hover:text-background transition-colors">View All Types →</Link></li>
+              <li><Link href="/category/government" className="hover:text-background transition-colors">Government</Link></li>
+              <li><Link href="/category/hospitals" className="hover:text-background transition-colors">Hospitals</Link></li>
+              <li><Link href="/category/schools" className="hover:text-background transition-colors">Schools</Link></li>
+              <li><Link href="/category/transportation" className="hover:text-background transition-colors">Transportation</Link></li>
+              <li><Link href="/category/residential" className="hover:text-background transition-colors">Residential</Link></li>
             </ul>
           </div>
           
