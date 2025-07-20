@@ -117,12 +117,12 @@ export default function GlobalCategoryPage() {
   // Set page metadata
   useEffect(() => {
     if (category) {
-      document.title = `${category.name} Asbestos Exposure Sites - ${facilities.length} Facilities Nationwide`;
+      document.title = `${category.name} Asbestos Exposure Sites - Comprehensive Directory`;
       
       const metaDescription = document.querySelector('meta[name="description"]');
       if (metaDescription) {
         metaDescription.setAttribute('content', 
-          `Comprehensive directory of ${facilities.length} ${category.name.toLowerCase()} facilities with documented asbestos exposure. Find exposure sites, learn about health risks, and get legal help.`
+          `Comprehensive directory of ${category.name.toLowerCase()} facilities with documented asbestos exposure. Find exposure sites, learn about health risks, and get legal help.`
         );
       }
     }
