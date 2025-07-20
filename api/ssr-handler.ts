@@ -47,24 +47,28 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         const categorySlug = pathSegments[1];
         
         console.log('📁 Category page detected:', categorySlug);
+        console.log('CategoryInfo type:', typeof categoryInfo);
+        console.log('CategoryInfo exists:', !!categoryInfo);
         
-        const category = categoryInfo[categorySlug];
+        // Add fallback in case import failed
+        const category = categoryInfo ? categoryInfo[categorySlug] : null;
         
-        if (category) {
-          // Use the imported category data
-          pageTitle = category.pageTitle;
-          pageDescription = category.metaDescription;
-          
-          // Define breadcrumb items
-          const breadcrumbItems = [
-            { label: 'Home', href: '/' },
-            { label: category.name }
-          ];
-          
-          // Build the SSR content
-          ssrContent = generateNavHTML();
-          ssrContent += generateBreadcrumbHTML(breadcrumbItems);
-          ssrContent += `
+        if (category && category.sections) {
+          try {
+            // Use the imported category data
+            pageTitle = category.pageTitle;
+            pageDescription = category.metaDescription;
+            
+            // Define breadcrumb items
+            const breadcrumbItems = [
+              { label: 'Home', href: '/' },
+              { label: category.name }
+            ];
+            
+            // Build the SSR content
+            ssrContent = generateNavHTML();
+            ssrContent += generateBreadcrumbHTML(breadcrumbItems);
+            ssrContent += `
             <div style="max-width: 1152px; margin: 0 auto; padding: 0 1rem;">
               <h1 style="font-size: 2.5rem; margin-bottom: 1rem; font-family: 'Merriweather', serif;">${category.h1Title}</h1>
               
@@ -128,12 +132,37 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
               <section style="margin: 2rem 0;">
                 <a href="/legal-help" style="background: #52d2e3; color: white; padding: 1rem 2rem; text-decoration: none; border-radius: 4px; display: inline-block; margin-top: 1rem;">Get Free Legal Consultation</a>
               </section>
+              
+              <!-- Citations Section (NEW) -->
+              ${category.sections.citations && category.sections.citations.references ? `
+              <section style="margin: 2rem 0;">
+                <h2 style="font-size: 2rem; margin-bottom: 1rem; font-family: 'Merriweather', serif;">${category.sections.citations.heading}</h2>
+                <ol style="padding-left: 1.5rem;">
+                  ${category.sections.citations.references.map(ref => `
+                    <li style="margin-bottom: 0.5rem;">
+                      ${ref.text} 
+                      <a href="${ref.url}" style="color: #0066cc; text-decoration: none;">[Source]</a>
+                    </li>
+                  `).join('')}
+                </ol>
+              </section>
+              ` : ''}
             </div>
           `;
           
           ssrContent += generateFooterHTML();
           
           console.log('✅ Category content generated successfully');
+          } catch (error) {
+            console.error('❌ Error generating category content:', error);
+            ssrContent = `
+              <div style="max-width: 1200px; margin: 0 auto; padding: 20px; text-align: center;">
+                <h1>Error Loading Category</h1>
+                <p>Unable to generate category content: ${error.message}</p>
+                <a href="/" style="color: #0066cc;">Return to Homepage</a>
+              </div>
+            `;
+          }
         } else {
           // Category not found
           ssrContent = `
