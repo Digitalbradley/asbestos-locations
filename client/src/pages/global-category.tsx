@@ -742,7 +742,7 @@ export default function GlobalCategoryPage() {
 
               {/* Load More Button */}
               {displayedFacilities < facilities.length && (
-                <div className="text-center">
+                <div className="text-center mb-8">
                   <Button
                     onClick={() => setDisplayedFacilities(prev => prev + 100)}
                     size="lg"
