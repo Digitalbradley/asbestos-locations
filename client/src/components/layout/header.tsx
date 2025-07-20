@@ -64,10 +64,7 @@ export default function Header() {
                   <Link href="/category/residential" className="block px-4 py-2 text-sm hover:bg-gray-100">
                     <span className="font-medium">Residential</span>
                   </Link>
-                  <hr className="my-2" />
-                  <Link href="/#facility-types" className="block px-4 py-2 text-sm text-primary hover:bg-gray-100">
-                    View All Facility Types →
-                  </Link>
+
                 </div>
               </div>
             </div>
