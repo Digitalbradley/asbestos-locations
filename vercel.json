@@ -2,13 +2,21 @@
   "version": 2,
   "buildCommand": "npm run vercel-build",
   "outputDirectory": "dist/public",
+  "functions": {
+    "api/index.ts": {
+      "maxDuration": 30
+    },
+    "api/ssr-handler.ts": {
+      "maxDuration": 30
+    }
+  },
   "rewrites": [
     {
       "source": "/api/(.*)",
-      "destination": "/api/index"
+      "destination": "/api"
     },
     {
-      "source": "/((?!api|_next|assets|.*\\.).*)$",
+      "source": "/(.*)",
       "destination": "/api/ssr-handler"
     }
   ],
