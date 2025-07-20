@@ -10,49 +10,49 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   console.log('Request URL:', req.url);
   console.log('🔧 ASSET DETECTION TEST - About to check for assets');
 
-  // Dynamic asset path detection
-  let jsAssetPath = '/src/main.tsx'; // fallback for development
-  let cssAssetPath = '';
+// Dynamic asset path detection
+let jsAssetPath = '/src/main.tsx'; // fallback for development
+let cssAssetPath = '';
 
-  try {
-    console.log('🔧 STARTING ASSET DETECTION');
+try {
+  console.log('🔧 STARTING ASSET DETECTION');
+  
+  // Use dynamic require inside try block for Vercel compatibility
+  const fs = eval('require')('fs');
+  const path = eval('require')('path');
+  const indexHtmlPath = path.join(process.cwd(), 'dist/public/index.html');
+  
+  // Debug logging for Vercel
+  console.log('🔍 Working directory:', process.cwd());
+  console.log('🔍 Looking for index.html at:', indexHtmlPath);
+  console.log('🔍 File exists:', fs.existsSync(indexHtmlPath));
+  
+  if (fs.existsSync(indexHtmlPath)) {
+    const indexHtml = fs.readFileSync(indexHtmlPath, 'utf-8');
     
-    // Try to read the built index.html to get actual asset paths
-   import * as fs from 'fs';
-    import * as path from 'path';
-    const indexHtmlPath = path.join(process.cwd(), 'dist/public/index.html');
-    
-    // Debug logging for Vercel
-    console.log('🔍 Working directory:', process.cwd());
-    console.log('🔍 Looking for index.html at:', indexHtmlPath);
-    console.log('🔍 File exists:', fs.existsSync(indexHtmlPath));
-    
-    if (fs.existsSync(indexHtmlPath)) {
-      const indexHtml = fs.readFileSync(indexHtmlPath, 'utf-8');
-      
-      // Extract JS asset path
-      const jsMatch = indexHtml.match(/<script[^>]*src="([^"]*assets\/index-[^"]*\.js)"[^>]*>/);
-      if (jsMatch) {
-        jsAssetPath = jsMatch[1];
-      }
-      
-      // Extract CSS asset path
-      const cssMatch = indexHtml.match(/<link[^>]*href="([^"]*assets\/index-[^"]*\.css)"[^>]*>/);
-      if (cssMatch) {
-        cssAssetPath = cssMatch[1];
-      }
+    // Extract JS asset path
+    const jsMatch = indexHtml.match(/<script[^>]*src="([^"]*assets\/index-[^"]*\.js)"[^>]*>/);
+    if (jsMatch) {
+      jsAssetPath = jsMatch[1];
     }
     
-    // Debug logging for asset paths
-    console.log('🔍 JS asset path found:', jsAssetPath);
-    console.log('🔍 CSS asset path found:', cssAssetPath);
-    
-  } catch (error) {
-    console.log('🚨 ASSET DETECTION ERROR:', error.message);
-    console.log('🔍 Error details:', error);
+    // Extract CSS asset path
+    const cssMatch = indexHtml.match(/<link[^>]*href="([^"]*assets\/index-[^"]*\.css)"[^>]*>/);
+    if (cssMatch) {
+      cssAssetPath = cssMatch[1];
+    }
   }
+  
+  // Debug logging for asset paths
+  console.log('🔍 JS asset path found:', jsAssetPath);
+  console.log('🔍 CSS asset path found:', cssAssetPath);
+  
+} catch (error) {
+  console.log('🚨 ASSET DETECTION ERROR:', error.message);
+  console.log('🔍 Error details:', error);
+}
 
-  console.log('🔧 ASSET DETECTION COMPLETE');
+console.log('🔧 ASSET DETECTION COMPLETE');
 
     // Bot detection
     const userAgent = req.headers['user-agent'] || '';
