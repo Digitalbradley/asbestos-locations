@@ -85,7 +85,12 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
 
     // Handle all non-API page requests with SSR
-    if (!path?.startsWith('/api/') && !path?.includes('.')) {
+    // Skip: API routes, static assets, and other file requests
+    const isApiRoute = path?.startsWith('/api/');
+    const isStaticAsset = path?.includes('/assets/') || path?.includes('.js') || path?.includes('.css') || path?.includes('.map') || path?.includes('.ico') || path?.includes('.png') || path?.includes('.jpg') || path?.includes('.svg');
+    const isSpecialRoute = path === '/sitemap-florida.xml';
+    
+    if (!isApiRoute && !isStaticAsset && !isSpecialRoute) {
       console.log('📄 PAGE REQUEST DETECTED - Handling with SSR:', path);
       const { default: ssrHandler } = await import('./ssr-handler');
       return await ssrHandler(req, res);
