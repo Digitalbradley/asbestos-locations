@@ -8,24 +8,8 @@
       "destination": "/api/index"
     },
     {
-      "source": "/assets/(.*)",
-      "destination": "/assets/$1"
-    },
-    {
-      "source": "/_next/(.*)",
-      "destination": "/_next/$1"
-    },
-    {
-      "source": "/favicon.ico",
-      "destination": "/favicon.ico"
-    },
-    {
-      "source": "/",
-      "destination": "/api/ssr-handler"
-    },
-    {
       "source": "/(.*)",
-      "destination": "/api/ssr-handler"
+      "destination": "/api/index"
     }
   ],
   "functions": {
